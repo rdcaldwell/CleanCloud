@@ -1,27 +1,54 @@
-# FiscJanitor
+#FiscJanitor
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.6.5.
+## Node Setup
+* Run `npm install` to install the project dependencies
+* Run `npm run server` to build the project and run the node server
 
-## Development server
+## Docker setup
+* Install docker if you don't have it already
+* Pull the docker image with `docker pull mlafeldt/simianarmy`
+* Verify your email address in Amazon Simple Email Service before running the container. 
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## Docker commands
+```
+docker run -d \
+    -e SIMIANARMY_CLIENT_AWS_ACCOUNTKEY=$your_account_key \
+    -e SIMIANARMY_CLIENT_AWS_SECRETKEY=$your_secret_key \
+    -e SIMIANARMY_CLIENT_AWS_REGION=$your_region \
+    -e SIMIANARMY_CALENDAR_ISMONKEYTIME=true \
+    -e SIMIANARMY_CHAOS_ENABLED=false \
+    -e SIMIANARMY_CHAOS_LEASHED=false \
+    -e SIMIANARMY_JANITOR_ENABLED=true \
+    -e SIMIANARMY_JANITOR_LEASHED=false \
+    -e SIMIANARMY_JANITOR_NOTIFICATION_DEFAULTEMAIL=$your_email \
+    -e SIMIANARMY_JANITOR_SUMMARYEMAIL_TO=$your_email \
+    -e SIMIANARMY_JANITOR_NOTIFICATION_SOURCEEMAIL=$your_email \
+    -p 8080:8080 \
+    mlafeldt/simianarmy
+```
+* Show the containers that are running currently
+```
+docker ps
+```
 
-## Code scaffolding
+* Stop the running container using the container id from the ps command 
+```
+docker stop $containerId
+``` 
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+* to remove the container
+```
+docker rm $containerId
+```
 
-## Build
+* for follow logs
+```
+docker logs $containerId -f
+```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build.
+## Links
+Simian army terraform link:
+https://github.com/kaofelix/simian-army-terraform
 
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+Simian army docker link:
+https://hub.docker.com/r/mlafeldt/simianarmy/
