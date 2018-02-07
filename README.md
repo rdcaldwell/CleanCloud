@@ -1,4 +1,4 @@
-#FiscJanitor
+# FiscJanitor
 
 ## Node Setup
 * Run `npm install` to install the project dependencies
@@ -7,9 +7,10 @@
 ## Docker setup
 * Install docker if you don't have it already
 * Pull the docker image with `docker pull mlafeldt/simianarmy`
-* Verify your email address in Amazon Simple Email Service before running the container. 
+* Verify your email address in Amazon Simple Email Service before running the container
 
 ## Docker commands
+* Run docker container
 ```
 docker run -d \
     -e SIMIANARMY_CLIENT_AWS_ACCOUNTKEY=$your_account_key \
@@ -36,19 +37,19 @@ docker ps
 docker stop $containerId
 ``` 
 
-* to remove the container
+* Remove the container
 ```
 docker rm $containerId
 ```
 
-* for follow logs
+* Follow logs
 ```
 docker logs $containerId -f
 ```
 
 ## Links
-Simian army terraform link:
+Simian army terraform:
 https://github.com/kaofelix/simian-army-terraform
 
-Simian army docker link:
+Simian army docker:
 https://hub.docker.com/r/mlafeldt/simianarmy/

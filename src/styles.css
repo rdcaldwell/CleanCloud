@@ -1,1 +1,40 @@
 /* You can add global styles to this file, and also import other style files */
+body {
+    padding: 50px;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  }
+  
+  a {
+    color: #00B7FF;
+  }
+  
+  .main {
+    padding-top:50px;
+  }
+  
+  .button-bar {
+    padding-bottom: 10px;
+  }
+  
+  tr.active, tbody > tr:hover {
+    background-color: #ffac59;
+  }
+  
+  #graph {
+    padding-top:25px;
+    padding-left:25px;
+  }
+  
+  .navbar {
+    background-color: #ffac59;
+    border-radius: 5px;
+  }
+  
+  a.nav-link.active {
+    background-color: #ffac59 !important;
+    color: #fff;
+  }
+  
+  a.nav-link {
+    color: #ffac59;
+  }

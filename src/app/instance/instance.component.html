@@ -1,0 +1,64 @@
+<div class="button-bar">
+    <button type="button" class="btn btn-outline-success" id="create" data-toggle="modal" data-target="#createModal">Create New Instance</button>
+    <button type="button" class="btn btn-outline-danger" id="terminate" (click)="terminateInstance()">Terminate</button>
+</div>
+<table id="instanceTable" class="table">
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Type</th>
+            <th scope="col">Zone</th>
+            <th scope="col">State</th>
+            <th scope="col">Public DNS (IPv4)</th>
+            <th scope="col">Creation Date</th>
+        </tr>
+    </thead>
+    <ng-container *ngFor="let datum of data">
+        <tbody *ngFor="let instance of datum.Instances">
+            <tr class="clickable-row" (click)="activateRow(instance.InstanceId)">
+                <th scope="row" id="instanceId">{{ instance.InstanceId }}</th>
+                <td>{{ instance.Tags[0].Value }}</td>
+                <td>{{ instance.InstanceType }}</td>
+                <td>{{ instance.Placement.AvailabilityZone }}</td>
+                <td>{{ instance.State.Name }}</td>
+                <td>{{ instance.PublicDnsName }}</td>
+                <td>{{ instance.LaunchTime }}</td>
+            </tr>
+        </tbody>
+    </ng-container>
+</table>
+
+<!-- Modal -->
+<div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Instance</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="InstanceName">Instance Name</label>
+                        <input type="text" class="form-control" id="InstanceName" name="InstanceName" placeholder="Enter Instance Name">
+                    </div>
+                    <!--
+                    <div class="form-group">
+                        <label for="Zone">Select Zone</label>
+                        <select multiple class="form-control" id="Zone" name="Zone">
+                            <option value="us-east-1">US East (N. Virgina)</option>
+                            <option value="us-east-2">US East (Ohio)</option>
+                            <option value="us-west-1">US West (N. California)</option>
+                            <option value="us-west-2">US West (Oregon)</option>
+                        </select>
+                    </div>
+                    -->
+                    <button (click)="createInstance()" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
