@@ -1,35 +1,76 @@
-<div class="button-bar">
-    <button type="button" class="btn btn-outline-success" id="create" data-toggle="modal" data-target="#createModal"><i class="fas fa-plus-square fa-lg"></i></button>
-    <button type="button" class="btn btn-outline-danger" id="terminate" (click)="terminateInstance()"><i class="fas fa-minus-square fa-lg"></i></button>
-    <button type="button" class="btn btn-outline-primary" id="analyze" (click)="analyzeInstance()"><i class="far fa-chart-bar fa-lg"></i></button>
-    <button type="button" class="btn btn-outline-primary" id="cost"><i class="fas fa-dollar-sign fa-lg"></i></button>
+<div class="jumbotron">
+    <h3>EC2 Instances</h3>
+    <div class="button-bar">
+        <button type="button" class="btn btn-outline-success" id="create-EC2" data-toggle="modal" data-target="#createModal"><i class="fas fa-plus fa-lg"></i></button>
+        <button type="button" class="btn btn-outline-danger" id="terminate-EC2" (click)="terminate('ec2')"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-aws fa-lg"></i></button>
+        <button type="button" class="btn btn-outline-danger" id="terminate-jenkins-EC2"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-jenkins fa-lg"></i></button>
+        <button type="button" class="btn btn-outline-primary" id="analyze-EC2" (click)="analyze('ec2')"><i class="far fa-chart-bar fa-lg"></i></button>
+        <button type="button" class="btn btn-outline-primary" id="cost-EC2"><i class="fas fa-dollar-sign fa-lg"></i></button>
+    </div>
+    <table id="EC2-table" class="table">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Context</th>
+                <th scope="col">Type</th>
+                <th scope="col">Zone</th>
+                <th scope="col">State</th>
+                <th scope="col">Public DNS (IPv4)</th>
+                <th scope="col">Creation Date</th>
+            </tr>
+        </thead>
+        <ng-container *ngFor="let datum of ec2_data">
+            <tbody *ngFor="let instance of datum.Instances">
+                <tr class="clickable-row" (click)="activateRow('EC2-table', instance.InstanceId)">
+                    <th scope="row" id="instanceId">{{ instance.InstanceId }}</th>
+                    <td>{{ instance.Tags[0]?.Value }}</td>
+                    <td>{{ instance.InstanceType }}</td>
+                    <td>{{ instance.Placement.AvailabilityZone }}</td>
+                    <td>{{ instance.State.Name }}</td>
+                    <td>{{ instance.PublicDnsName }}</td>
+                    <td>{{ instance.LaunchTime }}</td>
+                </tr>
+            </tbody>
+        </ng-container>
+    </table>
 </div>
-<table id="instanceTable" class="table">
-    <thead>
-        <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Name</th>
-            <th scope="col">Type</th>
-            <th scope="col">Zone</th>
-            <th scope="col">State</th>
-            <th scope="col">Public DNS (IPv4)</th>
-            <th scope="col">Creation Date</th>
-        </tr>
-    </thead>
-    <ng-container *ngFor="let datum of data">
-        <tbody *ngFor="let instance of datum.Instances">
-            <tr class="clickable-row" (click)="activateRow(instance.InstanceId)">
-                <th scope="row" id="instanceId">{{ instance.InstanceId }}</th>
-                <td>{{ instance.Tags[0]?.Value }}</td>
-                <td>{{ instance.InstanceType }}</td>
-                <td>{{ instance.Placement.AvailabilityZone }}</td>
-                <td>{{ instance.State.Name }}</td>
-                <td>{{ instance.PublicDnsName }}</td>
-                <td>{{ instance.LaunchTime }}</td>
+
+<div class="jumbotron">
+    <h3>RDS DB Instances</h3>
+    <div class="button-bar">
+        <button type="button" class="btn btn-outline-success" id="create-RDS" (click)="create('rds')"><i class="fas fa-plus fa-lg"></i></button>
+        <button type="button" class="btn btn-outline-danger" id="terminate-AWS-RDS" (click)="terminate('rds')"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-aws fa-lg"></i></button>
+        <button type="button" class="btn btn-outline-danger" id="terminate-jenkins-RDS"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-jenkins fa-lg"></i></button>
+        <button type="button" class="btn btn-outline-primary" id="analyze-RDS" (click)="analyze('rds')"><i class="far fa-chart-bar fa-lg"></i></button>
+        <button type="button" class="btn btn-outline-primary" id="cost-RDS"><i class="fas fa-dollar-sign fa-lg"></i></button>
+    </div>
+    <table id="RDS-table" class="table">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Identifier</th>
+                <!--<th scope="col">Context</th>-->
+                <th scope="col">Class</th>
+                <th scope="col">Engine</th>
+                <th scope="col">Status</th>
+                <th scope="col">Zone</th>
+                <th scope="col">Creation Date</th>
+            </tr>
+        </thead>
+        <tbody *ngFor="let instance of rds_data">
+            <tr class="clickable-row" (click)="activateRow('RDS-table', instance.DBInstanceIdentifier)">
+                <th>{{ instance.DBName }}</th>
+                <th scope="row" id="instanceId">{{ instance.DBInstanceIdentifier }}</th>
+                <!--<td>{{ instance.Tags[0]?.Value }}</td>-->
+                <td>{{ instance.DBInstanceClass }}</td>
+                <td>{{ instance.Engine }}</td>
+                <td>{{ instance.DBInstanceStatus }}</td>
+                <td>{{ instance.AvailabilityZone }}</td>
+                <td>{{ instance.InstanceCreateTime }}</td>
             </tr>
         </tbody>
-    </ng-container>
-</table>
+    </table>
+</div>
 
 <!-- Modal -->
 <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -58,13 +99,16 @@
                         </select>
                     </div>
                     -->
-                    <button (click)="createInstance()" class="btn btn-primary">Submit</button>
+                    <button (click)="create('ec2')" class="btn btn-primary">Submit</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<!--
 <div class="jumbotron">
     <h3>CPU Utilization</h3>
     <div id="graph"></div>
 </div>
+-->

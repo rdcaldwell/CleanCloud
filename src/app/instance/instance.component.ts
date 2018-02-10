@@ -12,7 +12,9 @@ import $ from 'jquery';
   providers: [InstancesService]
 })
 export class InstanceComponent implements OnInit {
-  data: any = [];
+  ec2_data: any = [];
+  rds_data: any = [];
+  analytics_data: any = [];
   createdInstance: any = [];
   activeId: string;
   resdata: any;
@@ -21,7 +23,8 @@ export class InstanceComponent implements OnInit {
               private analyticsService: AnalyticsService) {}
 
   ngOnInit() {
-    this.getInstanceData();
+    this.getEC2InstanceData();
+    this.getRDSInstanceData();
     this.instancesService.id.subscribe(id => this.activeId = id);
     /*
     setInterval(() => { 
@@ -30,32 +33,38 @@ export class InstanceComponent implements OnInit {
     */
   }
 
-  getInstanceData() {
-    this.instancesService.getInstances().subscribe(data => {
-      this.data = data;
+  getEC2InstanceData() {
+    this.instancesService.getInstances('ec2').subscribe(data => {
+      this.ec2_data = data;
     });
   }
 
-  createInstance() {
-    this.instancesService.create().subscribe();
+  getRDSInstanceData() {
+    this.instancesService.getInstances('rds').subscribe(data => {
+      this.rds_data = data;
+    });
   }
 
-  terminateInstance() {
-    this.instancesService.terminate(this.activeId).subscribe();
+  createInstance(service) {
+    this.instancesService.create(service).subscribe();
   }
 
-  activateRow(id) {
-    $('#instanceTable').on('click', '.clickable-row', function(event) {
+  terminateInstance(service) {
+    this.instancesService.terminate(service, this.activeId).subscribe();
+  }
+
+  activateRow(table, id) {
+    $(table).on('click', '.clickable-row', function(event) {
       $(this).addClass('active').siblings().removeClass('active');
     });
     this.instancesService.setActiveId(id);
   }
 
   analyzeInstance() {
-    this.analyticsService.analyze(this.activeId).subscribe(data => {
-      this.data = data;
+    this.analyticsService.analyze(this.activeId).subscribe(serviceData => {
+      this.analytics_data = serviceData;
 
-      var data = this.data.Datapoints;
+      var data = this.analytics_data.Datapoints;
 
       console.log("data:" + data);
       

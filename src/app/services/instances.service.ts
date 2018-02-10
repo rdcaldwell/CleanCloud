@@ -12,16 +12,16 @@ export class InstancesService {
   constructor(private http: Http) {
   }
 
-  getInstances() {
-    return this.http.get('/api/instances').map(res => res.json());
+  getInstances(service: string) {
+    return this.http.get(`/api/describe/${service}`).map(res => res.json());
   }
 
-  create() {
-    return this.http.get('/api/create').map(res => res.json());
+  create(service) {
+    return this.http.get(`/api/create/${service}`).map(res => res.json());
   }
 
-  terminate(instanceId) {
-    return this.http.get('/api/terminate/' + instanceId).map(res => res.json());
+  terminate(service, instanceId) {
+    return this.http.get(`/api/terminate/${service}/${instanceId}`).map(res => res.json());
   }
 
   setActiveId(id: string) {

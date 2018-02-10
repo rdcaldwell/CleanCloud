@@ -1,17 +1,23 @@
 const EXPRESS = require('express');
 const ROUTER = EXPRESS.Router();
 const AWS = require('aws-sdk');
-var jwt = require('express-jwt');
-var auth = jwt({
+const JWT = require('express-jwt');
+const LOG4JS = require('log4js');
+const LOGGER = LOG4JS.getLogger();
+const CTRL_PROFILE = require('../controllers/profile');
+const CTRL_AUTH = require('../controllers/auth');
+const EC2 = new AWS.EC2({apiVersion: '2016-11-15', region: 'us-west-2'});
+const EFS = new AWS.EFS({apiVersion: '2015-02-01', region: 'us-east-2'});
+const RDS = new AWS.RDS({apiVersion: '2014-10-31', region: 'us-east-2'});
+const CLOUD_WATCH = new AWS.CloudWatch({apiVersion: '2010-08-01', region: 'us-west-2'});
+const COST_EXPLORER = new AWS.CostExplorer({apiVersion: '2017-10-25', region: 'us-east-1'});
+
+const AUTH = JWT({
   secret: 'MY_SECRET',
   userProperty: 'payload'
 });
-var ctrlProfile = require('../controllers/profile');
-var ctrlAuth = require('../controllers/auth');
 
-var log4js = require('log4js');
-var logger = log4js.getLogger();
-logger.level = 'debug';
+LOGGER.level = 'debug';
 
 AWS.config.apiVersions = {
     costExplorer: '2017-10-25',
@@ -19,34 +25,51 @@ AWS.config.apiVersions = {
     cloudWatch: '2010-08-01',
 };
 
-ROUTER.get('/profile', auth, ctrlProfile.profileRead);
-ROUTER.post('/register', ctrlAuth.register);
-ROUTER.post('/login', ctrlAuth.login);
+ROUTER.get('/profile', AUTH, CTRL_PROFILE.profileRead);
+ROUTER.post('/register', CTRL_AUTH.register);
+ROUTER.post('/login', CTRL_AUTH.login);
 
-/* GET instances */
-ROUTER.get('/instances', (req, res) => {
-    // Set the region
-    AWS.config.update({region: 'us-west-2'});
-    // Create EC2 service object
-    var ec2 = new AWS.EC2();
-    var instances = [];
-    ec2.describeInstances(function(err, data) {
+/* GET EC2 instances */
+ROUTER.get('/describe/ec2', (req, res) => {
+    EC2.describeInstances(function(err, data) {
         if (err) {
-            logger.error("Could not describe instances", err);
+            LOGGER.error(err, err.stack);
             return;
         }
+        else     LOGGER.info(data);
         res.send(data.Reservations);
     });
 });
 
-/* Create Instance by id */
-ROUTER.get('/create', (req, res) => {
-    // Set the region
-    AWS.config.update({region: 'us-west-2'});
-    // Create EC2 service object
-    var ec2 = new AWS.EC2();
-    var instanceId = '';
-    var instances = {};
+/* GET EFS instances */
+ROUTER.get('describe/efs', (req, res) => {
+    var params = {};
+    EFS.describeFileSystems(params, function(err, data) {
+        if (err) {
+            LOGGER.error(err, err.stack);
+            return;
+        }
+        else     LOGGER.info(data);
+        LOGGER.info(data);
+        res.send(data);
+    });
+});
+
+/* GET RDS DB instances */
+ROUTER.get('/describe/rds', (req, res) => {
+    var params = {};
+    RDS.describeDBInstances(params, function(err, data) {
+        if (err) {
+            LOGGER.error(err, err.stack);
+            return;
+        }
+        else LOGGER.info(data.DBInstances);
+        res.send(data.DBInstances);
+    });
+});
+
+/* Create EC2 Instance */
+ROUTER.get('/create/ec2', (req, res) => {
     var params = {
         ImageId: 'ami-10fd7020', // amzn-ami-2011.09.1.x86_64-ebs
         InstanceType: 't1.micro',
@@ -54,34 +77,81 @@ ROUTER.get('/create', (req, res) => {
         MaxCount: 1
     };
     // Create the instance
-    ec2.runInstances(params, function(err, data) {
+    EC2.runInstances(params, function(err, data) {
         if (err) {
-            logger.debug("Could not create instance", err);
+            LOGGER.error(err, err.stack);
             return;
         }
-        instanceId = data.Instances[0].InstanceId;
+        else LOGGER.info(data);
+        var instanceId = data.Instances[0].InstanceId;
         // Add tags to the instance
-        params = {Resources: [instanceId], Tags: [
-            {
-                Key: 'Name',
-                Value: "Test"
-            }
+        params = {
+            Resources: [instanceId], 
+            Tags: [
+                {
+                    Key: 'Context',
+                    Value: "Test"
+                }
         ]};
-        ec2.createTags(params, function(err) {
-            logger.error("Tagging instance", err ? "failure" : "success");
+        EC2.createTags(params, function(err) {
+            LOGGER.error("Tagging instance", err ? "failure" : "success");
         });
-        logger.info(instanceId + " created");
+        LOGGER.info(instanceId + " created");
         res.send(data.Instances[0]);
     });
 });
 
-/* Terminate Instances by id */
-ROUTER.get('/terminate/:id', (req, res) => {
+/* Create EFS instance */
+ROUTER.get('/create/efs', (req, res) => {
+    var params = {
+        CreationToken: "tokenstring", 
+        PerformanceMode: "generalPurpose"
+    };
+    EFS.createFileSystem(params, function(err, data) {
+        if (err) console.log(err, err.stack); // an error occurred
+        else     console.log(data);           // successful response
+        var tagParams = {
+            FileSystemId: data.FileSystemId, 
+            Tags: [{
+                Key: "Context", 
+                Value: "rdc-test"
+            }]
+        };
+        EFS.createTags(tagParams, function(tagErr, tagData) {
+            if (tagErr) console.log(tagErr, tagErr.stack); // an error occurred
+            else     console.log(tagData);           // successful response
+        });
+    });
+});
+
+ROUTER.get('/create/rds', (req, res) => {
+    var params = {
+        DBInstanceClass: 'db.t2.micro',
+        DBInstanceIdentifier: 'instance-test',
+        Engine: 'postgres',
+        EngineVersion: '9.6.5',
+        AvailabilityZone: 'us-east-2a',
+        DBName: 'db_test',
+        MasterUsername: 'rdc',
+        MasterUserPassword: 'password',
+        AllocatedStorage: 20,
+        Tags: [
+          {
+            Key: 'Context',
+            Value: 'rdc-test'
+          },
+        ]
+    };
+    RDS.createDBInstance(params, function(err, data) {
+        if (err) console.log(err, err.stack); // an error occurred
+        else     console.log(data);  
+        res.send(data);         // successful response
+    });
+});
+ 
+/* Terminate EC2 Instances by id */
+ROUTER.get('/terminate/ec2/:id', (req, res) => {
     var InstanceValue = req.params.id;
-    // Set the region
-    AWS.config.update({region: 'us-west-2'});
-    // Create EC2 service object
-    var ec2 = new AWS.EC2();
     var instanceIds = [];
     instanceIds.push(InstanceValue)
     var params = {
@@ -89,22 +159,40 @@ ROUTER.get('/terminate/:id', (req, res) => {
         DryRun: false
     };
     // Create the instance
-    ec2.terminateInstances(params, function(err, data) {
+    EC2.terminateInstances(params, function(err, data) {
         if (err) {
-            logger.error("Could not terminate instances", err);
+            LOGGER.error("Could not terminate instances", err);
             return;
         }
-        logger.info(InstanceValue + " terminated");
+        LOGGER.info(InstanceValue + " terminated");
     });
 });
 
-/* Analyze by id */
-ROUTER.get('/analyze/:id', (req, res) => {
-    var InstanceValue = req.params.id;
-    logger.debug("analyzing " + InstanceValue);
-    // Set the region
-    AWS.config.update({region: 'us-west-2'});
-    var cloudWatch = new AWS.CloudWatch();
+/* Terminate EFS Instances by id */
+ROUTER.get('/terminate/efs/:id', (req, res) => {
+    var params = {
+        FileSystemId: req.params.id
+    };
+    EFS.deleteFileSystem(params, function(err, data) {
+        if (err) console.log(err, err.stack); // an error occurred
+        else     console.log(data);           // successful response
+    });
+});
+
+/* Terminate EFS Instances by id */
+ROUTER.get('/terminate/rds/:id', (req, res) => {
+    var params = {
+        DBInstanceIdentifier: req.params.id, /* required */
+        SkipFinalSnapshot: true
+    };
+    RDS.deleteDBInstance(params, function(err, data) {
+        if (err) console.log(err, err.stack); // an error occurred
+        else     console.log(data);           // successful response
+    });
+});
+
+/* Analyze EC2 instances by id */
+ROUTER.get('/analyze/ec2/:id', (req, res) => {
     var params = {
         EndTime: new Date(), /* required */
         MetricName: 'CPUUtilization', /* required */
@@ -114,7 +202,7 @@ ROUTER.get('/analyze/:id', (req, res) => {
         Dimensions: [
             {
                 Name: 'InstanceId', /* required */
-                Value: InstanceValue /* required */
+                Value: req.params.id /* required */
             },
         ],
         Statistics: [
@@ -122,10 +210,10 @@ ROUTER.get('/analyze/:id', (req, res) => {
         ],
         Unit: "Percent"
     };
-    cloudWatch.getMetricStatistics(params, function(err, data) {
-        if (err) logger.error(err, err.stack); // an error occurred
+    CLOUD_WATCH.getMetricStatistics(params, function(err, data) {
+        if (err) LOGGER.error(err, err.stack); // an error occurred
         else {
-            logger.info(JSON.stringify(data, null, "\t")); // successful response
+            LOGGER.info(JSON.stringify(data, null, "\t")); // successful response
             res.send(data);
         } 
     });
