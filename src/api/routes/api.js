@@ -1,6 +1,14 @@
 const EXPRESS = require('express');
 const ROUTER = EXPRESS.Router();
 const AWS = require('aws-sdk');
+var jwt = require('express-jwt');
+var auth = jwt({
+  secret: 'MY_SECRET',
+  userProperty: 'payload'
+});
+var ctrlProfile = require('../controllers/profile');
+var ctrlAuth = require('../controllers/auth');
+
 var log4js = require('log4js');
 var logger = log4js.getLogger();
 logger.level = 'debug';
@@ -10,6 +18,10 @@ AWS.config.apiVersions = {
     ec2: '2016-11-15',
     cloudWatch: '2010-08-01',
 };
+
+ROUTER.get('/profile', auth, ctrlProfile.profileRead);
+ROUTER.post('/register', ctrlAuth.register);
+ROUTER.post('/login', ctrlAuth.login);
 
 /* GET instances */
 ROUTER.get('/instances', (req, res) => {
@@ -89,7 +101,7 @@ ROUTER.get('/terminate/:id', (req, res) => {
 /* Analyze by id */
 ROUTER.get('/analyze/:id', (req, res) => {
     var InstanceValue = req.params.id;
-    log.debug("analyzing " + InstanceValue);
+    logger.debug("analyzing " + InstanceValue);
     // Set the region
     AWS.config.update({region: 'us-west-2'});
     var cloudWatch = new AWS.CloudWatch();
@@ -97,8 +109,8 @@ ROUTER.get('/analyze/:id', (req, res) => {
         EndTime: new Date(), /* required */
         MetricName: 'CPUUtilization', /* required */
         Namespace: 'AWS/EC2', /* required */
-        Period: 600, /* required */
-        StartTime: new Date('January 24, 2018 03:24:00'), /* required */
+        Period: 120, /* required */
+        StartTime: new Date('February 07, 2018 03:24:00'), /* required */
         Dimensions: [
             {
                 Name: 'InstanceId', /* required */

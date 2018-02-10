@@ -6,7 +6,7 @@ import 'rxjs/add/operator/map';
 @Injectable()
 export class InstancesService {
 
-  private activeId = new BehaviorSubject<string>("i-0eac610548383a5c1");
+  private activeId = new BehaviorSubject<string>("");
   id = this.activeId.asObservable();
 
   constructor(private http: Http) {

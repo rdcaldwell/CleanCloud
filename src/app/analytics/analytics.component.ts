@@ -97,7 +97,6 @@ export class AnalyticsComponent implements OnInit {
                   .attr("y", 5)
                   .attr("dy", ".71em")
                   .style("text-anchor", "end")
-                  .text("Avg Percent");
 
           // Add bar chart
           svg.selectAll("bar")

@@ -1,14 +1,25 @@
 <nav class="navbar navbar-expand-lg navbar-light">
-  <a class="navbar-brand" href="#">Fischer Cloud</a>
+  <a class="navbar-brand" href="#">Fischer Janitor</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
   </button>
 
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav mr-auto">
-          <li class="nav-item">
-              <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
-          </li>
-      </ul>
-  </div>
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li *ngIf="!authenticationService.isLoggedIn()" class="nav-item">
+        <a class="nav-link" routerLink="/login">Login</a>
+      </li>
+    </ul>
+    <ul class="nav navbar-nav ml-auto">
+      <li *ngIf="authenticationService.isLoggedIn()" class="nav-item ml-auto">
+        <a class="nav-link" routerLink="/profile">{{ authenticationService.getUser().user }}</a>
+      </li>
+      <li *ngIf="authenticationService.isLoggedIn()" class="nav-item ml-auto">
+        <a class="nav-link" (click)="authenticationService.logout()"><i class="fas fa-sign-out-alt fa-lg"></i></a>
+      </li>
+    </ul>
+</div>
 </nav>

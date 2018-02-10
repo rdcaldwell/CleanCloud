@@ -2,12 +2,15 @@ const EXPRESS = require('express');
 const PATH = require('path');
 const HTTP = require('http');
 const BODY_PARSER = require('body-parser');
-const API = require('./api');
 const SERVER = EXPRESS();
 const PORT = process.env.PORT || '3000';
 var log4js = require('log4js');
 var logger = log4js.getLogger();
 logger.level = 'debug';
+
+require('./src/api/models/db');
+require('./src/api/config/passport');
+const API = require('./src/api/routes/api');
 
 SERVER.use(BODY_PARSER.json());
 SERVER.use(BODY_PARSER.urlencoded({ extended: false }));

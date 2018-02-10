@@ -1,6 +1,8 @@
 <div class="button-bar">
-    <button type="button" class="btn btn-outline-success" id="create" data-toggle="modal" data-target="#createModal">Create New Instance</button>
-    <button type="button" class="btn btn-outline-danger" id="terminate" (click)="terminateInstance()">Terminate</button>
+    <button type="button" class="btn btn-outline-success" id="create" data-toggle="modal" data-target="#createModal"><i class="fas fa-plus-square fa-lg"></i></button>
+    <button type="button" class="btn btn-outline-danger" id="terminate" (click)="terminateInstance()"><i class="fas fa-minus-square fa-lg"></i></button>
+    <button type="button" class="btn btn-outline-primary" id="analyze" (click)="analyzeInstance()"><i class="far fa-chart-bar fa-lg"></i></button>
+    <button type="button" class="btn btn-outline-primary" id="cost"><i class="fas fa-dollar-sign fa-lg"></i></button>
 </div>
 <table id="instanceTable" class="table">
     <thead>
@@ -18,7 +20,7 @@
         <tbody *ngFor="let instance of datum.Instances">
             <tr class="clickable-row" (click)="activateRow(instance.InstanceId)">
                 <th scope="row" id="instanceId">{{ instance.InstanceId }}</th>
-                <td>{{ instance.Tags[0].Value }}</td>
+                <td>{{ instance.Tags[0]?.Value }}</td>
                 <td>{{ instance.InstanceType }}</td>
                 <td>{{ instance.Placement.AvailabilityZone }}</td>
                 <td>{{ instance.State.Name }}</td>
@@ -34,7 +36,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Create New Instance</h5>
+                <h5 class="modal-title">Launch Instance</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -61,4 +63,8 @@
             </div>
         </div>
     </div>
+</div>
+<div class="jumbotron">
+    <h3>CPU Utilization</h3>
+    <div id="graph"></div>
 </div>
