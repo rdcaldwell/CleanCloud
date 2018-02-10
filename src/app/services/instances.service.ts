@@ -12,7 +12,7 @@ export class InstancesService {
   constructor(private http: Http) {
   }
 
-  getInstances(service: string) {
+  describe(service: string) {
     return this.http.get(`/api/describe/${service}`).map(res => res.json());
   }
 
@@ -26,5 +26,6 @@ export class InstancesService {
 
   setActiveId(id: string) {
     this.activeId.next(id);
+    console.log("active id: " + this.activeId.getValue());
   }
 }

@@ -8,7 +8,12 @@ var rdsSchema = new mongoose.Schema({
     engine: String,
     status: String,
     availabilityZone: String,
-    creationDate: String
+    createdOn: String,
+    startedBy: String,
+    orgImportPath: String,
+    version: String,
+    reason: String,
+    highAvailability: String
 });
 
 mongoose.model('RDS', rdsSchema);

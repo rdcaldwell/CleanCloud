@@ -14,6 +14,7 @@ import $ from 'jquery';
 export class InstanceComponent implements OnInit {
   ec2_data: any = [];
   rds_data: any = [];
+  efs_data: any = [];
   analytics_data: any = [];
   createdInstance: any = [];
   activeId: string;
@@ -25,6 +26,7 @@ export class InstanceComponent implements OnInit {
   ngOnInit() {
     this.getEC2InstanceData();
     this.getRDSInstanceData();
+    this.getEFSInstanceData();
     this.instancesService.id.subscribe(id => this.activeId = id);
     /*
     setInterval(() => { 
@@ -34,14 +36,20 @@ export class InstanceComponent implements OnInit {
   }
 
   getEC2InstanceData() {
-    this.instancesService.getInstances('ec2').subscribe(data => {
+    this.instancesService.describe('ec2').subscribe(data => {
       this.ec2_data = data;
     });
   }
 
   getRDSInstanceData() {
-    this.instancesService.getInstances('rds').subscribe(data => {
+    this.instancesService.describe('rds').subscribe(data => {
       this.rds_data = data;
+    });
+  }
+
+  getEFSInstanceData() {
+    this.instancesService.describe('efs').subscribe(data => {
+      this.efs_data = data;
     });
   }
 

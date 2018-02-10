@@ -33,25 +33,24 @@ ROUTER.post('/login', CTRL_AUTH.login);
 ROUTER.get('/describe/ec2', (req, res) => {
     EC2.describeInstances(function(err, data) {
         if (err) {
-            LOGGER.error(err, err.stack);
+            LOGGER.error("[DESCRIBE-EC2] " + err.stack);
             return;
         }
-        else     LOGGER.info(data);
-        res.send(data.Reservations);
+        else LOGGER.info("[DESCRIBE-EC2]\n" + JSON.stringify(data, null, "\t"));
+        res.send(data.Reservations.Instances);
     });
 });
 
 /* GET EFS instances */
-ROUTER.get('describe/efs', (req, res) => {
+ROUTER.get('/describe/efs', (req, res) => {
     var params = {};
     EFS.describeFileSystems(params, function(err, data) {
         if (err) {
-            LOGGER.error(err, err.stack);
+            LOGGER.error("[DESCRIBE-EFS] " + err.stack);
             return;
         }
-        else     LOGGER.info(data);
-        LOGGER.info(data);
-        res.send(data);
+        else LOGGER.info("[DESCRIBE-EFS]\n" + JSON.stringify(data, null, "\t"));
+        res.send(data.FileSystems);
     });
 });
 
@@ -60,10 +59,10 @@ ROUTER.get('/describe/rds', (req, res) => {
     var params = {};
     RDS.describeDBInstances(params, function(err, data) {
         if (err) {
-            LOGGER.error(err, err.stack);
+            LOGGER.error("[DESCRIBE-RDS] " + err.stack);
             return;
         }
-        else LOGGER.info(data.DBInstances);
+        else LOGGER.info("[DESCRIBE-RDS]\n" + JSON.stringify(data.DBInstances, null, "\t"));
         res.send(data.DBInstances);
     });
 });
@@ -109,7 +108,7 @@ ROUTER.get('/create/efs', (req, res) => {
     };
     EFS.createFileSystem(params, function(err, data) {
         if (err) console.log(err, err.stack); // an error occurred
-        else     console.log(data);           // successful response
+        else     console.log("[CREATE-EFS]\n" + JSON.stringify(data, null, "\t"));           // successful response
         var tagParams = {
             FileSystemId: data.FileSystemId, 
             Tags: [{

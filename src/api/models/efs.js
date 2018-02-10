@@ -1,13 +1,11 @@
 var mongoose = require( 'mongoose' );
 
-var ec2Schema = new mongoose.Schema({
+var efsSchema = new mongoose.Schema({
     identifier: String,
+    name: String,
+    size: Number,
     context: String,
-    type: String,
-    availabilityZone: String,
-    status: String,
-    dns: String,
-    createdON: String,
+    createdOn: String,
     startedBy: String,
     orgImportPath: String,
     version: String,
@@ -15,4 +13,4 @@ var ec2Schema = new mongoose.Schema({
     highAvailability: String
 });
 
-mongoose.model('EC2', ec2Schema);
+mongoose.model('EFS', efsSchema);
