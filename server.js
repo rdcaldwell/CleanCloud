@@ -1,3 +1,4 @@
+require('dotenv').config()
 const EXPRESS = require('express');
 const PATH = require('path');
 const HTTP = require('http');

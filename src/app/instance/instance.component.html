@@ -19,15 +19,15 @@
                 <th scope="col">Creation Date</th>
             </tr>
         </thead>
-        <tbody *ngFor="let instance of data">
+        <tbody *ngFor="let instance of ec2_data">
             <tr class="clickable-row" (click)="activateRow('EC2Table', instance.InstanceId)">
-                <th scope="row" id="instanceId">{{ instance.InstanceId }}</th>
-                <td>{{ instance.Tags[0]?.Value }}</td>
-                <td>{{ instance.InstanceType }}</td>
-                <td>{{ instance.Placement.AvailabilityZone }}</td>
-                <td>{{ instance.State.Name }}</td>
-                <td>{{ instance.PublicDnsName }}</td>
-                <td>{{ instance.LaunchTime }}</td>
+                <th scope="row" id="instanceId">{{ instance.identifier }}</th>
+                <td>{{ instance.context }}</td>
+                <td>{{ instance.type }}</td>
+                <td>{{ instance.availabilityZone }}</td>
+                <td>{{ instance.status }}</td>
+                <td>{{ instance.dns }}</td>
+                <td>{{ instance.createdOn }}</td>
             </tr>
         </tbody>
     </table>
