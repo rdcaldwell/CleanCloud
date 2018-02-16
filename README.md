@@ -2,7 +2,26 @@
 
 ## Node Setup
 * Run `npm install` to install the project dependencies
-* Run `npm run server` to build the project and run the node server
+
+## Envrionment Variables Setup
+* Create a '.env' file in the root directory of the project that looks like this:
+```
+DB_USERNAME=
+DB_PASSWORD=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+REGION=
+JWT_SECRET=
+``` 
+
+## Development Servers
+* Run `npm run angular` to run the Angular server
+* Run `npm run node` to run the Node.js server
+* Port 4200
+
+## Production Server
+* Run `npm start`
+* Port 3000
 
 ## Docker setup
 * Install docker if you don't have it already

@@ -2,6 +2,7 @@ const EXPRESS = require('express');
 const ROUTER = EXPRESS.Router();
 const ASYNC = require('async');
 const MONGOOSE = require('mongoose');
+const HTTP = require('http');
 const LOG4JS = require('log4js');
 const LOGGER = LOG4JS.getLogger();
 LOGGER.level = 'debug';
@@ -40,89 +41,63 @@ ROUTER.get('/describe/ec2', (req, res) => {
             return;
         }
         else if (data.Reservations.length) {
+            res.json(data.Reservations[0].Instances);   
+        }
+        else {
+            LOGGER.info("No ec2 data found.");
+            res.send("No ec2 data\n");
+        }
+    });
+});
+
+ROUTER.get('/context/ec2/:id', (req, res) => {
+    var ec2_instances = [];
+    var params = {
+        Filters: [
+            {
+                Name: 'tag-value',
+                Values: [
+                    req.params.id
+                ]
+            }
+        ]
+    };
+    EC2.describeInstances(params, function(err, data) {
+        if (err) {
+            LOGGER.error("[CONTEXT-EC2]\n " + err.stack);
+            return;
+        }
+        else if (data.Reservations.length) {
+            res.json(data.Reservations[0].Instances);
+        }
+    });
+});
+
+/* GET EC2 instances */
+ROUTER.get('/context/names/ec2', (req, res) => {
+    var context = {
+        names: []
+    };
+    EC2.describeInstances(function(err, data) {
+        if (err) {
+            LOGGER.error("[CONTEXT-NAMES-EC2]:\n " + err.stack);
+            return;
+        }
+        else if (data.Reservations.length) {
             ASYNC.forEachOf(data.Reservations[0].Instances, function(describedInstance, index, callback) {
-                removeTerminatedInstancesFromDb(data.Reservations[0].Instances);
-                if (isDescribedInstanceInDb(db_EC2, describedInstance.InstanceId, describedInstance.State.Name) === false)
-                    insertEC2(describedInstance);
+                if (context.names.indexOf(describedInstance.Tags[0].Value) < 0)
+                    context.names.push(describedInstance.Tags[0].Value);
                 callback();
             }, function(err) {
                 if (err) {
                     LOGGER.error(err);
                     return;
                 }
-                db_EC2.find({}, function(err, docs) {
-                    res.send(docs);                                    
-                });
+                res.json(context);
             });
-
         }
     });
 });
-
-ROUTER.get('/clusters', (req, res) => {
-    db_EC2.find({}, function(err, docs) {
-        ASYNC.forEachOf(docs, function(doc, index, callback) {
-            if (doc.context === "Test") {
-
-            }
-        });
-    });        
-}); 
-
-function isDescribedInstanceInDb(db, serviceIdentifier, serviceStatus) {
-    var alreadyRunning = false;
-    db.find({ identifier: serviceIdentifier }, function(err, doc) {
-        if (doc.length) {
-            LOGGER.info(`${serviceIdentifier} ${alreadyRunning}`); 
-            alreadyRunning = true;
-            if (doc[0].status !== serviceStatus) {
-                db.update({ identifier: serviceIdentifier }, { status: serviceStatus }, function(err, doc2) {
-                    if (err) LOGGER.error(`Error updating ${doc[0].identifier}`)
-                    else LOGGER.info(`${doc[0].identifier} updated to ${serviceStatus}`);   
-                });
-            }        
-        }
-        else {
-            alreadyRunning = false;
-        }
-    });
-    return alreadyRunning;
-}
-
-
-function removeTerminatedInstancesFromDb(db, instances) {
-    db.find({}, function(err, table) {
-        ASYNC.forEachOf(table, function(instance, index, callback) {
-            if (isTerminated(instance.identifier, instances)) {
-                db.find({ identifier: instance.identifier }).remove().exec();
-                LOGGER.info("record removed");
-            }         
-        });
-    });
-}
-
-function isTerminated(id, instances) {
-    var terminated = true;
-    ASYNC.forEachOf(instances, function(instance, index, callback) {    
-        if (id === instance.InstanceId) terminated = false;
-    });
-    return terminated;
-}
-
-function insertEC2(instance) {
-    var ec2 = new db_EC2();
-    ec2.identifier = instance.InstanceId;
-    ec2.context = instance.Tags[0].Value;
-    ec2.type = instance.InstanceType;
-    ec2.availabilityZone = instance.Placement.AvailabilityZone;
-    ec2.status = instance.State.Name;
-    ec2.dns = instance.PublicDnsName;
-    ec2.createdOn = instance.LaunchTime;
-    ec2.save(function(err) {
-        if (err) LOGGER.error("Error adding " + instance.InstanceId)
-        else LOGGER.info(ec2.identifier + " record added");                        
-    });
-}
 
 /* GET EFS instances */
 ROUTER.get('/describe/efs', (req, res) => {
@@ -135,6 +110,10 @@ ROUTER.get('/describe/efs', (req, res) => {
         else if (data.FileSystems.length) {
             LOGGER.info("[DESCRIBE-EFS]\n" + JSON.stringify(data.FileSystems, null, "\t"));
             res.send(data.FileSystems);
+        }
+        else {
+            LOGGER.info("No efs data found.");
+            res.send("No efs data\n");
         }
     });
 });
@@ -150,6 +129,10 @@ ROUTER.get('/describe/rds', (req, res) => {
         else if (data.DBInstances.length) {
             LOGGER.info("[DESCRIBE-RDS]\n" + JSON.stringify(data.DBInstances, null, "\t"));
             res.send(data.DBInstances);            
+        }
+        else {
+            LOGGER.info("No rds data found.");
+            res.send("No rds data\n");
         }
     });
 });
@@ -195,12 +178,12 @@ ROUTER.get('/create/efs', (req, res) => {
     };
     EFS.createFileSystem(params, function(err, data) {
         if (err) console.log(err, err.stack); // an error occurred
-        else     console.log("[CREATE-EFS]\n" + JSON.stringify(data, null, "\t"));           // successful response
+        else     LOGGER.info("[CREATE-EFS]\n" + JSON.stringify(data, null, "\t"));           // successful response
         var tagParams = {
             FileSystemId: data.FileSystemId, 
             Tags: [{
                 Key: "Context", 
-                Value: "rdc-test"
+                Value: "Test"
             }]
         };
         EFS.createTags(tagParams, function(tagErr, tagData) {
@@ -342,9 +325,7 @@ ROUTER.get('/cost/:id', (req, res) => {
         else     console.log(JSON.stringify(data)); // successful response
     });
 });
-*/
 
-/*
 function addRunningEC2InstancesToDb(instance) {
     db_EC2.find({ identifier: instance.InstanceId }, function(err, doc) {
         if (doc.length) {
@@ -361,9 +342,7 @@ function addRunningEC2InstancesToDb(instance) {
         }
     });
 }
-*/
 
-/*
 function removeTerminatedEC2InstancesFromDb(instances) {
     db_EC2.find({}, function(err, ec2_table) {
         ASYNC.forEachOf(ec2_table, function(instance, index, callback) {
@@ -372,6 +351,70 @@ function removeTerminatedEC2InstancesFromDb(instances) {
                 LOGGER.info("record removed");
             }         
         });
+    });
+}
+
+function isDescribedInstanceInDb(serviceIdentifier, serviceStatus) {
+    var alreadyRunning = false;
+    db_EC2.find({ identifier: serviceIdentifier }, function(err, doc) {
+        if (doc.length) {
+            alreadyRunning = true;
+            if (doc[0].status !== serviceStatus) {
+                db_EC2.update({ identifier: serviceIdentifier }, { status: serviceStatus }, function(err, doc2) {
+                    if (err) LOGGER.error(`Error updating ${doc[0].identifier}`)
+                    else LOGGER.info(`${doc[0].identifier} updated to ${serviceStatus}`);   
+                });
+            }        
+        }
+        else {
+            alreadyRunning = false;
+        }
+    });
+    return alreadyRunning;
+}
+
+
+function removeTerminatedInstancesFromDb(instances) {
+    db_EC2.find({}, function(err, table) {
+        ASYNC.forEachOf(table, function(instance, index, callback) {
+            if (isTerminated(instance.identifier, instances)) {
+                db_EC2.find({ identifier: instance.identifier }).remove().exec();
+                LOGGER.info("record removed");
+            }         
+        });
+    });
+}
+
+function isTerminated(id, instances) {
+    var terminated = true;
+    ASYNC.forEachOf(instances, function(instance, index, callback) {    
+        if (id === instance.InstanceId) terminated = false;
+    });
+    return terminated;
+}
+
+function insertCluster(ec2_docs) {
+    var cluster = new db_Cluster();
+    cluster.name = ec2_docs[0].context;
+    cluster.EC2.push(ec2_docs[0]._id);
+    cluster.save(function(err) {
+        if (err) LOGGER.error("Error adding cluster")
+        else LOGGER.info(cluster.name + " record added");                        
+    });
+}
+
+function insertEC2(instance) {
+    var ec2 = new db_EC2();
+    ec2.identifier = instance.InstanceId;
+    ec2.context = instance.Tags[0].Value;
+    ec2.type = instance.InstanceType;
+    ec2.availabilityZone = instance.Placement.AvailabilityZone;
+    ec2.status = instance.State.Name;
+    ec2.dns = instance.PublicDnsName;
+    ec2.createdOn = instance.LaunchTime;
+    ec2.save(function(err) {
+        if (err) LOGGER.error("Error adding " + instance.InstanceId)
+        else LOGGER.info(ec2.identifier + " record added");                        
     });
 }
 */

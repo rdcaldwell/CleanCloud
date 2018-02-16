@@ -11,6 +11,7 @@ import { CostComponent } from './cost/cost.component';
 import { AnalyticsComponent } from './analytics/analytics.component';
 import { HeaderComponent } from './header/header.component';
 import { InstancesService } from './services/instances.service';
+import { ContextService } from './services/context.service';
 import { AnalyticsService } from './services/analytics.service';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
@@ -18,6 +19,7 @@ import { ActivateService } from './services/activate.service';
 import { AuthenticationService } from './services/authentication.service';
 import { ProfileComponent } from './profile/profile.component';
 import { RegisterComponent } from './register/register.component';
+import { ClusterComponent } from './cluster/cluster.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -36,7 +38,8 @@ const routes: Routes = [
     HomeComponent,
     LoginComponent,
     ProfileComponent,
-    RegisterComponent
+    RegisterComponent,
+    ClusterComponent
   ],
   imports: [
     BrowserModule,
@@ -49,7 +52,8 @@ const routes: Routes = [
     InstancesService,
     AnalyticsService,
     AuthenticationService,
-    ActivateService
+    ActivateService,
+    ContextService
   ],
   bootstrap: [AppComponent]
 })

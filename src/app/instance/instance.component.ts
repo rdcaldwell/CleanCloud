@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { InstancesService } from '../services/instances.service';
 import { AnalyticsService } from '../services/analytics.service';
+import { ContextService } from '../services/context.service';
 import * as d3 from "d3";
 import * as moment from 'moment';
 import $ from 'jquery';
@@ -15,18 +16,21 @@ export class InstanceComponent implements OnInit {
   ec2_data: any = [];
   rds_data: any = [];
   efs_data: any = [];
+  context: any = [];
   analytics_data: any = [];
   createdInstance: any = [];
   activeId: string;
   resdata: any;
 
   constructor(private instancesService: InstancesService,
-              private analyticsService: AnalyticsService) {}
+              private analyticsService: AnalyticsService,
+              private contextService: ContextService) {}
 
   ngOnInit() {
     this.getEC2InstanceData();
     this.getRDSInstanceData();
     this.getEFSInstanceData();
+    this.getContextNames();
     this.instancesService.id.subscribe(id => this.activeId = id);
     /*
     setInterval(() => { 
@@ -66,6 +70,13 @@ export class InstanceComponent implements OnInit {
       $(this).addClass('active').siblings().removeClass('active');
     });
     this.instancesService.setActiveId(id);
+  }
+
+  getContextNames() {
+    this.contextService.contextNames('ec2').subscribe(data => {
+      console.log('trying');
+      this.context = data;
+    });    
   }
 
   analyzeInstance() {

@@ -8,13 +8,15 @@
   },
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve && node server.js",
     "build": "ng build --prod",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
     "server": "ng build && nodemon server.js",
-    "init": "npm install && ng build && node server.js"
+    "init": "npm install && ng build && node server.js",
+    "angular": "ng serve --proxy-config proxy.json",
+    "node": "nodemon server-dev.js"
   },
   "private": true,
   "dependencies": {
@@ -38,6 +40,7 @@
     "dotenv": "^5.0.0",
     "express": "^4.16.2",
     "express-jwt": "^5.3.0",
+    "http": "0.0.0",
     "jquery": "^3.3.1",
     "jsonwebtoken": "^8.1.1",
     "log4js": "^2.5.2",
