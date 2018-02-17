@@ -15,14 +15,23 @@ export class ClusterComponent implements OnInit {
   reason: string;
   highAvailability: string;
   monitor = true;
+  context: any = [];  
   public clusterInstances: Array<ClusterInstance> = [];
 
   constructor(private amazonWebService: AmazonWebService) { }
 
   ngOnInit() {
+    this.getContextNames();
     this.getEFSContext();
     this.getEC2Context();
     this.getRDSContext();
+  }
+
+  getContextNames() {
+    this.amazonWebService.contextNames().subscribe(data => {
+      console.log('trying');
+      this.context = data;
+    });
   }
 
   getEC2Context() {

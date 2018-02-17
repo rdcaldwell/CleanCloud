@@ -45,3 +45,7 @@ body {
     padding: 2em;
     margin-bottom: 1rem;
 }
+
+svg {
+  color: #ffac59;
+}

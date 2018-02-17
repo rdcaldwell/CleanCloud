@@ -21,9 +21,11 @@ import { ClusterComponent } from './cluster/cluster.component';
 import { Ec2Component } from './ec2/ec2.component';
 import { EfsComponent } from './efs/efs.component';
 import { RdsComponent } from './rds/rds.component';
+import { SidebarComponent } from './sidebar/sidebar.component';
 
 const routes: Routes = [
   { path: '', component: DashboardComponent },
+  { path: 'clusters', component: ClusterComponent },  
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [ActivateService] }
@@ -42,7 +44,8 @@ const routes: Routes = [
     ClusterComponent,
     EfsComponent,
     RdsComponent,
-    Ec2Component
+    Ec2Component,
+    SidebarComponent
   ],
   imports: [
     BrowserModule,

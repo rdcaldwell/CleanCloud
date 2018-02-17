@@ -80,9 +80,9 @@ ROUTER.get('/context/names', (req, res) => {
             LOGGER.error("[CONTEXT-NAMES-EC2]:\n " + err.stack);
             return;
         }
-        else if (data.Reservations.length) {
+        else if (data.Reservations) {
             ASYNC.forEachOf(data.Reservations[0].Instances, function(describedInstance, index, callback) {
-                if (context.names.indexOf(describedInstance.Tags[0].Value) < 0)
+                if (describedInstance.Tags.length && context.names.indexOf(describedInstance.Tags[0].Value) < 0)
                     context.names.push(describedInstance.Tags[0].Value);
                 callback();
             }, function(err) {

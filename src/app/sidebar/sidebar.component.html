@@ -1,0 +1,17 @@
+<nav class="nav flex-column">
+  <li class="nav-item">
+    <a class="nav-link" routerLink="/">Instances</a>
+  </li>
+  <li *ngIf="!authenticationService.isLoggedIn()" class="nav-item">
+    <a class="nav-link" routerLink="/login">Login</a>
+  </li>
+  <li *ngIf="authenticationService.isLoggedIn()" class="nav-item">
+    <a class="nav-link" routerLink="/profile">{{ authenticationService.getUser().user }}</a>
+  </li>
+  <li *ngIf="authenticationService.isLoggedIn()" class="nav-item">
+      <a class="nav-link" routerLink="/configure">Configure Janitor</a>
+  </li>
+  <li *ngIf="authenticationService.isLoggedIn()" class="nav-item">
+    <a class="nav-link" (click)="authenticationService.logout()">Logout <i class="fas fa-sign-out-alt fa-lg"></i></a>
+  </li>
+</nav>

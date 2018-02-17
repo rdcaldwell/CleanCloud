@@ -1,9 +1,9 @@
-<app-ec2></app-ec2>
-<app-rds></app-rds>
-<app-efs></app-efs>
 <ng-container *ngFor="let context of context.names">
     <app-cluster [title]="context"></app-cluster>
 </ng-container>
+<app-ec2></app-ec2>
+<app-rds></app-rds>
+<app-efs></app-efs>
 
 <!--
 <div class="jumbotron">
