@@ -1,0 +1,66 @@
+<div class="instance-section">
+  <h5>RDS DB INSTANCES</h5>
+  <div class="button-bar">
+    <button type="button" class="btn btn-outline-success" id="create-RDS" (click)="createInstance()"><i class="fas fa-plus fa-lg"></i></button>
+    <button type="button" class="btn btn-outline-danger" id="terminate-AWS-RDS" (click)="terminateInstances()"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-aws fa-lg"></i></button>
+    <!--<button type="button" class="btn btn-outline-primary" id="analyze-RDS" (click)="analyze('rds')"><i class="far fa-chart-bar fa-lg"></i></button>-->
+    <!--<button type="button" class="btn btn-outline-primary" id="cost-RDS"><i class="fas fa-dollar-sign fa-lg"></i></button>-->
+  </div>
+  <table id="RDSTable" class="table">
+    <thead>
+      <tr>        
+        <th scope="col"></th>        
+        <th scope="col">ID</th>
+        <th scope="col">Context</th>
+        <th scope="col">Name</th>
+        <th scope="col">Type</th>
+        <th scope="col">Engine</th>
+        <th scope="col">Zone</th>        
+        <th scope="col">Status</th>
+        <th scope="col">Creation Date</th>
+      </tr>
+    </thead>
+    <tbody *ngFor="let instance of rdsInstances">
+      <tr>
+        <td>
+            <div class="form-check">
+                <input type="checkbox" [(ngModel)]="instance.checked">
+            </div>
+        </td>
+        <th scope="row" id="instanceId">{{ instance.id }}</th> 
+        <td></td>       
+        <th>{{ instance.name }}</th>
+        <td>{{ instance.type }}</td>
+        <td>{{ instance.engine }}</td>
+        <td>{{ instance.zone }}</td>        
+        <td>{{ instance.status }}</td>
+        <td>{{ instance.creationDate }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <span *ngIf="!rdsInstances[0]">There are no RDS instances running.</span>
+</div>
+
+<!-- Modal
+<div class="modal fade" id="createRDS" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Launch RDS Instance</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="InstanceName">Instance Name</label>
+                        <input type="text" class="form-control" id="InstanceName" name="InstanceName" placeholder="Enter Instance Name">
+                    </div>
+                    <button (click)="create()" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+-->

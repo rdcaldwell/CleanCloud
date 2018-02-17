@@ -6,15 +6,12 @@ import * as moment from 'moment';
 import * as $ from 'jquery';
 
 @Component({
-  selector: 'app-instances',
-  templateUrl: './instance.component.html',
-  styleUrls: ['./instance.component.css'],
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css'],
   providers: [AmazonWebService]
 })
-export class InstanceComponent implements OnInit {
-  ec2_data: any = [];
-  rds_data: any = [];
-  efs_data: any = [];
+export class DashboardComponent implements OnInit {
   context: any = [];
   analytics_data: any = [];
   createdInstance: any = [];
@@ -26,42 +23,7 @@ export class InstanceComponent implements OnInit {
 
   ngOnInit() {
     this.amazonWebService.id.subscribe(id => this.activeId = id);
-    this.getEC2InstanceData();
-    this.getRDSInstanceData();
-    this.getEFSInstanceData();
     this.getContextNames();
-    /*
-    setInterval(() => {
-        this.getInstanceData();
-    }, 2500);
-    */
-  }
-
-
-  getEC2InstanceData() {
-    this.amazonWebService.describe('ec2').subscribe(data => {
-      this.ec2_data = data;
-    });
-  }
-
-  getRDSInstanceData() {
-    this.amazonWebService.describe('rds').subscribe(data => {
-      this.rds_data = data;
-    });
-  }
-
-  getEFSInstanceData() {
-    this.amazonWebService.describe('efs').subscribe(data => {
-      this.efs_data = data;
-    });
-  }
-
-  createInstance(service) {
-    this.amazonWebService.create(service).subscribe();
-  }
-
-  terminateInstance(service) {
-    this.amazonWebService.terminate(service, this.activeId).subscribe();
   }
 
   getContextNames() {

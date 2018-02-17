@@ -30,7 +30,7 @@ export class ClusterComponent implements OnInit {
       console.log(data);
       for (const instance of data) {
         const instanceData = {
-          serviceType: 'EC2',
+          serviceType: 'ec2',
           id: instance.InstanceId,
           name: instance.Tags[1].Value,
           status: instance.State.Name
@@ -48,7 +48,7 @@ export class ClusterComponent implements OnInit {
             for (const tag of tags) {
               if (tag.Value === this.title) {
                 const instanceData = {
-                  serviceType: 'EFS',
+                  serviceType: 'efs',
                   id: instance.FileSystemId,
                   name: instance.Name,
                   status: instance.LifeCycleState
@@ -70,7 +70,7 @@ export class ClusterComponent implements OnInit {
             for (const tag of tags) {
               if (tag.Value === this.title) {
                 const instanceData = {
-                  serviceType: 'RDS',
+                  serviceType: 'rds',
                   id: instance.DBInstanceIdentifier,
                   name: instance.DBName,
                   status: instance.DBInstanceStatus
@@ -82,6 +82,12 @@ export class ClusterComponent implements OnInit {
         });
       }
     });
+  }
+  
+  terminateClusterAWS() {
+    for (const instance of this.clusterInstances) {
+        this.amazonWebService.terminate(instance.serviceType, instance.id).subscribe();
+    }
   }
 }
 

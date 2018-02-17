@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { InstanceComponent } from './instance.component';
+import { EfsComponent } from './efs.component';
 
-describe('InstanceComponent', () => {
-  let component: InstanceComponent;
-  let fixture: ComponentFixture<InstanceComponent>;
+describe('EfsComponent', () => {
+  let component: EfsComponent;
+  let fixture: ComponentFixture<EfsComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ InstanceComponent ]
+      declarations: [ EfsComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(InstanceComponent);
+    fixture = TestBed.createComponent(EfsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -39,7 +39,8 @@ ROUTER.get('/describe/ec2', (req, res) => {
             return;
         }
         else if (data.Reservations.length) {
-            res.json(data.Reservations[0].Instances);   
+            LOGGER.info(data.Reservations);
+            res.json(data.Reservations);   
         }
         else {
             LOGGER.info("No ec2 data found.");

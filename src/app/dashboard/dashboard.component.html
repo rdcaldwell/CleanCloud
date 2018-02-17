@@ -1,0 +1,13 @@
+<app-ec2></app-ec2>
+<app-rds></app-rds>
+<app-efs></app-efs>
+<ng-container *ngFor="let context of context.names">
+    <app-cluster [title]="context"></app-cluster>
+</ng-container>
+
+<!--
+<div class="jumbotron">
+    <h3>CPU Utilization</h3>
+    <div id="graph"></div>
+</div>
+-->
