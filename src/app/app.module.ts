@@ -10,8 +10,7 @@ import { InstanceComponent } from './instance/instance.component';
 import { CostComponent } from './cost/cost.component';
 import { AnalyticsComponent } from './analytics/analytics.component';
 import { HeaderComponent } from './header/header.component';
-import { InstancesService } from './services/instances.service';
-import { ContextService } from './services/context.service';
+import { AmazonWebService } from './services/amazonweb.service';
 import { AnalyticsService } from './services/analytics.service';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
@@ -49,11 +48,10 @@ const routes: Routes = [
     RouterModule.forRoot(routes),
   ],
   providers: [
-    InstancesService,
+    AmazonWebService,
     AnalyticsService,
     AuthenticationService,
     ActivateService,
-    ContextService
   ],
   bootstrap: [AppComponent]
 })

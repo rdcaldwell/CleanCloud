@@ -7,9 +7,9 @@ const LOG4JS = require('log4js');
 const LOGGER = LOG4JS.getLogger();
 LOGGER.level = 'debug';
 
-var db_EC2 = MONGOOSE.model('EC2');;
-var db_EFS = MONGOOSE.model('EFS');;
-var db_RDS = MONGOOSE.model('RDS');;
+var db_EC2 = MONGOOSE.model('EC2');
+var db_EFS = MONGOOSE.model('EFS');
+var db_RDS = MONGOOSE.model('RDS');
 var db_Cluster = MONGOOSE.model('Cluster');
 
 const CTRL_PROFILE = require('../controllers/profile');
@@ -33,8 +33,6 @@ ROUTER.post('/login', CTRL_AUTH.login);
 
 /* GET EC2 instances */
 ROUTER.get('/describe/ec2', (req, res) => {
-    var isInserted = false;
-    var ec2_collection = [];
     EC2.describeInstances(function(err, data) {
         if (err) {
             LOGGER.error("[DESCRIBE-EC2]\n " + err.stack);
@@ -51,7 +49,6 @@ ROUTER.get('/describe/ec2', (req, res) => {
 });
 
 ROUTER.get('/context/ec2/:id', (req, res) => {
-    var ec2_instances = [];
     var params = {
         Filters: [
             {
@@ -73,8 +70,7 @@ ROUTER.get('/context/ec2/:id', (req, res) => {
     });
 });
 
-/* GET EC2 instances */
-ROUTER.get('/context/names/ec2', (req, res) => {
+ROUTER.get('/context/names', (req, res) => {
     var context = {
         names: []
     };
@@ -100,9 +96,24 @@ ROUTER.get('/context/names/ec2', (req, res) => {
 });
 
 /* GET EFS instances */
+ROUTER.get('/describe/tags/efs/:id', (req, res) => {
+       EFS.describeTags({ FileSystemId: req.params.id }, function(err, data) {
+         if (err) console.log(err, err.stack); // an error occurred
+         else     res.json(data.Tags);           // successful response
+       });
+});
+
+/* GET EFS instances */
+ROUTER.get('/describe/tags/rds/:id', (req, res) => {
+    RDS.listTagsForResource({ ResourceName: req.params.id }, function(err, data) {
+        if (err) console.log(err, err.stack); // an error occurred
+        else     res.json(data.TagList);           // successful response
+    });
+});
+
+/* GET EFS instances */
 ROUTER.get('/describe/efs', (req, res) => {
-    var params = {};
-    EFS.describeFileSystems(params, function(err, data) {
+    EFS.describeFileSystems({}, function(err, data) {
         if (err) {
             LOGGER.error("[DESCRIBE-EFS]\n " + err.stack);
             return;
@@ -143,7 +154,7 @@ ROUTER.get('/create/ec2', (req, res) => {
         ImageId: 'ami-10fd7020', // amzn-ami-2011.09.1.x86_64-ebs
         InstanceType: 't1.micro',
         MinCount: 1,
-        MaxCount: 1
+        MaxCount: 1,
     };
     // Create the instance
     EC2.runInstances(params, function(err, data) {
@@ -159,7 +170,11 @@ ROUTER.get('/create/ec2', (req, res) => {
             Tags: [
                 {
                     Key: 'Context',
-                    Value: "Test"
+                    Value: 'Test'
+                },
+                {   
+                    Key: 'Name',
+                    Value: 'Test-rdc'
                 }
         ]};
         EC2.createTags(params, function(err) {
@@ -181,10 +196,16 @@ ROUTER.get('/create/efs', (req, res) => {
         else     LOGGER.info("[CREATE-EFS]\n" + JSON.stringify(data, null, "\t"));           // successful response
         var tagParams = {
             FileSystemId: data.FileSystemId, 
-            Tags: [{
-                Key: "Context", 
-                Value: "Test"
-            }]
+            Tags: [
+                {
+                    Key: "Context", 
+                    Value: "Test"
+                },
+                {
+                    Key: "Name", 
+                    Value: "Test-rdc"
+                }
+            ]
         };
         EFS.createTags(tagParams, function(tagErr, tagData) {
             if (tagErr) console.log(tagErr, tagErr.stack); // an error occurred
@@ -196,25 +217,28 @@ ROUTER.get('/create/efs', (req, res) => {
 ROUTER.get('/create/rds', (req, res) => {
     var params = {
         DBInstanceClass: 'db.t2.micro',
-        DBInstanceIdentifier: 'instance-test',
+        DBInstanceIdentifier: 'instance-test2',
         Engine: 'postgres',
         EngineVersion: '9.6.5',
         AvailabilityZone: 'us-east-2a',
-        DBName: 'db_test',
+        DBName: 'db_test2',
         MasterUsername: 'rdc',
         MasterUserPassword: 'password',
         AllocatedStorage: 20,
         Tags: [
           {
             Key: 'Context',
-            Value: 'rdc-test'
+            Value: 'Test'
           },
+          {
+            Key: 'Name',
+            Value: 'Test-rdc'
+          }
         ]
     };
     RDS.createDBInstance(params, function(err, data) {
         if (err) console.log(err, err.stack); // an error occurred
         else     console.log(data);  
-        res.send(data);         // successful response
     });
 });
  

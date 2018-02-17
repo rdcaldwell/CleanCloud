@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { ContextService } from '../services/context.service';
+import { AmazonWebService } from '../services/amazonweb.service';
 
 @Component({
   selector: 'app-cluster',
@@ -8,49 +8,86 @@ import { ContextService } from '../services/context.service';
 })
 export class ClusterComponent implements OnInit {
   @Input() private title: any;
-  ec2_context: any = [];
-  efs_context: any = [];
-  rds_context: any = [];
-  
-  constructor(private contextService: ContextService) { }
+  createdOn: string;
+  startedBy: string;
+  orgImportPath: string;
+  version: string;
+  reason: string;
+  highAvailability: string;
+  monitor = true;
+  public clusterInstances: Array<ClusterInstance> = [];
+
+  constructor(private amazonWebService: AmazonWebService) { }
 
   ngOnInit() {
+    this.getEFSContext();
     this.getEC2Context();
-    for (let instance of this.ec2_context) {
-
-    }
+    this.getRDSContext();
   }
 
   getEC2Context() {
-    this.contextService.context('ec2', "Test").subscribe(data => {
+    this.amazonWebService.context('ec2', this.title).subscribe(data => {
       console.log(data);
-      this.ec2_context = data;
+      for (const instance of data) {
+        const instanceData = {
+          serviceType: 'EC2',
+          id: instance.InstanceId,
+          name: instance.Tags[1].Value,
+          status: instance.State.Name
+        };
+        console.log(instanceData);
+        this.clusterInstances.push(instanceData);
+      }
     });
   }
 
   getEFSContext() {
-    this.contextService.context('efs', this.title).subscribe(data => {
-      this.efs_context = data;
+    this.amazonWebService.describe('efs').subscribe(instances => {
+      for (const instance of instances) {
+        this.amazonWebService.describeTags('efs', instance.FileSystemId).subscribe(tags => {
+            for (const tag of tags) {
+              if (tag.Value === this.title) {
+                const instanceData = {
+                  serviceType: 'EFS',
+                  id: instance.FileSystemId,
+                  name: instance.Name,
+                  status: instance.LifeCycleState
+                };
+                console.log(instanceData);
+                this.clusterInstances.push(instanceData);
+              }
+            }
+        });
+      }
     });
   }
 
   getRDSContext() {
-    this.contextService.context('rds', this.title).subscribe(data => {
-      this.rds_context = data;
+    this.amazonWebService.describe('rds').subscribe(instances => {
+      for (const instance of instances) {
+        console.log(instance);
+        this.amazonWebService.describeTags('rds', instance.DBInstanceArn).subscribe(tags => {
+            for (const tag of tags) {
+              if (tag.Value === this.title) {
+                const instanceData = {
+                  serviceType: 'RDS',
+                  id: instance.DBInstanceIdentifier,
+                  name: instance.DBName,
+                  status: instance.DBInstanceStatus
+                };
+                console.log(instanceData);
+                this.clusterInstances.push(instanceData);
+              }
+            }
+        });
+      }
     });
   }
 }
 
-interface Instance {
-  type: string,
-  id: string,
-  availabilityZone: string,
-  status: string,
-  createdOn: string,
-  startedBy: string,
-  orgImportPath: string,
-  version: string,
-  reason: string,
-  highAvailability: string,
-  monitor: boolean
+interface ClusterInstance {
+  serviceType: string;
+  id: string;
+  name: string;
+  status: string;
 }

@@ -1,35 +1,25 @@
 <div class="instance-section">
     <h5>{{title}}</h5>
     <div class="button-bar">
-        <button type="button" class="btn btn-outline-success" id="create-RDS" (click)="create('rds')"><i class="fas fa-plus fa-lg"></i></button>
-        <button type="button" class="btn btn-outline-danger" id="terminate-AWS-RDS" (click)="terminate('rds')"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-aws fa-lg"></i></button>
-        <button type="button" class="btn btn-outline-danger" id="terminate-jenkins-RDS"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-jenkins fa-lg"></i></button>
-        <button type="button" class="btn btn-outline-primary" id="analyze-RDS" (click)="analyze('rds')"><i class="far fa-chart-bar fa-lg"></i></button>
-        <button type="button" class="btn btn-outline-primary" id="cost-RDS"><i class="fas fa-dollar-sign fa-lg"></i></button>
+        <button type="button" class="btn btn-outline-danger" id="terminate-jenkins-{{title}}"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-jenkins fa-lg"></i></button>
+        <!--<button type="button" class="btn btn-outline-primary" id="analyze-RDS" (click)="analyze('rds')"><i class="far fa-chart-bar fa-lg"></i></button>-->
+        <!--<button type="button" class="btn btn-outline-primary" id="cost-RDS"><i class="fas fa-dollar-sign fa-lg"></i></button>-->
     </div>
-    <table id="RDSTable" class="table">
+    <table class="table">
         <thead>
             <tr>
+                <th scope="col">Service Type</th>
+                <th scope="col">ID</th>
                 <th scope="col">Name</th>
-                <th scope="col">Identifier</th>
-                <!--<th scope="col">Context</th>-->
-                <th scope="col">Class</th>
-                <th scope="col">Engine</th>
                 <th scope="col">Status</th>
-                <th scope="col">Zone</th>
-                <th scope="col">Creation Date</th>
             </tr>
         </thead>
-        <tbody *ngFor="let instance of rds_data">
-            <tr class="clickable-row" (click)="activateRow('RDSTable', instance.DBInstanceIdentifier)">
-                <th>{{ instance.DBName }}</th>
-                <th scope="row" id="instanceId">{{ instance.DBInstanceIdentifier }}</th>
-                <!--<td>{{ instance.Tags[0]?.Value }}</td>-->
-                <td>{{ instance.DBInstanceClass }}</td>
-                <td>{{ instance.Engine }}</td>
-                <td>{{ instance.DBInstanceStatus }}</td>
-                <td>{{ instance.AvailabilityZone }}</td>
-                <td>{{ instance.InstanceCreateTime }}</td>
+        <tbody *ngFor="let clusterInstance of clusterInstances">
+            <tr class="clickable-row" (click)="activateRow(title + 'Table', clusterInstance.id)">
+                <th>{{ clusterInstance.serviceType }}</th>
+                <th scope="row" id="instanceId">{{ clusterInstance.id }}</th>
+                <td>{{ clusterInstance.name }}</td>
+                <td>{{ clusterInstance.status }}</td>
             </tr>
         </tbody>
     </table>
