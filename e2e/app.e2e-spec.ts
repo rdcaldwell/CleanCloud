@@ -1,6 +1,6 @@
 import { AppPage } from './app.po';
 
-describe('fisc-janitor App', () => {
+describe('clean-cloud App', () => {
   let page: AppPage;
 
   beforeEach(() => {

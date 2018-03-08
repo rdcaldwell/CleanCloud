@@ -15,7 +15,7 @@ export class ClusterComponent implements OnInit {
   reason: string;
   highAvailability: string;
   monitor = true;
-  context: any = [];  
+  context: any = [];
   public clusterInstances: Array<ClusterInstance> = [];
 
   constructor(private amazonWebService: AmazonWebService) { }
@@ -29,53 +29,53 @@ export class ClusterComponent implements OnInit {
 
   getContextNames() {
     this.amazonWebService.contextNames().subscribe(data => {
-      console.log('trying');
       this.context = data;
     });
   }
 
   getEC2Context() {
     this.amazonWebService.context('ec2', this.title).subscribe(data => {
-      console.log(data);
-      for (const instance of data) {
-        const instanceData = {
-          serviceType: 'ec2',
-          id: instance.InstanceId,
-          name: instance.Tags[1].Value,
-          status: instance.State.Name
-        };
-        console.log(instanceData);
-        this.clusterInstances.push(instanceData);
+      if (data !== 'No ec2 data') {
+        for (const instance of data) {
+          const instanceData = {
+            serviceType: 'ec2',
+            id: instance.InstanceId,
+            name: instance.Tags[0].Value,
+            status: instance.State.Name
+          };
+          this.clusterInstances.push(instanceData);
+        }
       }
     });
   }
 
   getEFSContext() {
     this.amazonWebService.describe('efs').subscribe(instances => {
-      for (const instance of instances) {
-        this.amazonWebService.describeTags('efs', instance.FileSystemId).subscribe(tags => {
-            for (const tag of tags) {
-              if (tag.Value === this.title) {
-                const instanceData = {
-                  serviceType: 'efs',
-                  id: instance.FileSystemId,
-                  name: instance.Name,
-                  status: instance.LifeCycleState
-                };
-                console.log(instanceData);
-                this.clusterInstances.push(instanceData);
+      if (instances !== 'No efs data') {
+        for (const instance of instances) {
+          this.amazonWebService.describeTags('efs', instance.FileSystemId).subscribe(tags => {
+              for (const tag of tags) {
+                if (tag.Value === this.title) {
+                  const instanceData = {
+                    serviceType: 'efs',
+                    id: instance.FileSystemId,
+                    name: instance.Name,
+                    status: instance.LifeCycleState
+                  };
+                  this.clusterInstances.push(instanceData);
+                }
               }
-            }
-        });
+          });
+        }
       }
     });
   }
 
   getRDSContext() {
     this.amazonWebService.describe('rds').subscribe(instances => {
-      for (const instance of instances) {
-        console.log(instance);
-        this.amazonWebService.describeTags('rds', instance.DBInstanceArn).subscribe(tags => {
+      if (instances !== 'No rds data') {
+        for (const instance of instances) {
+          this.amazonWebService.describeTags('rds', instance.DBInstanceArn).subscribe(tags => {
             for (const tag of tags) {
               if (tag.Value === this.title) {
                 const instanceData = {
@@ -84,19 +84,23 @@ export class ClusterComponent implements OnInit {
                   name: instance.DBName,
                   status: instance.DBInstanceStatus
                 };
-                console.log(instanceData);
                 this.clusterInstances.push(instanceData);
               }
             }
-        });
+          });
+        }
       }
     });
   }
-  
+
   terminateClusterAWS() {
     for (const instance of this.clusterInstances) {
-        this.amazonWebService.terminate(instance.serviceType, instance.id).subscribe();
+        this.amazonWebService.terminateAWS(instance.serviceType, instance.id).subscribe();
     }
+  }
+
+  terminateClusterJenkins() {
+      this.amazonWebService.terminateJenkins().subscribe();
   }
 }
 

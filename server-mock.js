@@ -11,7 +11,7 @@ LOGGER.level = 'debug';
 
 require('./src/api/models/db');
 require('./src/api/config/passport');
-const API = require('./src/api/routes/api');
+const API = require('./src/api/routes/mock-api');
 
 API_SERVER.use(BODY_PARSER.json());
 API_SERVER.use(BODY_PARSER.urlencoded({ extended: false }));

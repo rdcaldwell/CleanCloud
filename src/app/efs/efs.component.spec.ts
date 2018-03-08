@@ -1,4 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 
 import { EfsComponent } from './efs.component';
 
@@ -8,6 +9,7 @@ describe('EfsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
+      imports: [ FormsModule ],
       declarations: [ EfsComponent ]
     })
     .compileComponents();

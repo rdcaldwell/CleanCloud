@@ -15,31 +15,22 @@ export class DashboardComponent implements OnInit {
   context: any = [];
   analytics_data: any = [];
   createdInstance: any = [];
-  activeId: string;
   resdata: any;
 
   constructor(private amazonWebService: AmazonWebService,
               private analyticsService: AnalyticsService) {}
 
   ngOnInit() {
-    this.amazonWebService.id.subscribe(id => this.activeId = id);
     this.getContextNames();
   }
 
   getContextNames() {
     this.amazonWebService.contextNames().subscribe(data => {
-      console.log('trying');
       this.context = data;
     });
   }
 
-  activateRow(table, id) {
-    $(table).on('click', '.clickable-row', function(event) {
-      $(this).addClass('active').siblings().removeClass('active');
-    });
-    this.amazonWebService.setActiveId(id);
-  }
-
+  /*
   analyzeInstance() {
     this.analyticsService.analyze(this.activeId).subscribe(serviceData => {
       this.analytics_data = serviceData;
@@ -132,5 +123,5 @@ export class DashboardComponent implements OnInit {
                   .attr('y', function(d) { return y(d.Average) - 5; })
                   .text(function(d) { return d.Average.toFixed(2) + '%'; });
       });
-  }
+  }*/
 }

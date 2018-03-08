@@ -64,39 +64,18 @@ export class AuthenticationService {
   }
 
   private getRequest() {
-    let base = this.http.get(`/api/profile`, { headers: { Authorization: `Bearer ${this.getToken()}` }});
+    const base = this.http.get(`/api/profile`, { headers: { Authorization: `Bearer ${this.getToken()}` }});
 
     return this.request(base);
   }
 
   private postRequest(type,  user?: TokenPayload): Observable<any> {
-    let base = this.http.post(`/api/${type}`, user);
+    const base = this.http.post(`/api/${type}`, user);
 
     return this.request(base);
   }
 
   private request(base) {
-    const request = base.pipe(
-      map((data: TokenResponse) => {
-        if (data.token) {
-          this.saveToken(data.token);
-        }
-        return data;
-      })
-    );
-
-    return request;
-  }
-
-
-  private requestz(method: 'post'|'get', type: 'login'|'register'|'profile', user?: TokenPayload): Observable<any> {
-    let base;
-    if (method === 'post') {
-      base = this.http.post(`/api/${type}`, user);
-    } else {
-      base = this.http.get(`/api/${type}`, { headers: { Authorization: `Bearer ${this.getToken()}` }});
-    }
-
     const request = base.pipe(
       map((data: TokenResponse) => {
         if (data.token) {

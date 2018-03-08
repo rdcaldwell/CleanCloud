@@ -1,22 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
 
-import { Ec2Component } from './ec2.component';
+import { JanitorComponent } from './janitor.component';
 
-describe('Ec2Component', () => {
-  let component: Ec2Component;
-  let fixture: ComponentFixture<Ec2Component>;
+describe('JanitorComponent', () => {
+  let component: JanitorComponent;
+  let fixture: ComponentFixture<JanitorComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ FormsModule ],
-      declarations: [ Ec2Component ]
+      declarations: [ JanitorComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(Ec2Component);
+    fixture = TestBed.createComponent(JanitorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

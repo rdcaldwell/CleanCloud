@@ -3,7 +3,7 @@ import { AuthenticationService, TokenPayload } from '../services/authentication.
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'register',
+  selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })

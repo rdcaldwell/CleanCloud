@@ -12,12 +12,10 @@ import * as moment from 'moment';
 })
 export class AnalyticsComponent implements OnInit {
   data: any;
-  activeId: string;
 
   constructor(private analyticsService: AnalyticsService,
               private amazonWebService: AmazonWebService) { }
 
   ngOnInit() {
-    this.amazonWebService.id.subscribe(currentId => this.activeId = currentId);
   }
 }

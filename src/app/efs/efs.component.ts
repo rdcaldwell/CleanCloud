@@ -9,27 +9,29 @@ import { AmazonWebService } from '../services/amazonweb.service';
 export class EfsComponent implements OnInit {
   efs_data: any = [];
   public efsInstances: Array<EFSInstance> = [];
-  
+
   constructor(private amazonWebService: AmazonWebService) { }
 
   ngOnInit() {
     this.amazonWebService.describe('efs').subscribe(data => {
-      for (const instance of data) {
-        const instanceData = {
-          id: instance.FileSystemId,
-          context: '',
-          name: '',
-          size: instance.SizeInBytes.Value,
-          status: instance.LifeCycleState,
-          creationDate: instance.CreationTime,
-          checked: false
-        };
-        this.efsInstances.push(instanceData);
+      if (data !== 'No efs data') {
+        for (const instance of data) {
+          const instanceData = {
+            id: instance.FileSystemId,
+            context: '',
+            name: '',
+            size: instance.SizeInBytes.Value,
+            status: instance.LifeCycleState,
+            creationDate: instance.CreationTime,
+            checked: false
+          };
+          this.efsInstances.push(instanceData);
+        }
+        setInterval(() => {
+          this.updateStatus();
+        }, 5000);
       }
     });
-    setInterval(() => {
-      this.updateStatus();
-    }, 5000);
   }
 
   updateStatus() {
@@ -37,11 +39,11 @@ export class EfsComponent implements OnInit {
       for (const instance of data) {
         for (const efsInstance of this.efsInstances) {
           if (efsInstance.id === instance.FileSystemId) {
-            efsInstance.status = instance.LifeCycleState;            
+            efsInstance.status = instance.LifeCycleState;
           }
         }
       }
-    });      
+    });
   }
 
   createInstance() {
@@ -51,7 +53,7 @@ export class EfsComponent implements OnInit {
   terminateInstances() {
     for (const instance of this.efsInstances) {
       if (instance.checked) {
-        this.amazonWebService.terminate('efs', instance.id).subscribe();
+        this.amazonWebService.terminateAWS('efs', instance.id).subscribe();
       }
     }
   }
@@ -64,5 +66,5 @@ interface EFSInstance {
   size: number;
   status: string;
   creationDate: string;
-  checked: boolean
+  checked: boolean;
 }

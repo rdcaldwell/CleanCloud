@@ -1,8 +1,8 @@
-<div class="instance-section">
+<section>
   <h5>EFS INSTANCES</h5>
   <div class="button-bar">
     <button type="button" class="btn btn-outline-success" id="create-EFS" (click)="createInstance()"><i class="fas fa-plus fa-lg"></i></button>
-    <button type="button" class="btn btn-outline-danger" id="terminate-AWS-EFS" (click)="terminateInstances()"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-aws fa-lg"></i></button>
+    <button type="button" class="btn btn-outline-danger" id="terminate-AWS-EFS" (click)="terminateInstances()"><i class="fas fa-trash-alt fa-lg"></i></button>
     <!--<button type="button" class="btn btn-outline-primary" id="analyze-EFS" (click)="analyze('efs')"><i class="far fa-chart-bar fa-lg"></i></button>-->
     <!--<button type="button" class="btn btn-outline-primary" id="cost-EFS"><i class="fas fa-dollar-sign fa-lg"></i></button>-->
   </div>
@@ -35,7 +35,7 @@
     </tbody>
   </table>
   <span *ngIf="!efsInstances[0]">There are no EFS instances running.</span>
-</div>
+</section>
 
 <!-- Modal
 <div class="modal fade" id="createEFS" tabindex="-1" role="dialog" aria-hidden="true">

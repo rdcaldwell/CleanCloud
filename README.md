@@ -1,4 +1,4 @@
-# FiscJanitor
+# CleanCloud
 
 ## Node Setup
 * Run `npm install` to install the project dependencies

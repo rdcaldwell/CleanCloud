@@ -1,3 +1,21 @@
 nav {
     background: #fff;
+    border: 1px solid #c6c6c6;
+}
+
+a.nav-link {
+    color: #000;
+    cursor: pointer;
+}
+
+.nav-item {
+    transition: color .10s ease-in-out, background-color .15s;
+}
+.nav-item:hover, a.nav-link.active-link {
+    background-color: #ffac59;
+    color: #fff;
+}
+
+a.nav-link:hover {
+    color: #fff;
 }

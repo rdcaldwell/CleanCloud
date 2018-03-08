@@ -1,8 +1,8 @@
 <div class="instance-section">
-    <h5>{{title}}</h5>
+    <h5>{{title}} CLUSTER</h5>
     <div class="button-bar">
         <button type="button" class="btn btn-outline-danger" id="terminate-AWS-{{title}}" (click)="terminateClusterAWS()"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-aws fa-lg"></i></button>
-        <!--<button type="button" class="btn btn-outline-danger" id="terminate-jenkins-{{title}}" /*(click)="terminateClusterJenkins()"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-jenkins fa-lg"></i></button>-->
+        <button type="button" class="btn btn-outline-danger" id="terminate-jenkins-{{title}}" (click)="terminateClusterJenkins()"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-jenkins fa-lg"></i></button>
         <!--<button type="button" class="btn btn-outline-primary" id="analyze-RDS" (click)="analyze('rds')"><i class="far fa-chart-bar fa-lg"></i></button>-->
         <!--<button type="button" class="btn btn-outline-primary" id="cost-RDS"><i class="fas fa-dollar-sign fa-lg"></i></button>-->
     </div>

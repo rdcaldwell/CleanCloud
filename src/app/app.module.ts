@@ -22,11 +22,14 @@ import { Ec2Component } from './ec2/ec2.component';
 import { EfsComponent } from './efs/efs.component';
 import { RdsComponent } from './rds/rds.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
+import { JanitorComponent } from './janitor/janitor.component';
+import { MomentModule } from 'angular2-moment';
+
 
 const routes: Routes = [
-  { path: '', component: DashboardComponent },
-  { path: 'clusters', component: ClusterComponent },  
-  { path: 'register', component: RegisterComponent },
+  { path: '', redirectTo: 'instances', pathMatch: 'full' },
+  { path: 'instances', component: DashboardComponent },
+  { path: 'janitor', component: JanitorComponent },
   { path: 'login', component: LoginComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [ActivateService] }
 ];
@@ -45,20 +48,22 @@ const routes: Routes = [
     EfsComponent,
     RdsComponent,
     Ec2Component,
-    SidebarComponent
+    SidebarComponent,
+    JanitorComponent
   ],
   imports: [
     BrowserModule,
     HttpModule,
     FormsModule,
     HttpClientModule,
+    MomentModule,
     RouterModule.forRoot(routes),
   ],
   providers: [
     AmazonWebService,
     AnalyticsService,
     AuthenticationService,
-    ActivateService,
+    ActivateService
   ],
   bootstrap: [AppComponent]
 })

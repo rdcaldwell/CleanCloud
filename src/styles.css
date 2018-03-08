@@ -1,51 +1,77 @@
 /* You can add global styles to this file, and also import other style files */
 body {
-    padding: 50px;
-    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-    background: #f1f1f1;
-  }
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background: #f1f1f1;
+}
   
-  a {
-    color: #00B7FF;
-  }
+a {
+  color: #00B7FF;
+}
   
-  .main {
-    padding-top:50px;
-  }
+.main {
+  padding-top:50px;
+}
   
-  .button-bar {
-    padding-bottom: 10px;
-  }
-  
-  tr.active, tbody > tr:hover {
-    background-color: #ffac59;
-  }
-  
-  #graph {
-    padding-top:25px;
-    padding-left:25px;
-  }
-  
-  .navbar {
-    background-color: #ffac59;
-    border-radius: 5px;
-  }
-  
-  a.nav-link.active {
-    background-color: #ffac59 !important;
-    color: #fff;
-  }
-  
-  a.nav-link {
-    color: #ffac59;
-  }
-
-  .instance-section {
-    background: #fff;
-    padding: 2em;
-    margin-bottom: 1rem;
+.button-bar {
+  padding-bottom: 10px;
 }
 
-svg {
-  color: #ffac59;
+tr.active, tbody > tr {
+  transition: color .10s ease-in-out, background-color .15s;
+}
+  
+tr.active, tbody > tr:hover {
+  color: #fff;
+  background-color: #ffac59;
+}
+  
+#graph {
+  padding-top:25px;
+  padding-left:25px;
+}
+  
+.navbar {
+  background-color: #ffac59;
+  border-radius: 5px;
+}
+
+section {
+  background: #fff;
+  padding: 2em;
+  margin-bottom: 1rem;
+  border: 1px solid #c6c6c6;
+}
+
+.cldn-btn {
+  color: #fff;
+  background-color: #ffac59;
+  border-color: #ffac59;
+  transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+  display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border: 1px solid transparent;
+      border-top-color: transparent;
+      border-right-color: transparent;
+      border-bottom-color: transparent;
+      border-left-color: transparent;
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: .25rem;
+  width:100%;
+  cursor: pointer;
+}
+
+.cldn-btn:hover {
+  color: #fff;
+  background-color: #ffac59;
+  border-color: #ffac59;
 }
