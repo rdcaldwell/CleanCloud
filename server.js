@@ -4,7 +4,6 @@ const PATH = require('path');
 const HTTP = require('http');
 const BODY_PARSER = require('body-parser');
 const LOGGER = require('log4js').getLogger();
-const API = require('./src/api/routes/api');
 
 const API_SERVER = EXPRESS();
 const PORT = process.env.PORT || '3000';
@@ -12,6 +11,7 @@ LOGGER.level = 'debug';
 
 require('./src/api/models/db');
 require('./src/api/config/passport');
+const API = require('./src/api/routes/mock-api');
 
 API_SERVER.use(BODY_PARSER.json());
 API_SERVER.use(BODY_PARSER.urlencoded({ extended: false }));

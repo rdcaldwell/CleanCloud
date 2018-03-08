@@ -19,4 +19,4 @@ API_SERVER.use('/api', API);
 
 API_SERVER.set('port', PORT);
 
-HTTP.createServer(API_SERVER).listen(PORT, () => LOGGER.info(`API running on localhost:${PORT}`));
+module.exports = HTTP.createServer(API_SERVER).listen(PORT, () => LOGGER.info(`API running on localhost:${PORT}`));
