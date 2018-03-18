@@ -1,23 +1,31 @@
 /* eslint quote-props:0, comma-dangle: 0, indent:0 */
 const ROUTER = require('express').Router();
-const AUTH = require('express-jwt')({
-  secret: process.env.JWT_SECRET,
-  userProperty: 'payload',
-});
 
-const PROFILE_CONTROLLER = require('../controllers/profile');
 const AUTH_CONTROLLER = require('../controllers/auth');
 const JANITOR_CONTROLLER = require('../controllers/janitor');
+const MONITOR_CONTROLLER = require('../controllers/monitor');
+const JENKINS_CONTROLLER = require('../controllers/jenkins');
+const PRICE_CONTROLLER = require('../controllers/price');
 
 /* User Authorization Controllers */
-ROUTER.get('/profile', AUTH, PROFILE_CONTROLLER.profileRead);
 ROUTER.post('/register', AUTH_CONTROLLER.register);
 ROUTER.post('/login', AUTH_CONTROLLER.login);
+
+/* Monitoring Controller */
+ROUTER.get('/cluster/unmark/:id', MONITOR_CONTROLLER.cancelJob);
+ROUTER.get('/clusters', MONITOR_CONTROLLER.getClusters);
+
+/* Jenkins Controller */
+ROUTER.get('/jenkins/destroy/:id', JENKINS_CONTROLLER.destroy);
 
 /* Janitor Controller */
 ROUTER.post('/janitor/run', JANITOR_CONTROLLER.run);
 ROUTER.get('/janitor/destroy/:id', JANITOR_CONTROLLER.destroyById);
 ROUTER.get('/janitors', JANITOR_CONTROLLER.getJanitors);
+
+/* Price Controller */
+ROUTER.post('/price/ec2', PRICE_CONTROLLER.getEc2Price);
+ROUTER.post('/price/rds', PRICE_CONTROLLER.getRdsPrice);
 
 ROUTER.get('/describe/tags/rds/:id', (req, res) => {
   res.json([{
@@ -173,6 +181,7 @@ ROUTER.get('/describe/efs', (req, res) => {
 ROUTER.get('/describe/rds', (req, res) => {
   res.json([{
     'DBInstanceIdentifier': 'instance-test2',
+    'InstanceCreateTime': '2018-03-08T01:18:03.000Z',
     'DBInstanceClass': 'db.t2.micro',
     'Engine': 'postgres',
     'DBInstanceStatus': 'creating',

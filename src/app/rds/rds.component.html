@@ -1,10 +1,9 @@
 <section>
-  <h5>RDS DB INSTANCES</h5>
+  <h2>RDS DB INSTANCES</h2>
   <div class="button-bar">
     <button type="button" class="btn btn-outline-success" id="create-RDS" (click)="createInstance()"><i class="fas fa-plus fa-lg"></i></button>
     <button type="button" class="btn btn-outline-danger" id="terminate-AWS-RDS" (click)="terminateInstances()"><i class="fas fa-trash-alt fa-lg"></i></button>
     <!--<button type="button" class="btn btn-outline-primary" id="analyze-RDS" (click)="analyze('rds')"><i class="far fa-chart-bar fa-lg"></i></button>-->
-    <!--<button type="button" class="btn btn-outline-primary" id="cost-RDS"><i class="fas fa-dollar-sign fa-lg"></i></button>-->
   </div>
   <table id="RDSTable" class="table">
     <thead>
@@ -17,6 +16,8 @@
         <th scope="col">Engine</th>
         <th scope="col">Zone</th>        
         <th scope="col">Status</th>
+        <th scope="col">Running Hours</th>
+        <th scope="col">Cost</th>
         <th scope="col">Creation Date</th>
       </tr>
     </thead>
@@ -27,14 +28,16 @@
                 <input type="checkbox" [(ngModel)]="instance.checked">
             </div>
         </td>
-        <th scope="row" id="instanceId">{{ instance.id }}</th> 
+        <th>{{ instance.id }}</th> 
         <td></td>       
         <th>{{ instance.name }}</th>
         <td>{{ instance.type }}</td>
         <td>{{ instance.engine }}</td>
         <td>{{ instance.zone }}</td>        
         <td>{{ instance.status }}</td>
-        <td>{{ instance.creationDate }}</td>
+        <td>{{ instance.runningHours | number : '1.2' }}</td>
+        <td>${{ instance.cost | number : '1.2-2' }}</td>
+        <td>{{ instance.creationDate | amDateFormat: 'M/D/YYYY h:mm A' }}</td>
       </tr>
     </tbody>
   </table>

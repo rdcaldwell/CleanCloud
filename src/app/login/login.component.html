@@ -1,15 +1,24 @@
 <section>
   <div class="row">
     <div class="col-md-4">
-      <h1>Login</h1>
+      <h1>LOGIN</h1>
       <form (submit)="login()">
         <div class="form-group">
-          <input type="text" class="form-control" name="username" placeholder="Username" [(ngModel)]="credentials.username">
+          <input type="text" class="form-control" name="username" placeholder="Username" 
+            [ngClass]="{'is-invalid': userNotFound}" [(ngModel)]="credentials.username">
+          <div *ngIf="userNotFound" class="invalid-feedback">
+            User not found.
+          </div>                          
         </div>
         <div class="form-group">
-          <input type="password" class="form-control" name="password" placeholder="Password" [(ngModel)]="credentials.password">
+          <input type="password" class="form-control" name="password" placeholder="Password" 
+            [ngClass]="{'is-invalid': incorrectPassword}" [(ngModel)]="credentials.password">
+          <div *ngIf="incorrectPassword" class="invalid-feedback">
+            The password you entered was incorrect.
+          </div>
         </div>
-        <button type="submit" class="cldn-btn">Login</button>
+        <button type="submit" class="cldn-btn" 
+          [disabled]="!credentials.username || !credentials.password">Login</button>
       </form>
     </div>
   </div>

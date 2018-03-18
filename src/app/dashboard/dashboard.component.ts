@@ -1,6 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { AmazonWebService } from '../services/amazonweb.service';
-import { AnalyticsService } from '../services/analytics.service';
 import * as d3 from 'd3';
 import * as moment from 'moment';
 import * as $ from 'jquery';
@@ -12,13 +11,12 @@ import * as $ from 'jquery';
   providers: [AmazonWebService]
 })
 export class DashboardComponent implements OnInit {
-  context: any = [];
+  context: any = {};
   analytics_data: any = [];
   createdInstance: any = [];
   resdata: any;
 
-  constructor(private amazonWebService: AmazonWebService,
-              private analyticsService: AnalyticsService) {}
+  constructor(private amazonWebService: AmazonWebService) {}
 
   ngOnInit() {
     this.getContextNames();
@@ -30,9 +28,8 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  /*
-  analyzeInstance() {
-    this.analyticsService.analyze(this.activeId).subscribe(serviceData => {
+  analyzeInstance(id) {
+    this.amazonWebService.analyze(id).subscribe(serviceData => {
       this.analytics_data = serviceData;
 
       let data = this.analytics_data.Datapoints;
@@ -123,5 +120,5 @@ export class DashboardComponent implements OnInit {
                   .attr('y', function(d) { return y(d.Average) - 5; })
                   .text(function(d) { return d.Average.toFixed(2) + '%'; });
       });
-  }*/
+  }
 }

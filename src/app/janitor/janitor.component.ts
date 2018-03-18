@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { AmazonWebService } from '../services/amazonweb.service';
+import { MatDialog } from '@angular/material';
+import { JanitorDialogComponent } from './janitordialog/janitordialog.component';
 
 @Component({
   selector: 'app-janitor',
@@ -8,39 +10,12 @@ import { AmazonWebService } from '../services/amazonweb.service';
 })
 export class JanitorComponent implements OnInit {
 
-  janitorConfig: JanitorProperties = {
-    region: '',
-    defaultEmail: '',
-    summaryEmail: '',
-    sourceEmail: '',
-    isMonkeyTime: true,
-    port: 8080
-  };
-
   public ports: Array<number> = [];
 
   public janitors: Array<any> = [];
 
-  public regions: Array<RegionProperties> = [
-    {
-      name: 'us-west-2',
-      location: 'Oregon'
-    },
-    {
-      name: 'us-east-1',
-      location: 'North Virgina'
-    },
-    {
-      name: 'us-east-2',
-      location: 'Ohio'
-    },
-    {
-      name: 'ap-south-1',
-      location: 'Mumbai'
-    },
-  ];
-
-  constructor(private amazonWebService: AmazonWebService) { }
+  constructor(private amazonWebService: AmazonWebService,
+     public dialog: MatDialog) { }
 
   ngOnInit() {
     this.getJanitors();
@@ -66,8 +41,12 @@ export class JanitorComponent implements OnInit {
     });
   }
 
-  runJanitor() {
-    this.amazonWebService.runJanitor(this.janitorConfig).subscribe(data => {
+  createJanitor() {
+    const janitorDialog = this.dialog.open(JanitorDialogComponent, {
+      width: '33%'
+    });
+
+    janitorDialog.afterClosed().subscribe(result => {
       this.getJanitors();
     });
   }
@@ -85,18 +64,4 @@ export class JanitorComponent implements OnInit {
   isPortUsed(port) {
     return this.ports.includes(port);
   }
-}
-
-interface RegionProperties {
-  name: string;
-  location: string;
-}
-
-interface JanitorProperties {
-  region: string;
-  defaultEmail: string;
-  summaryEmail: string;
-  sourceEmail: string;
-  isMonkeyTime: boolean;
-  port: number;
 }

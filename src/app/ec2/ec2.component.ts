@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { AmazonWebService } from '../services/amazonweb.service';
-
+import { MatDialog } from '@angular/material';
+import * as moment from 'moment';
+import { AnalyticsComponent } from '../analytics/analytics.component';
 @Component({
   selector: 'app-ec2',
   templateUrl: './ec2.component.html',
@@ -8,8 +10,8 @@ import { AmazonWebService } from '../services/amazonweb.service';
 })
 export class Ec2Component implements OnInit {
   public ec2Instances: Array<EC2Instance> = [];
-
-  constructor(private amazonWebService: AmazonWebService) { }
+  constructor(private amazonWebService: AmazonWebService,
+    public dialog: MatDialog) { }
 
   ngOnInit() {
     this.updateInstances();
@@ -21,18 +23,34 @@ export class Ec2Component implements OnInit {
       if (reservations !== 'No ec2 data') {
         for (const reservation of reservations) {
           for (const instance of reservation.Instances) {
-            const instanceData = {
-              id: instance.InstanceId,
-              context: instance.Tags.length > 0 ? instance.Tags[1].Value : null,
-              name: instance.Tags.length > 0 ? instance.Tags[0].Value : null,
-              type: instance.InstanceType,
-              dns: instance.PublicDnsName,
-              zone: instance.Placement.AvailabilityZone,
-              status: instance.State.Name,
-              creationDate: instance.LaunchTime,
-              checked: false
-            };
-            this.ec2Instances.push(instanceData);
+            const getRunningHours = new Promise((resolve, reject) => {
+              resolve(moment.duration(moment().diff(instance.LaunchTime)).asHours());
+            });
+            getRunningHours.then((hours: number) => {
+              const getTotalCost = new Promise((resolve, reject) => {
+                this.amazonWebService.getPrice('ec2', {
+                  region: instance.Placement.AvailabilityZone,
+                  type: instance.InstanceType,
+                }).subscribe(price => {
+                  resolve(hours * price);
+                });
+              });
+              getTotalCost.then((price) => {
+                this.ec2Instances.push({
+                  id: instance.InstanceId,
+                  context: instance.Tags.length > 0 ? this.getTag(instance.Tags, 'Context') : null,
+                  name: instance.Tags.length > 0 ? this.getTag(instance.Tags, 'Name') : null,
+                  type: instance.InstanceType,
+                  dns: instance.PublicDnsName,
+                  zone: instance.Placement.AvailabilityZone,
+                  status: instance.State.Name,
+                  creationDate: instance.LaunchTime,
+                  runningHours: hours,
+                  cost: price,
+                  checked: false
+                });
+              });
+            });
           }
         }
         setInterval(() => {
@@ -59,8 +77,9 @@ export class Ec2Component implements OnInit {
   }
 
   createInstance() {
-    this.amazonWebService.create('ec2').subscribe();
-    this.updateInstances();
+    this.amazonWebService.create('ec2').subscribe(data => {
+      this.updateInstances();
+    });
   }
 
   terminateInstances() {
@@ -71,23 +90,22 @@ export class Ec2Component implements OnInit {
     }
   }
 
-  getCost() {
-    for (const instance of this.ec2Instances) {
-      if (instance.checked) {
-        this.amazonWebService.cost(instance.name).subscribe();
+  openAnalytics(id, name) {
+    this.amazonWebService.analyze(id).subscribe(data => {
+      this.dialog.open(AnalyticsComponent, {
+        width: '75%',
+        data: { response: data.Datapoints, name: name },
+      });
+    });
+  }
+
+  getTag(tags, key) {
+    for (const tag of tags) {
+      if (tag.Key === key) {
+        return tag.Value;
       }
     }
   }
-}
-
-interface NewEC2Instance {
-  region: string;
-  highAvailability: string;
-  orgImportPaths: string;
-  verison: string;
-  reason: string;
-  context: string;
-  startedBy: string;
 }
 
 interface EC2Instance {
@@ -99,5 +117,7 @@ interface EC2Instance {
   zone: string;
   status: string;
   creationDate: Date;
+  runningHours: any;
+  cost: any;
   checked: boolean;
 }

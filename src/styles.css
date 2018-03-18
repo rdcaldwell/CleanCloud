@@ -1,36 +1,60 @@
-/* You can add global styles to this file, and also import other style files */
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+* {
+  font: 18px "Oswald", sans-serif;
+  font-weight: 300;
+}
+
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
   background: #f1f1f1;
 }
-  
+
+.container {
+  max-width: 1200px;
+}
+
+th,
+td {
+  text-align: center;
+}
+
+h2,
+.navbar-brand,
+.nav-link {
+  font-weight: 400;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
 a {
   color: #00B7FF;
 }
-  
+
 .main {
-  padding-top:50px;
+  padding-top: 50px;
 }
-  
+
 .button-bar {
   padding-bottom: 10px;
 }
 
-tr.active, tbody > tr {
+tr.active,
+tbody>tr {
   transition: color .10s ease-in-out, background-color .15s;
 }
-  
-tr.active, tbody > tr:hover {
+
+tr.active,
+tbody>tr:hover {
   color: #fff;
   background-color: #ffac59;
 }
-  
+
 #graph {
-  padding-top:25px;
-  padding-left:25px;
+  padding-top: 25px;
+  padding-left: 25px;
 }
-  
+
 .navbar {
   background-color: #ffac59;
   border-radius: 5px;
@@ -58,20 +82,24 @@ section {
   -ms-user-select: none;
   user-select: none;
   border: 1px solid transparent;
-      border-top-color: transparent;
-      border-right-color: transparent;
-      border-bottom-color: transparent;
-      border-left-color: transparent;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
   padding: .375rem .75rem;
   font-size: 1rem;
   line-height: 1.5;
   border-radius: .25rem;
-  width:100%;
+  width: 100%;
   cursor: pointer;
+}
+
+.cldn-btn[disabled] {
+  background-color: #c6c6c6 !important;
 }
 
 .cldn-btn:hover {
   color: #fff;
-  background-color: #ffac59;
-  border-color: #ffac59;
+  background-color: #f49535;
+  border-color: #000;
 }

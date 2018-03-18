@@ -1,10 +1,9 @@
 <section>
-  <h5>EFS INSTANCES</h5>
+  <h2>EFS INSTANCES</h2>
   <div class="button-bar">
     <button type="button" class="btn btn-outline-success" id="create-EFS" (click)="createInstance()"><i class="fas fa-plus fa-lg"></i></button>
     <button type="button" class="btn btn-outline-danger" id="terminate-AWS-EFS" (click)="terminateInstances()"><i class="fas fa-trash-alt fa-lg"></i></button>
     <!--<button type="button" class="btn btn-outline-primary" id="analyze-EFS" (click)="analyze('efs')"><i class="far fa-chart-bar fa-lg"></i></button>-->
-    <!--<button type="button" class="btn btn-outline-primary" id="cost-EFS"><i class="fas fa-dollar-sign fa-lg"></i></button>-->
   </div>
   <table id="EFSTable" class="table">
     <thead>
@@ -25,12 +24,12 @@
                 <input type="checkbox" [(ngModel)]="instance.checked">
             </div>
         </td>
-        <th scope="row" id="instanceId">{{ instance.id }}</th>
+        <th>{{ instance.id }}</th>
         <td></td>        
         <td></td>
         <td>{{ instance.size }}</td>
         <td>{{ instance.status }}</td>
-        <td>{{ instance.creationDate }}</td>
+        <td>{{ instance.creationDate | amDateFormat: 'M/D h:mm A' }}</td>
       </tr>
     </tbody>
   </table>

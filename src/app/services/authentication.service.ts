@@ -2,7 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { map } from 'rxjs/operators/map';
-import { Router } from '@angular/router';
+import { Router, CanActivate } from '@angular/router';
+import { Http } from '@angular/http';
+import 'rxjs/add/operator/map';
 
 export interface User {
   _id: string;
@@ -28,7 +30,20 @@ export interface TokenPayload {
 export class AuthenticationService {
   private token: string;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private httpClient: HttpClient, private http: Http, private router: Router) { }
+
+  canActivate() {
+    if (!this.isLoggedIn()) {
+      this.router.navigateByUrl('/login');
+      return false;
+    }
+    return true;
+  }
+
+  // Validate form fields
+  validate(field, type) {
+    return this.http.get(`/api/auth/${type}/${field}`).map(res => res.json());
+  }
 
   private saveToken(token: string): void {
     localStorage.setItem('janitor-token', token);
@@ -64,13 +79,13 @@ export class AuthenticationService {
   }
 
   private getRequest() {
-    const base = this.http.get(`/api/profile`, { headers: { Authorization: `Bearer ${this.getToken()}` }});
+    const base = this.httpClient.get(`/api/auth/profile`, { headers: { Authorization: `Bearer ${this.getToken()}` } });
 
     return this.request(base);
   }
 
-  private postRequest(type,  user?: TokenPayload): Observable<any> {
-    const base = this.http.post(`/api/${type}`, user);
+  private postRequest(type, user?: TokenPayload): Observable<any> {
+    const base = this.httpClient.post(`/api/auth/${type}`, user);
 
     return this.request(base);
   }
@@ -103,6 +118,6 @@ export class AuthenticationService {
   public logout(): void {
     this.token = '';
     window.localStorage.removeItem('janitor-token');
-    this.router.navigateByUrl('/');
+    this.router.navigateByUrl('/login');
   }
 }

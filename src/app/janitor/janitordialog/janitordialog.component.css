@@ -1,0 +1,20 @@
+.dialog-header {
+  padding-bottom: 60px;
+}
+
+.row {
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+.form-check {
+  padding-left: 2rem;
+}
+
+.fa-times {
+    cursor: pointer;
+}
+
+form {
+  clear: both;
+}

@@ -1,8 +1,10 @@
+/* eslint no-param-reassign:0 */
 const run = require('docker-run');
 const MONGOOSE = require('mongoose');
 const LOGGER = require('log4js').getLogger();
 
 const JANITOR = MONGOOSE.model('Janitor');
+const CLUSTER = MONGOOSE.model('Cluster');
 
 let WEST_2 = {};
 let EAST_1 = {};
@@ -19,10 +21,7 @@ function createJanitor(janitorConfig) {
   janitor.sourceEmail = janitorConfig.sourceEmail;
   janitor.isMonkeyTime = janitorConfig.isMonkeyTime;
   janitor.port = janitorConfig.port;
-  janitor.save((err) => {
-    if (err) LOGGER.info(err);
-    else LOGGER.info(janitor._id);
-  });
+  janitor.save();
 }
 
 module.exports.run = (req, res) => {
@@ -44,6 +43,14 @@ module.exports.run = (req, res) => {
     },
   };
   janitorConfig.ports[req.body.port] = req.body.port;
+  CLUSTER.find({
+    region: janitorConfig.env.SIMIANARMY_CLIENT_AWS_REGION,
+  }, (err, clusters) => {
+    clusters.forEach((cluster) => {
+      cluster.monkeyPort = req.body.port;
+      cluster.save();
+    });
+  });
   switch (janitorConfig.env.SIMIANARMY_CLIENT_AWS_REGION) {
     case 'us-east-1':
       EAST_1 = run('mlafeldt/simianarmy', janitorConfig);

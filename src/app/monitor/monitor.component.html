@@ -1,0 +1,41 @@
+<section>
+  <div class="instance-section">
+    <h2>MONITOR</h2>
+    <table id="{{title}}Table" class="table">
+      <thead>
+        <tr>
+          <th scope="col">Context</th>
+          <th scope="col">Owner</th>
+          <th scope="col">Region</th>
+          <th scope="col">Monitored</th>
+          <th scope="col">Marked</th>
+          <th scope="col">Destruction Date</th>
+          <th scope="col">Cluster Options</th>
+          <th scope="col">Monitor Options</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cluster of clusters">
+          <th>{{ cluster.context }}</th>
+          <th>{{ cluster.startedBy }}</th>
+          <td>{{ cluster.region }}</td>
+          <td>{{ cluster.monitored }}</td>
+          <td>{{ cluster.marked }}</td>
+          <td>{{ cluster.destructionDate }}</td>
+          <td>
+            <ng-container *ngIf="cluster.marked">
+              <button type="button" class="btn btn-outline-primary" id="destroy" data-toggle="modal" (click)="destroy(cluster)">Destroy Now</button>
+              <button type="button" class="btn btn-outline-primary" id="unmark" data-toggle="modal" (click)="unmark(cluster)">Cancel Destruction</button>
+            </ng-container>
+          </td>
+          <td>
+            <ng-container *ngIf="cluster.monitored !== null">
+              <button *ngIf="!cluster.monitored" type="button" class="btn btn-outline-primary" id="optIn" data-toggle="modal" (click)="optIn(cluster)">Monitor</button>
+              <button *ngIf="cluster.monitored" type="button" class="btn btn-outline-primary" id="optOut" data-toggle="modal" (click)="optOut(cluster)">Don't Monitor</button>
+            </ng-container>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

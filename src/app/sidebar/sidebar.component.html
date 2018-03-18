@@ -1,17 +1,46 @@
-<nav class="nav flex-column">
-  <li class="nav-item">
-    <a class="nav-link" routerLinkActive="active-link" routerLink="/instances"><i class="fab fa-aws fa-lg"></i> Instances</a>
-  </li>
-  <li *ngIf="!authenticationService.isLoggedIn()" class="nav-item">
-    <a class="nav-link" routerLinkActive="active-link" routerLink="/login"><i class="fas fa-sign-in-alt fa-lg"></i>  Login</a>
-  </li>
-  <li *ngIf="authenticationService.isLoggedIn()" class="nav-item">
-    <a class="nav-link" routerLinkActive="active-link" routerLink="/profile"><i class="fas fa-user-circle fa-lg"></i>  {{ authenticationService.getUser().user }}</a>
-  </li>
-  <li *ngIf="authenticationService.isLoggedIn()" class="nav-item">
-      <a class="nav-link" routerLinkActive="active-link" routerLink="/janitor"><i class="fas fa-wrench fa-lg"></i>   Janitor</a>
-  </li>
-  <li *ngIf="authenticationService.isLoggedIn()" class="nav-item">
-    <a class="nav-link" routerLinkActive="active-link" (click)="authenticationService.logout()"><i class="fas fa-sign-out-alt fa-lg"></i>  Logout</a>
-  </li>
-</nav>
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #sidenav mode="side" class="sidenav" opened="true" [fixedInViewport]="true" [fixedTopGap]="60">
+    <div *ngIf="authenticationService.isLoggedIn()" class="nav-item">
+      <a class="nav-link" routerLinkActive="active-link" routerLink="/instances">
+        Instances
+        <i class="fab fa-aws fa-lg sidebar"></i>
+      </a>
+    </div>
+    <div *ngIf="authenticationService.isLoggedIn()" class="nav-item">
+      <a class="nav-link" routerLinkActive="active-link" routerLink="/monitor">
+        Monitor
+        <i class="fas fa-eye fa-lg sidebar"></i>
+      </a>
+    </div>
+    <div *ngIf="authenticationService.isLoggedIn()" class="nav-item">
+      <a class="nav-link" routerLinkActive="active-link" routerLink="/janitor">
+        Janitor
+        <i class="fas fa-wrench fa-lg sidebar"></i>
+      </a>
+    </div>
+    <div *ngIf="authenticationService.isLoggedIn()" class="nav-item">
+      <a class="nav-link" routerLinkActive="active-link" routerLink="/profile">
+        {{ authenticationService.getUser().user }}
+        <i class="fas fa-user-circle fa-lg sidebar"></i>
+      </a>
+    </div>
+    <div *ngIf="authenticationService.isLoggedIn()" class="nav-item">
+      <a class="nav-link" routerLinkActive="active-link" (click)="authenticationService.logout()">
+        Logout
+        <i class="fas fa-sign-out-alt fa-lg sidebar"></i>
+      </a>
+    </div>
+    <div *ngIf="!authenticationService.isLoggedIn()" class="nav-item">
+      <a class="nav-link" routerLinkActive="active-link" routerLink="/login">
+        Login
+        <i class="fas fa-sign-in-alt fa-lg sidebar"></i>
+      </a>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="sidenav-content">
+    <div class="container">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

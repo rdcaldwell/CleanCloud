@@ -1,4 +1,9 @@
 .navbar-brand {
-    color: #fff;
-    padding-left: 35px;
+  color: #fff;
+  padding-left: 35px;
+  font-size: 23px;
+}
+
+.navbar {
+    border-radius: 0px;
 }

@@ -21,8 +21,7 @@ mongoose.connection.on('disconnected', () => {
 });
 
 require('./users');
-require('./ec2');
-require('./efs');
-require('./rds');
 require('./cluster');
 require('./janitor');
+require('./ec2_prices');
+require('./rds_prices');

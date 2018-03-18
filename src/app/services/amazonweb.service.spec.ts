@@ -1,10 +1,10 @@
 import { FormsModule } from '@angular/forms';
 import { AmazonWebService } from './amazonweb.service';
-import { TestBed, async, inject } from '@angular/core/testing';
+import { TestBed, async, inject, tick } from '@angular/core/testing';
 import { HttpModule, Http, Response, ResponseOptions, XHRBackend } from '@angular/http';
 import { MockBackend } from '@angular/http/testing';
 
-fdescribe('AmazonWebService', () => {
+describe('AmazonWebService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [

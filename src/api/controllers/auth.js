@@ -1,10 +1,10 @@
 const passport = require('passport');
 const mongoose = require('mongoose');
 
-const User = mongoose.model('User');
+const USER = mongoose.model('User');
 
 module.exports.register = (req, res) => {
-  const user = new User();
+  const user = new USER();
   user.username = req.body.username;
   user.email = req.body.email;
   user.firstName = req.body.firstName;
@@ -38,4 +38,49 @@ module.exports.login = (req, res) => {
       res.status(401).json(info);
     }
   })(req, res);
+};
+
+module.exports.profileRead = (req, res) => {
+  if (!req.payload._id) {
+    res.status(401).json({
+      message: 'UnauthorizedError: private profile',
+    });
+  } else {
+    USER.findById(req.payload._id).exec((err, user) => {
+      if (err) res.json(err);
+      else res.status(200).json(user);
+    });
+  }
+};
+
+/* Checks if username is taken */
+module.exports.validateUsername = (req, res) => {
+  // Retrun data if username is found
+  const jsonData = {
+    found: false,
+  };
+  // Customer database query on passed id
+  USER.findOne({
+    username: req.params.id,
+  }, (err, customer) => {
+    if (!customer) jsonData.found = false;
+    else jsonData.found = true;
+    res.json(jsonData);
+  });
+};
+
+/* Checks if email is taken */
+module.exports.validateEmail = (req, res) => {
+  // Retrun data if email is found
+  const jsonData = {
+    found: false,
+  };
+  // Customer database query on passed email
+  USER.findOne({
+    email: req.params.id,
+  }, (err, customer) => {
+    if (!customer) jsonData.found = false;
+    else jsonData.found = true;
+    res.json(jsonData);
+  });
 };

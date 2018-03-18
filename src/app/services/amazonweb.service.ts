@@ -8,6 +8,36 @@ export class AmazonWebService {
 
   constructor(private http: Http) {}
 
+  optOut(port, resourceId) {
+    return this.http.post(`http://localhost:${port}/simianarmy/api/v1/janitor`, {
+      'eventType': 'OPTOUT',
+      'resourceId': resourceId
+    }).map(res => res.json());
+  }
+
+  optIn(port, resourceId) {
+    return this.http.post(`http://localhost:${port}/simianarmy/api/v1/janitor`, {
+      'eventType': 'OPTIN',
+      'resourceId': resourceId
+    }).map(res => res.json());
+  }
+
+  unmarkCluster(name) {
+    return this.http.get(`/api/monitor/unmark/${name}`).map(res => res.json());
+  }
+
+  getClusters() {
+    return this.http.get(`/api/monitor/clusters`).map(res => res.json());
+  }
+
+  destroyCluster(name) {
+    return this.http.get(`/api/jenkins/destroy/${name}`).map(res => res.json());
+  }
+
+  destroyJanitor(id) {
+    return this.http.get(`/api/janitor/destroy/${id}`).map(res => res.json());
+  }
+
   runJanitor(janitorConfig) {
     return this.http.post(`/api/janitor/run`, janitorConfig).map(res => res.json());
   }
@@ -16,39 +46,39 @@ export class AmazonWebService {
     return this.http.get(`/api/janitors`).map(res => res.json());
   }
 
-  destroyJanitor(id) {
-    return this.http.get(`/api/janitor/destroy/${id}`).map(res => res.json());
-  }
-
   describe(service: string) {
-    return this.http.get(`/api/describe/${service}`).map(res => res.json());
+    return this.http.get(`/api/${service}/describe`).map(res => res.json());
   }
 
   describeTags(service: string, context: string) {
-    return this.http.get(`/api/describe/tags/${service}/${context}`).map(res => res.json());
+    return this.http.get(`/api/${service}/describe/tags/${context}`).map(res => res.json());
   }
 
   create(service: string) {
-    return this.http.get(`/api/create/${service}`).map(res => res.json());
+    return this.http.get(`/api/${service}/create`).map(res => res.json());
   }
 
   terminateAWS(service: string, instanceId: string) {
-    return this.http.get(`/api/terminate/${service}/${instanceId}`).map(res => res.json());
+    return this.http.get(`/api/${service}/terminate/${instanceId}`).map(res => res.json());
+  }
+
+  context(service: string, title: string) {
+    return this.http.get(`/api/context/${title}`).map(res => res.json());
+  }
+
+  contextNames() {
+    return this.http.get(`/api/context`).map(res => res.json());
+  }
+
+  analyze(id) {
+    return this.http.get(`/api/analyze/${id}`).map(res => res.json());
   }
 
   terminateJenkins() {
     return this.http.get(`/api/jenkins/destroy`).map(res => res.json());
   }
 
-  context(service: string, title: string) {
-    return this.http.get(`/api/context/${service}/${title}`).map(res => res.json());
-  }
-
-  contextNames() {
-    return this.http.get(`/api/context/names`).map(res => res.json());
-  }
-
-  cost(id) {
-    return this.http.get(`/api/cost/${id}`).map(res => res.json());
+  getPrice(service, data) {
+    return this.http.post(`/api/price/${service}`, data).map(res => res.json());
   }
 }

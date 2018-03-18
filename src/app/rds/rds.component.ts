@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AmazonWebService } from '../services/amazonweb.service';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-rds',
@@ -15,18 +16,35 @@ export class RdsComponent implements OnInit {
     this.amazonWebService.describe('rds').subscribe(data => {
       if (data !== 'No rds data') {
         for (const instance of data) {
-          const instanceData = {
-            id: instance.DBInstanceIdentifier,
-            context: '',
-            name: instance.DBName,
-            type: instance.DBInstanceClass,
-            engine: instance.Engine,
-            zone: instance.AvailabilityZone,
-            status: instance.DBInstanceStatus,
-            creationDate: instance.InstanceCreateTime,
-            checked: false
-          };
-          this.rdsInstances.push(instanceData);
+          const getRunningHours = new Promise((resolve, reject) => {
+            resolve(moment.duration(moment().diff(instance.InstanceCreateTime)).asHours());
+          });
+          getRunningHours.then((hours: number) => {
+            const getTotalCost = new Promise((resolve, reject) => {
+              this.amazonWebService.getPrice('rds', {
+                region: instance.AvailabilityZone,
+                type: instance.DBInstanceClass,
+                DB: instance.Engine
+              }).subscribe(price => {
+                resolve(hours * price);
+              });
+            });
+            getTotalCost.then((price) => {
+              this.rdsInstances.push({
+                id: instance.DBInstanceIdentifier,
+                context: '',
+                name: instance.DBName,
+                type: instance.DBInstanceClass,
+                engine: instance.Engine,
+                zone: instance.AvailabilityZone,
+                status: instance.DBInstanceStatus,
+                creationDate: instance.InstanceCreateTime,
+                runningHours: hours,
+                cost: price,
+                checked: false
+              });
+            });
+          });
         }
         setInterval(() => {
           this.updateStatus();
@@ -60,6 +78,10 @@ export class RdsComponent implements OnInit {
       }
     }
   }
+
+  getRunningHours(startTime) {
+    return moment.duration(moment().diff(startTime)).asHours();
+  }
 }
 
 interface RDSInstance {
@@ -71,5 +93,7 @@ interface RDSInstance {
   zone: string;
   status: string;
   creationDate: string;
+  runningHours: any;
+  cost: any;
   checked: boolean;
 }
