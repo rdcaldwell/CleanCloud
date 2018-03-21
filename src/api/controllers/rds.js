@@ -36,11 +36,11 @@ module.exports.describe = (req, res) => {
 module.exports.create = (req, res) => {
   const params = {
     DBInstanceClass: 'db.t2.micro',
-    DBInstanceIdentifier: 'instance-test2',
+    DBInstanceIdentifier: 'instance-test',
     Engine: 'postgres',
     EngineVersion: '9.6.5',
     AvailabilityZone: 'us-east-2a',
-    DBName: 'db_test2',
+    DBName: 'db_test',
     MasterUsername: 'rdc',
     MasterUserPassword: 'password',
     AllocatedStorage: 20,
@@ -54,7 +54,7 @@ module.exports.create = (req, res) => {
   };
   RDS.createDBInstance(params, (err, data) => {
     if (err) res.json(err, err.stack); // an error occurred
-    else res.json(data);
+    else res.json(`${data.DBInstance.DBInstanceIdentifier} created`);
   });
 };
 
@@ -66,6 +66,6 @@ module.exports.terminateById = (req, res) => {
   };
   RDS.deleteDBInstance(params, (err, data) => {
     if (err) res.json(err, err.stack); // an error occurred
-    else res.json(data); // successful response
+    else res.json(`${data.DBInstance.DBInstanceIdentifier} terminated`);
   });
 };

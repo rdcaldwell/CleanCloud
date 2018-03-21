@@ -47,7 +47,7 @@ module.exports.create = (req, res) => {
     if (err) LOGGER.error(err, err.stack);
     else {
       LOGGER.info(data);
-      res.json(data.Instances[0]);
+      res.json(`${data.Instances[0].InstanceId} created`);
     }
   });
 };

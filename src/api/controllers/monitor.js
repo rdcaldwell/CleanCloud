@@ -12,8 +12,8 @@ const EC2_CONTROLLER = require('../controllers/ec2');
 const CLUSTER = mongoose.model('Cluster');
 
 const mailListener = new MailListener({
-  username: 'cloudianapp@gmail.com',
-  password: '#Rdc9085',
+  username: process.env.IMAP_EMAIL,
+  password: process.env.IMAP_PASSWORD,
   host: 'imap.gmail.com',
   port: 993,
   tls: true,
@@ -33,7 +33,7 @@ const SES = new AWS.SES({
 });
 const EC2 = new AWS.EC2({
   apiVersion: '2016-11-15',
-  region: 'us-west-2',
+  region: 'us-east-1',
 });
 const jobs = [];
 

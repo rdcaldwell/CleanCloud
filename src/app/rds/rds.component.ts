@@ -8,6 +8,7 @@ import * as moment from 'moment';
   styleUrls: ['./rds.component.css']
 })
 export class RdsComponent implements OnInit {
+  responseFromAWS: any;
   public rdsInstances: Array<RDSInstance> = [];
 
   constructor(private amazonWebService: AmazonWebService) { }
@@ -17,19 +18,13 @@ export class RdsComponent implements OnInit {
       if (data !== 'No rds data') {
         for (const instance of data) {
           const getRunningHours = new Promise((resolve, reject) => {
-            resolve(moment.duration(moment().diff(instance.InstanceCreateTime)).asHours());
+            resolve(this.getRunningHours(instance.InstanceCreateTime));
           });
           getRunningHours.then((hours: number) => {
             const getTotalCost = new Promise((resolve, reject) => {
-              this.amazonWebService.getPrice('rds', {
-                region: instance.AvailabilityZone,
-                type: instance.DBInstanceClass,
-                DB: instance.Engine
-              }).subscribe(price => {
-                resolve(hours * price);
-              });
+              resolve(this.getCost(hours, instance));
             });
-            getTotalCost.then((price) => {
+            getTotalCost.then((price: number) => {
               this.rdsInstances.push({
                 id: instance.DBInstanceIdentifier,
                 context: '',
@@ -49,6 +44,8 @@ export class RdsComponent implements OnInit {
         setInterval(() => {
           this.updateStatus();
         }, 5000);
+      } else {
+        this.responseFromAWS = data;
       }
     });
   }
@@ -63,28 +60,49 @@ export class RdsComponent implements OnInit {
             }
           }
         }
+      } else {
+        this.responseFromAWS = data;
       }
     });
   }
 
   createInstance() {
-    this.amazonWebService.create('rds').subscribe();
+    this.amazonWebService.create('rds').subscribe(data => {
+      this.responseFromAWS = data;
+    });
   }
 
   terminateInstances() {
     for (const instance of this.rdsInstances) {
       if (instance.checked) {
-        this.amazonWebService.terminateAWS('rds', instance.id).subscribe();
+        this.amazonWebService.terminateAWS('rds', instance.id).subscribe(data => {
+          this.responseFromAWS = data;
+        });
+      } else {
+        this.responseFromAWS = 'No instances checked for termination';
       }
     }
   }
 
-  getRunningHours(startTime) {
-    return moment.duration(moment().diff(startTime)).asHours();
+  getRunningHours(startTime): number {
+    const hours = moment.duration(moment().diff(startTime)).asHours();
+    return Math.round(hours * 100) / 100;
+  }
+
+  getCost(hours, instance): number {
+    let totalCost = 0;
+    this.amazonWebService.getPrice('rds', {
+      region: instance.AvailabilityZone,
+      type: instance.DBInstanceClass,
+      DB: instance.Engine
+    }).subscribe(price => {
+      totalCost = hours * price;
+    });
+    return totalCost;
   }
 }
 
-interface RDSInstance {
+export interface RDSInstance {
   id: string;
   context: string;
   name: string;
@@ -93,7 +111,7 @@ interface RDSInstance {
   zone: string;
   status: string;
   creationDate: string;
-  runningHours: any;
-  cost: any;
+  runningHours: number;
+  cost: number;
   checked: boolean;
 }

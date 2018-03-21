@@ -44,7 +44,7 @@ module.exports.create = (req, res) => {
     };
     EFS.createTags(tagParams, (tagErr) => {
       if (tagErr) res.json(tagErr, tagErr.stack); // an error occurred
-      else res.json(data); // successful response
+      else res.json(`${tagParams.FileSystemId} created`); // successful response
     });
   });
 };
