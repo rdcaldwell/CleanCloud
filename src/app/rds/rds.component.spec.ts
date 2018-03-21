@@ -36,7 +36,6 @@ describe('RdsComponent', () => {
   it('should update status from creating to available',
     fakeAsync(inject([AmazonWebService, XHRBackend],
       (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
-
         const mockResponse = [{
           'DBInstanceIdentifier': 'instance-test2',
           'DBInstanceClass': 'db.t2.micro',
@@ -148,12 +147,12 @@ describe('RdsComponent', () => {
         });
 
         component.updateStatus();
+
         expect(component.rdsInstances[0].status).toEqual('available');
       })));
 
   it('should have no data for updateStatus', fakeAsync(inject([AmazonWebService, XHRBackend],
     (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
-
       const mockResponse = 'No rds data';
 
       mockBackend.connections.subscribe((connection) => {
@@ -163,12 +162,12 @@ describe('RdsComponent', () => {
       });
 
       component.updateStatus();
+
       expect(component.responseFromAWS).toEqual(mockResponse);
     })));
 
   it('should createInstance', fakeAsync(inject([AmazonWebService, XHRBackend],
     (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
-
       const mockResponse = 'instance-test2 created';
 
       mockBackend.connections.subscribe((connection) => {
@@ -178,13 +177,13 @@ describe('RdsComponent', () => {
       });
 
       component.createInstance();
+
       expect(component.responseFromAWS).toEqual(mockResponse);
     })));
 
   it('should terminateInstances with instance checked',
     fakeAsync(inject([AmazonWebService, XHRBackend],
       (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
-
         const mockResponse = 'instance-test2 terminated';
 
         mockBackend.connections.subscribe((connection) => {
@@ -208,6 +207,7 @@ describe('RdsComponent', () => {
         });
 
         component.terminateInstances();
+
         expect(component.responseFromAWS).toEqual(mockResponse);
       })));
 
@@ -227,6 +227,7 @@ describe('RdsComponent', () => {
     });
 
     component.terminateInstances();
+
     expect(component.responseFromAWS).toEqual('No instances checked for termination');
   });
 
@@ -236,14 +237,15 @@ describe('RdsComponent', () => {
   it('should get running hours', () => {
     const startTime = '2018-03-08T01:00:02.000Z';
     const test = component.getRunningHours(startTime);
+
     let runningHours = moment.duration(moment().diff(startTime)).asHours();
     runningHours = Math.round(runningHours * 100) / 100;
+
     expect(test).toEqual(runningHours);
   });
 
   it('should setup rds instances', async(inject([AmazonWebService, XHRBackend],
     (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
-
       const mockResponse = [{
         'DBInstanceIdentifier': 'instance-test2',
         'DBInstanceClass': 'db.t2.micro',
@@ -340,35 +342,33 @@ describe('RdsComponent', () => {
         })));
       });
 
-      const getHours = new Promise((resolve) => {
-        resolve(component.getRunningHours('2018-03-18T17:40:10.346Z'));
+      const hours = 24;
+      const cost = hours * 0.02;
+
+      spyOn(component, 'getRunningHours').and.returnValue(hours);
+      spyOn(component, 'getCost').and.returnValue(cost);
+
+      const setUpInstance = new Promise((resolve) => {
+        resolve({
+          id: 'instance-test2',
+          context: '',
+          name: 'db_test2',
+          type: 'db.t2.micro',
+          engine: 'postgres',
+          zone: 'us-east-2a',
+          status: 'available',
+          creationDate: '2018-03-18T17:40:10.346Z',
+          runningHours: hours,
+          cost: cost,
+          checked: false
+        });
       });
 
-      getHours.then((hours: number) => {
-        spyOn(component, 'getCost').and.returnValue(0.02 * hours);
-
-        const setUpInstance = new Promise((resolve) => {
-          resolve({
-            id: 'instance-test2',
-            context: '',
-            name: 'db_test2',
-            type: 'db.t2.micro',
-            engine: 'postgres',
-            zone: 'us-east-2a',
-            status: 'available',
-            creationDate: '2018-03-18T17:40:10.346Z',
-            runningHours: hours,
-            cost: hours * 0.02,
-            checked: false
-          });
-        });
-
-        setUpInstance.then((mockRdsInstance: RDSInstance) => {
-          new Promise((resolve) => {
-            component.ngOnInit();
-          }).then(() => {
-            expect(component.rdsInstances[0]).toEqual(mockRdsInstance);
-          });
+      setUpInstance.then((mockRdsInstance: RDSInstance) => {
+        new Promise((resolve) => {
+          component.ngOnInit();
+        }).then(() => {
+          expect(component.rdsInstances[0]).toEqual(mockRdsInstance);
         });
       });
     })));
@@ -385,15 +385,21 @@ describe('RdsComponent', () => {
       });
 
       component.ngOnInit();
+
       expect(component.responseFromAWS).toEqual(mockResponse);
     })));
 
   it('should get cost', async(inject([AmazonWebService, XHRBackend],
     (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
+      const price = 0.02;
+      const hours = 40;
+
       spyOn(amazonWebService, 'getPrice').and.callFake(() => {
-        return Observable.of(0.02);
+        return Observable.of(price);
       });
-      const cost = component.getCost(40, {});
-      expect(cost).toEqual(40 * 0.02);
+
+      const cost = component.getCost(hours, {});
+
+      expect(cost).toEqual(hours * price);
     })));
 });
