@@ -24,7 +24,7 @@ export class Ec2Component implements OnInit {
         for (const reservation of reservations) {
           for (const instance of reservation.Instances) {
             const getRunningHours = new Promise((resolve, reject) => {
-              resolve(moment.duration(moment().diff(instance.LaunchTime)).asHours());
+              resolve(this.getRunningHours(instance.LaunchTime));
             });
             getRunningHours.then((hours: number) => {
               const getTotalCost = new Promise((resolve, reject) => {
@@ -90,11 +90,11 @@ export class Ec2Component implements OnInit {
     }
   }
 
-  openAnalytics(id, name) {
-    this.amazonWebService.analyze(id).subscribe(data => {
+  openAnalytics(instance) {
+    this.amazonWebService.analyze(instance).subscribe(data => {
       this.dialog.open(AnalyticsComponent, {
         width: '75%',
-        data: { response: data.Datapoints, name: name },
+        data: { response: data.Datapoints, name: instance.name },
       });
     });
   }
@@ -105,6 +105,22 @@ export class Ec2Component implements OnInit {
         return tag.Value;
       }
     }
+  }
+
+  getRunningHours(startTime): number {
+    const hours = moment.duration(moment().diff(startTime)).asHours();
+    return Math.round(hours * 100) / 100;
+  }
+
+  getCost(hours, instance): number {
+    let totalCost = 0;
+    this.amazonWebService.getPrice('ec2', {
+      region: instance.Placement.AvailabilityZone,
+      type: instance.InstanceType,
+    }).subscribe(price => {
+      totalCost = hours * price;
+    });
+    return totalCost;
   }
 }
 

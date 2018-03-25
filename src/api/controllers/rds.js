@@ -1,20 +1,20 @@
 const AWS = require('aws-sdk');
-const LOGGER = require('log4js').getLogger();
+const LOGGER = require('log4js').getLogger('RDS');
 
 const RDS = new AWS.RDS({
   apiVersion: '2014-10-31',
   region: 'us-east-2',
 });
 
-LOGGER.level = 'debug';
+LOGGER.level = 'info';
 
 /* GET EFS instances */
 module.exports.describeTagsById = (req, res) => {
   RDS.listTagsForResource({
     ResourceName: req.params.id,
   }, (err, data) => {
-    if (err) res.json(err, err.stack);// an error occurred
-    else res.json(data.TagList); // successful response
+    if (err) res.json(err);
+    else res.json(data.TagList);
   });
 };
 
@@ -22,12 +22,10 @@ module.exports.describeTagsById = (req, res) => {
 module.exports.describe = (req, res) => {
   RDS.describeDBInstances({}, (err, data) => {
     if (err) {
-      LOGGER.error(`[DESCRIBE-RDS]\n ${err.stack}`);
+      LOGGER.error(err);
     } else if (data.DBInstances.length) {
-      LOGGER.info(`[DESCRIBE-RDS]\n ${JSON.stringify(data.DBInstances, null, '\t')}`);
       res.json(data.DBInstances);
     } else {
-      LOGGER.info('No rds data found.');
       res.json('No rds data');
     }
   });
@@ -53,8 +51,11 @@ module.exports.create = (req, res) => {
     }],
   };
   RDS.createDBInstance(params, (err, data) => {
-    if (err) res.json(err, err.stack); // an error occurred
-    else res.json(`${data.DBInstance.DBInstanceIdentifier} created`);
+    if (err) res.json(err);
+    else {
+      LOGGER.info(`${data.DBInstance.DBInstanceIdentifier} created`);
+      res.json(`${data.DBInstance.DBInstanceIdentifier} created`);
+    }
   });
 };
 
@@ -65,7 +66,7 @@ module.exports.terminateById = (req, res) => {
     SkipFinalSnapshot: true,
   };
   RDS.deleteDBInstance(params, (err, data) => {
-    if (err) res.json(err, err.stack); // an error occurred
+    if (err) res.json(err);
     else res.json(`${data.DBInstance.DBInstanceIdentifier} terminated`);
   });
 };

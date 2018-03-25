@@ -4,20 +4,29 @@ require('./src/api/config/passport');
 const EXPRESS = require('express');
 const HTTP = require('http');
 const BODY_PARSER = require('body-parser');
-const LOGGER = require('log4js').getLogger();
+const LOGGER = require('log4js').getLogger('server-dev');
 const API = require('./src/api/routes/api');
-const MONITOR_CONTROLLER = require('./src/api/controllers/monitor');
+const CLUSTER_CONTROLLER = require('./src/api/controllers/cluster');
+const EMAIL_CONTROLLER = require('./src/api/controllers/email');
+
+LOGGER.level = 'info';
 
 const API_SERVER = EXPRESS();
 const PORT = process.env.PORT || '3000';
+// Clean up cluster DB on start up
+CLUSTER_CONTROLLER.cleanClusterDB();
 // Set up cluster DB on start up
-MONITOR_CONTROLLER.setupClusterDB();
+CLUSTER_CONTROLLER.setClusterDB();
 // Start janitor monitor
-MONITOR_CONTROLLER.startMonitor();
+EMAIL_CONTROLLER.startMonitor();
 // Update cluster DB every 5 minutes
 setInterval(() => {
-  MONITOR_CONTROLLER.setupClusterDB();
+  CLUSTER_CONTROLLER.setClusterDB();
 }, 300000);
+// Clean up cluster DB every 10 minutes
+setInterval(() => {
+  CLUSTER_CONTROLLER.cleanClusterDB();
+}, 600000);
 
 API_SERVER.use(BODY_PARSER.json());
 API_SERVER.use('/api', API);

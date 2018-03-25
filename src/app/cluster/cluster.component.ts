@@ -113,7 +113,7 @@ export class ClusterComponent implements OnInit {
   }
 
   terminateClusterJenkins() {
-    this.amazonWebService.terminateJenkins().subscribe();
+    this.amazonWebService.destroyCluster(this.title).subscribe();
   }
 
   getName(tags) {

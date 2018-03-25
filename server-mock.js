@@ -4,14 +4,16 @@ require('./src/api/config/passport');
 const EXPRESS = require('express');
 const HTTP = require('http');
 const BODY_PARSER = require('body-parser');
-const LOGGER = require('log4js').getLogger();
+const LOGGER = require('log4js').getLogger('server-mock');
 const API = require('./src/api/routes/mock-api');
-const MONITOR_CONTROLLER = require('./src/api/controllers/monitor');
+const CLUSTER_CONTROLLER = require('./src/api/controllers/cluster');
+
+LOGGER.level = 'info';
 
 const API_SERVER = EXPRESS();
 const PORT = process.env.PORT || '3000';
 
-MONITOR_CONTROLLER.startMonitor();
+CLUSTER_CONTROLLER.startMonitor();
 
 API_SERVER.use(BODY_PARSER.json());
 API_SERVER.use('/api', API);

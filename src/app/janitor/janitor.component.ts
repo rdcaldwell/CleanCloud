@@ -43,7 +43,7 @@ export class JanitorComponent implements OnInit {
 
   createJanitor() {
     const janitorDialog = this.dialog.open(JanitorDialogComponent, {
-      width: '33%'
+      width: '40%'
     });
 
     janitorDialog.afterClosed().subscribe(result => {

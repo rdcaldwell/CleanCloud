@@ -1,23 +1,21 @@
 const AWS = require('aws-sdk');
-const LOGGER = require('log4js').getLogger();
+const LOGGER = require('log4js').getLogger('EFS');
 
 const EFS = new AWS.EFS({
   apiVersion: '2015-02-01',
   region: 'us-east-2',
 });
 
-LOGGER.level = 'debug';
+LOGGER.level = 'info';
 
 /* GET EFS instances */
 module.exports.describe = (req, res) => {
   EFS.describeFileSystems({}, (err, data) => {
     if (err) {
-      LOGGER.error(`[DESCRIBE-EFS]\n ${err.stack}`);
+      LOGGER.error(err);
     } else if (data.FileSystems.length) {
-      LOGGER.info(`DESCRIBE-EFS]\n ${JSON.stringify(data.FileSystems, null, '\t')}`);
       res.json(data.FileSystems);
     } else {
-      LOGGER.info('No efs data found.');
       res.json('No efs data');
     }
   });
@@ -30,8 +28,7 @@ module.exports.create = (req, res) => {
     PerformanceMode: 'generalPurpose',
   };
   EFS.createFileSystem(params, (err, data) => {
-    if (err) res.json(err, err.stack); // an error occurred
-    else LOGGER.info(`[CREATE-EFS]\n ${JSON.stringify(data, null, '\t')}`); // successful response
+    if (err) res.json(err);
     const tagParams = {
       FileSystemId: data.FileSystemId,
       Tags: [{
@@ -43,8 +40,11 @@ module.exports.create = (req, res) => {
       }],
     };
     EFS.createTags(tagParams, (tagErr) => {
-      if (tagErr) res.json(tagErr, tagErr.stack); // an error occurred
-      else res.json(`${tagParams.FileSystemId} created`); // successful response
+      if (tagErr) res.json(tagErr);
+      else {
+        LOGGER.info(`${tagParams.FileSystemId} created`);
+        res.json(`${tagParams.FileSystemId} created`);
+      }
     });
   });
 };
@@ -55,8 +55,11 @@ module.exports.terminateById = (req, res) => {
     FileSystemId: req.params.id,
   };
   EFS.deleteFileSystem(params, (err) => {
-    if (err) res.json(err, err.stack); // an error occurred
-    else res.json(`${req.params.id} terminated`); // successful response
+    if (err) res.json(err);
+    else {
+      LOGGER.info(`${req.params.id} terminated`);
+      res.json(`${req.params.id} terminated`);
+    }
   });
 };
 
@@ -65,29 +68,7 @@ module.exports.describeTagsById = (req, res) => {
   EFS.describeTags({
     FileSystemId: req.params.id,
   }, (err, data) => {
-    if (err) res.json(err, err.stack); // an error occurred
-    else res.json(data.Tags); // successful response
+    if (err) res.json(err);
+    else res.json(data.Tags);
   });
 };
-
-/*
-module.exports.getContext = () => {
-  EFS.describeFileSystems({}, (err, data) => {
-    if (err) {
-      LOGGER.error(`[DESCRIBE-EFS]\n ${err.stack}`);
-    } else if (data.FileSystems.length) {
-      data.FileSystems.forEach((fileSystem) => {
-        EFS.describeTags({
-          FileSystemId: fileSystem.FileSystemId,
-        }, (err, data) => {
-          if (err) res.json(err, err.stack); // an error occurred
-          else res.json(data.Tags); // successful response
-        });
-      });
-      LOGGER.info(`DESCRIBE-EFS]\n ${JSON.stringify(data.FileSystems, null, '\t')}`);
-    } else {
-      LOGGER.info('No efs data found.');
-    }
-  });
-};
-*/

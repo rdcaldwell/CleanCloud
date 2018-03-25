@@ -7,17 +7,20 @@ const EC2_CONTROLLER = require('../controllers/ec2');
 const EFS_CONTROLLER = require('../controllers/efs');
 const RDS_CONTROLLER = require('../controllers/rds');
 const PRICE_CONTROLLER = require('../controllers/price');
-const MONITOR_CONTROLLER = require('../controllers/monitor');
+const CLUSTER_CONTROLLER = require('../controllers/cluster');
 const ANALYTICS_CONTROLLER = require('../controllers/analytics');
+const JOB_CONTROLLER = require('../controllers/job');
 const AUTH = require('express-jwt')({
   secret: process.env.JWT_SECRET,
   userProperty: 'payload',
 });
 
-/* User Authorization Controllers */
+/* Authentication Controller */
 ROUTER.post('/auth/register', AUTH_CONTROLLER.register);
 ROUTER.post('/auth/login', AUTH_CONTROLLER.login);
 ROUTER.get('/auth/profile', AUTH, AUTH_CONTROLLER.profileRead);
+
+/* Validation Controller */
 ROUTER.get('/auth/username/:id', AUTH_CONTROLLER.validateUsername);
 ROUTER.get('/auth/email/:id', AUTH_CONTROLLER.validateEmail);
 
@@ -26,16 +29,18 @@ ROUTER.post('/janitor/run', JANITOR_CONTROLLER.run);
 ROUTER.get('/janitor/destroy/:id', JANITOR_CONTROLLER.destroyById);
 ROUTER.get('/janitors', JANITOR_CONTROLLER.getJanitors);
 
-/* Monitoring Controller */
-ROUTER.get('/monitor/unmark/:id', MONITOR_CONTROLLER.cancelJob);
-ROUTER.get('/monitor/clusters', MONITOR_CONTROLLER.getClusters);
+/* Job Controller */
+ROUTER.get('/job/cancel/:id', JOB_CONTROLLER.cancelJob);
+
+/* Cluster Controller */
+ROUTER.get('/clusters', CLUSTER_CONTROLLER.getClusters);
+ROUTER.get('/context/:id', EC2_CONTROLLER.getContextById);
+ROUTER.get('/context', EC2_CONTROLLER.getClusterNames);
 
 /* EC2 Controller */
 ROUTER.get('/ec2/create', EC2_CONTROLLER.create);
 ROUTER.get('/ec2/describe', EC2_CONTROLLER.describe);
 ROUTER.get('/ec2/terminate/:id', EC2_CONTROLLER.terminateById);
-ROUTER.get('/context/:id', EC2_CONTROLLER.getContextById);
-ROUTER.get('/context', EC2_CONTROLLER.getContextNames);
 
 /* EFS Controller */
 ROUTER.get('/efs/create', EFS_CONTROLLER.create);
@@ -53,7 +58,7 @@ ROUTER.get('/rds/terminate/:id', RDS_CONTROLLER.terminateById);
 ROUTER.get('/jenkins/destroy/:id', JENKINS_CONTROLLER.destroy);
 
 /* Analytics Controller */
-ROUTER.get('/analyze/:id', ANALYTICS_CONTROLLER.analyzeById);
+ROUTER.post('/analyze', ANALYTICS_CONTROLLER.analyzeById);
 
 /* Price Controller */
 ROUTER.post('/price/ec2', PRICE_CONTROLLER.getEc2Price);

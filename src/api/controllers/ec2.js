@@ -1,6 +1,6 @@
 /* eslint consistent-return:0 */
 const AWS = require('aws-sdk');
-const LOGGER = require('log4js').getLogger();
+const LOGGER = require('log4js').getLogger('EC2');
 const ASYNC = require('async');
 
 const EC2 = new AWS.EC2({
@@ -8,13 +8,13 @@ const EC2 = new AWS.EC2({
   region: 'us-east-1',
 });
 
-LOGGER.level = 'debug';
+LOGGER.level = 'info';
 
 /* GET EC2 instances */
 module.exports.describe = (req, res) => {
   EC2.describeInstances((err, data) => {
     if (err) {
-      LOGGER.error(`[DESCRIBE-EC2]\n ${err.stack}`);
+      LOGGER.error(err);
     } else if (data.Reservations.length) {
       res.json(data.Reservations);
     } else {
@@ -38,15 +38,18 @@ module.exports.create = (req, res) => {
       }, {
         Key: 'Name',
         Value: 'Test-rdc',
+      }, {
+        Key: 'startedBy',
+        Value: 'rdc',
       }],
     }],
   };
 
   // Create the instance
   EC2.runInstances(params, (err, data) => {
-    if (err) LOGGER.error(err, err.stack);
+    if (err) LOGGER.error(err);
     else {
-      LOGGER.info(data);
+      LOGGER.info(`${data.Instances[0].InstanceId} created`);
       res.json(`${data.Instances[0].InstanceId} created`);
     }
   });
@@ -64,7 +67,10 @@ module.exports.terminateById = (req, res) => {
   // Create the instance
   EC2.terminateInstances(params, (err) => {
     if (err) res.json('Could not terminate instances', err);
-    else res.json(`${InstanceValue} terminated`);
+    else {
+      LOGGER.info(`${InstanceValue} terminated`);
+      res.json(`${InstanceValue} terminated`);
+    }
   });
 };
 
@@ -78,35 +84,33 @@ module.exports.getContextById = (req, res) => {
     }],
   };
   EC2.describeInstances(params, (err, data) => {
-    if (err) LOGGER.error(`[CONTEXT-EC2]\n ${err.stack}`);
+    if (err) LOGGER.error(err);
     else if (data.Reservations.length) {
       res.json(data.Reservations);
     }
   });
 };
 
-module.exports.getContextNames = (req, res) => {
+module.exports.getClusterNames = (req, res) => {
   const context = {
     names: [],
   };
-  EC2.describeInstances((describeErr, data) => {
-    if (describeErr) LOGGER.error(`[CONTEXT-NAMES-EC2]:\n ${describeErr.stack}`);
-    else if (data.Reservations.length !== 0) {
-      ASYNC.forEachOf(data.Reservations, (reservation, i, callback) => {
-        ASYNC.forEachOf(reservation.Instances, (describedInstance) => {
-          if (describedInstance.Tags.length) {
-            ASYNC.forEachOf(describedInstance.Tags, (tag) => {
-              if (tag.Key === 'Context' && context.names.indexOf(tag.Key) < 0) {
-                context.names.push(tag.Value);
-              }
-            });
-          }
-        });
-        callback();
-      }, (loopErr) => {
-        if (loopErr) LOGGER.error(loopErr);
-        else res.json(context);
-      });
-    }
+  const params = {
+    Filters: [{
+      Name: 'key',
+      Values: ['Context'],
+    }],
+  };
+  EC2.describeTags(params, (err, data) => {
+    if (err) LOGGER.info(err);
+    ASYNC.forEachOf(data.Tags, (tag, i, callback) => {
+      if (tag.Key === 'Context' && context.names.indexOf(tag.Key) < 0) {
+        context.names.push(tag.Value);
+      }
+      callback();
+    }, (loopErr) => {
+      if (loopErr) LOGGER.error(loopErr);
+      else res.json(context);
+    });
   });
 };

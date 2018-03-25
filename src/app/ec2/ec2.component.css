@@ -1,3 +1,8 @@
 .analyze {
   cursor: pointer;
 }
+
+::ng-deep .mat-tooltip {
+  background-color: #000;
+  font-size: 12px;
+}

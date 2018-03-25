@@ -1,9 +1,6 @@
 <section>
   <h2>EC2 INSTANCES</h2>
   <div class="button-bar">
-    <button type="button" class="btn btn-outline-success" id="create-EC2" (click)="createInstance()">
-      <i class="fas fa-plus fa-lg"></i>
-    </button>
     <button type="button" class="btn btn-outline-danger" id="terminate-EC2" (click)="terminateInstances()">
       <i class="fas fa-trash-alt fa-lg"></i>
     </button>
@@ -40,7 +37,7 @@
         <td>{{ instance.runningHours | number : '1.2' }}</td>
         <td>${{ instance.cost | number : '1.2-2' }}</td>
         <td>{{ instance.creationDate | amDateFormat: 'M/D h:mm A' }}</td>
-        <td><div class="analyze" (click)="openAnalytics(instance.id, instance.name)"><i class="far fa-chart-bar fa-lg"></i></div></td>
+        <td><span matTooltip="Instance Analytics" class="analyze" (click)="openAnalytics(instance)"><i class="far fa-chart-bar fa-lg"></i></span></td>
       </tr>
     </tbody>
   </table>

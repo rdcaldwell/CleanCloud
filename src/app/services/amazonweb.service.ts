@@ -9,25 +9,25 @@ export class AmazonWebService {
   constructor(private http: Http) {}
 
   optOut(port, resourceId) {
-    return this.http.post(`http://localhost:${port}/simianarmy/api/v1/janitor`, {
+    return this.http.post(`/simianarmy/api/v1/janitor`, {
       'eventType': 'OPTOUT',
       'resourceId': resourceId
     }).map(res => res.json());
   }
 
   optIn(port, resourceId) {
-    return this.http.post(`http://localhost:${port}/simianarmy/api/v1/janitor`, {
+    return this.http.post(`/simianarmy/api/v1/janitor`, {
       'eventType': 'OPTIN',
       'resourceId': resourceId
     }).map(res => res.json());
   }
 
   unmarkCluster(name) {
-    return this.http.get(`/api/monitor/unmark/${name}`).map(res => res.json());
+    return this.http.get(`/api/job/cancel/${name}`).map(res => res.json());
   }
 
   getClusters() {
-    return this.http.get(`/api/monitor/clusters`).map(res => res.json());
+    return this.http.get(`/api/clusters`).map(res => res.json());
   }
 
   destroyCluster(name) {
@@ -70,12 +70,11 @@ export class AmazonWebService {
     return this.http.get(`/api/context`).map(res => res.json());
   }
 
-  analyze(id) {
-    return this.http.get(`/api/analyze/${id}`).map(res => res.json());
-  }
-
-  terminateJenkins() {
-    return this.http.get(`/api/jenkins/destroy`).map(res => res.json());
+  analyze(instance) {
+    return this.http.post(`/api/analyze/`, {
+      launchTime: instance.creationDate,
+      id: instance.id
+    }).map(res => res.json());
   }
 
   getPrice(service, data) {

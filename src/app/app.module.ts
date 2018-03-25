@@ -29,8 +29,11 @@ import {
   MatSidenavModule,
   ErrorStateMatcher,
   ShowOnDirtyErrorStateMatcher,
-  MatDialogModule
+  MatDialogModule,
+  MatTooltipModule
 } from '@angular/material';
+import { BrowserXhr } from '@angular/http';
+import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 
 const routes: Routes = [
   { path: '', redirectTo: 'instances', pathMatch: 'full' },
@@ -76,11 +79,12 @@ const routes: Routes = [
     MatSelectModule,
     MatSidenavModule,
     MatDialogModule,
+    MatTooltipModule,
     RouterModule.forRoot(routes),
   ],
   providers: [
     AmazonWebService,
-    AuthenticationService
+    AuthenticationService,
   ],
   bootstrap: [AppComponent]
 })

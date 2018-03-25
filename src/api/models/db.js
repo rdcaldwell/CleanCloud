@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
-const LOG4JS = require('log4js');
+const LOGGER = require('log4js').getLogger('db');
 
 const db = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@ds121543.mlab.com:21543/fischerjanitor`;
-const LOGGER = LOG4JS.getLogger();
 
-LOGGER.level = 'debug';
+LOGGER.level = 'info';
 
 mongoose.connect(db);
 

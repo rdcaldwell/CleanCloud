@@ -1,28 +1,34 @@
 <div class="instance-section">
-    <h2 class="float-left">{{ title }} CLUSTER</h2> 
-    <h2 class="float-right">${{ totalCost | number : '1.2-2' }}</h2>
-    <div class="button-bar">
-        <button type="button" class="btn btn-outline-danger" id="terminate-AWS-{{title}}" (click)="terminateClusterAWS()"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-aws fa-lg"></i></button>
-        <button type="button" class="btn btn-outline-danger" id="terminate-jenkins-{{title}}" (click)="terminateClusterJenkins()"><i class="fas fa-trash-alt fa-lg"></i><i style="margin-left:10px" class="fab fa-jenkins fa-lg"></i></button>
-        <!--<button type="button" class="btn btn-outline-primary" id="analyze-RDS" (click)="analyze('rds')"><i class="far fa-chart-bar fa-lg"></i></button>-->
-        <!--<button type="button" class="btn btn-outline-primary" id="cost-RDS"><i class="fas fa-dollar-sign fa-lg"></i></button>-->
-    </div>
-    <table id="{{ title }}Table" class="table">
-        <thead>
-            <tr>
-                <th scope="col">Service Type</th>
-                <th scope="col">ID</th>
-                <th scope="col">Name</th>
-                <th scope="col">Status</th>
-            </tr>
-        </thead>
-        <tbody *ngFor="let clusterInstance of clusterInstances">
-            <tr class="clickable-row" (click)="activateRow(title + 'Table', clusterInstance.id)">
-                <th>{{ clusterInstance.serviceType | uppercase }}</th>
-                <th scope="row" id="instanceId">{{ clusterInstance.id }}</th>
-                <td>{{ clusterInstance.name }}</td>
-                <td>{{ clusterInstance.status }}</td>
-            </tr>
-        </tbody>
-    </table>
+  <h2 class="float-left">{{ title | uppercase }} CLUSTER</h2>
+  <h2 class="float-right">${{ totalCost | number : '1.2-2' }}</h2>
+  <div class="button-bar">
+    <button type="button" class="btn btn-outline-danger" id="terminate-AWS-{{title}}" (click)="terminateClusterAWS()">
+      <i class="fas fa-trash-alt fa-lg"></i>
+      <i style="margin-left:10px" class="fab fa-aws fa-lg"></i>
+    </button>
+    <button type="button" class="btn btn-outline-danger" id="terminate-jenkins-{{title}}" (click)="terminateClusterJenkins()">
+      <i class="fas fa-trash-alt fa-lg"></i>
+      <i style="margin-left:10px" class="fab fa-jenkins fa-lg"></i>
+    </button>
+    <!--<button type="button" class="btn btn-outline-primary" id="analyze-RDS" (click)="analyze('rds')"><i class="far fa-chart-bar fa-lg"></i></button>-->
+    <!--<button type="button" class="btn btn-outline-primary" id="cost-RDS"><i class="fas fa-dollar-sign fa-lg"></i></button>-->
+  </div>
+  <table id="{{ title }}Table" class="table">
+    <thead>
+      <tr>
+        <th scope="col">Service Type</th>
+        <th scope="col">ID</th>
+        <th scope="col">Name</th>
+        <th scope="col">Status</th>
+      </tr>
+    </thead>
+    <tbody *ngFor="let clusterInstance of clusterInstances">
+      <tr class="clickable-row" (click)="activateRow(title + 'Table', clusterInstance.id)">
+        <th>{{ clusterInstance.serviceType | uppercase }}</th>
+        <th scope="row" id="instanceId">{{ clusterInstance.id }}</th>
+        <td>{{ clusterInstance.name }}</td>
+        <td>{{ clusterInstance.status }}</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
