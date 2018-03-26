@@ -50,7 +50,9 @@ module.exports.emailStartedBy = (clusterName, startedBy, message) => {
     Message: {
       Body: {
         Html: {
-          Data: `Hello ${startedBy}, <br> ${clusterName} has been ${message}.`,
+          Data: `Hello ${startedBy}, <br><br>
+           ${clusterName} has been ${message}. <br><br>
+           CleanCloud`,
           Charset: 'UTF-8',
         },
         Text: {

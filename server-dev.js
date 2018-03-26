@@ -22,7 +22,7 @@ EMAIL_CONTROLLER.startMonitor();
 // Update cluster DB every 5 minutes
 setInterval(() => {
   CLUSTER_CONTROLLER.setClusterDB();
-}, 300000);
+}, 600000);
 // Clean up cluster DB every 10 minutes
 setInterval(() => {
   CLUSTER_CONTROLLER.cleanClusterDB();

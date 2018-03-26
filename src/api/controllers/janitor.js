@@ -2,6 +2,7 @@
 const run = require('docker-run');
 const MONGOOSE = require('mongoose');
 const LOGGER = require('log4js').getLogger('janitor');
+const CLUSTER_CONTROLLER = require('./cluster');
 
 const JANITOR = MONGOOSE.model('Janitor');
 const CLUSTER = MONGOOSE.model('Cluster');
@@ -25,6 +26,8 @@ function createJanitor(janitorConfig) {
 }
 
 module.exports.run = (req, res) => {
+  CLUSTER_CONTROLLER.setClusterDB();
+
   const janitorConfig = {
     ports: {},
     env: {
