@@ -7,7 +7,7 @@ import * as moment from 'moment';
   styleUrls: ['./cluster.component.css']
 })
 export class ClusterComponent implements OnInit {
-  @Input() private title: any;
+  @Input() title: any;
   createdOn: string;
   startedBy: string;
   orgImportPath: string;
@@ -18,6 +18,7 @@ export class ClusterComponent implements OnInit {
   context: any = [];
   public clusterInstances: Array<ClusterInstance> = [];
   totalCost = 0;
+  responseFromAWS: any;
 
   constructor(private amazonWebService: AmazonWebService) { }
 
@@ -49,6 +50,8 @@ export class ClusterComponent implements OnInit {
             });
           }
         }
+      } else {
+        this.responseFromAWS = reservations;
       }
     });
   }
@@ -71,6 +74,8 @@ export class ClusterComponent implements OnInit {
             }
           });
         }
+      } else {
+        this.responseFromAWS = instances;
       }
     });
   }
@@ -102,18 +107,24 @@ export class ClusterComponent implements OnInit {
             }
           });
         }
+      } else {
+        this.responseFromAWS = instances;
       }
     });
   }
 
   terminateClusterAWS() {
     for (const instance of this.clusterInstances) {
-      this.amazonWebService.terminateAWS(instance.serviceType, instance.id).subscribe();
+      this.amazonWebService.terminateAWS(instance.serviceType, instance.id).subscribe(data => {
+        this.responseFromAWS = data;
+      });
     }
   }
 
   terminateClusterJenkins() {
-    this.amazonWebService.destroyCluster(this.title).subscribe();
+    this.amazonWebService.destroyCluster(this.title).subscribe(data => {
+      this.responseFromAWS = data;
+    });
   }
 
   getName(tags) {
@@ -125,7 +136,7 @@ export class ClusterComponent implements OnInit {
   }
 }
 
-interface ClusterInstance {
+export interface ClusterInstance {
   serviceType: string;
   id: string;
   name: string;

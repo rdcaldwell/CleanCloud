@@ -42,6 +42,7 @@ export class AuthenticationService {
 
   // Validate form fields
   validate(field, type) {
+    // console.log(this.http.get(`/api/auth/${type}/${field}`).map(res => res.json()));
     return this.http.get(`/api/auth/${type}/${field}`).map(res => res.json());
   }
 
