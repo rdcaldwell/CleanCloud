@@ -7,7 +7,7 @@ import { AmazonWebService } from '../services/amazonweb.service';
   styleUrls: ['./efs.component.css']
 })
 export class EfsComponent implements OnInit {
-  efs_data: any = [];
+  responseFromAWS: any;
   public efsInstances: Array<EFSInstance> = [];
 
   constructor(private amazonWebService: AmazonWebService) { }
@@ -30,36 +30,48 @@ export class EfsComponent implements OnInit {
         setInterval(() => {
           this.updateStatus();
         }, 5000);
+      } else {
+        this.responseFromAWS = data;
       }
     });
   }
 
   updateStatus() {
     this.amazonWebService.describe('efs').subscribe(data => {
-      for (const instance of data) {
-        for (const efsInstance of this.efsInstances) {
-          if (efsInstance.id === instance.FileSystemId) {
-            efsInstance.status = instance.LifeCycleState;
+      if (data !== 'No efs data') {
+        for (const instance of data) {
+          for (const efsInstance of this.efsInstances) {
+            if (efsInstance.id === instance.FileSystemId) {
+              efsInstance.status = instance.LifeCycleState;
+            }
           }
         }
+      } else {
+        this.responseFromAWS = data;
       }
     });
   }
 
   createInstance() {
-    this.amazonWebService.create('efs').subscribe();
+    this.amazonWebService.create('efs').subscribe(data => {
+      this.responseFromAWS = data;
+    });
   }
 
   terminateInstances() {
     for (const instance of this.efsInstances) {
       if (instance.checked) {
-        this.amazonWebService.terminateAWS('efs', instance.id).subscribe();
+        this.amazonWebService.terminateAWS('efs', instance.id).subscribe(data => {
+          this.responseFromAWS = data;
+        });
+      } else {
+        this.responseFromAWS = 'No instances checked for termination';
       }
     }
   }
 }
 
-interface EFSInstance {
+export interface EFSInstance {
   id: string;
   context: string;
   name: string;

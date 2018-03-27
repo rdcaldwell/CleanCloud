@@ -21,4 +21,68 @@ describe('EC2', () => {
         });
     });
   });
+
+  describe('/GET create ', () => {
+    it('it should GET ', (done) => {
+      chai.request(server)
+        .get('/api/create/ec2')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('array');
+          res.body[0].should.have.property('Tests');
+          done();
+        });
+    });
+  });
+
+  describe('/GET terminateById ', () => {
+    it('it should terminate by id ', (done) => {
+      chai.request(server)
+        .get('/api/terminate/ec2/i-03ca172443e06c4e1')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('array');
+          res.body[0].should.have.property('Tests');
+          done();
+        });
+    });
+  });
+
+  describe('/GET getContextById ', () => {
+    it('it should GET ', (done) => {
+      chai.request(server)
+        .get('/api/context/ec2/i-03ca172443e06c4e1')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('array');
+          res.body[0].ImageId.should.be.equal('ami-10fd7020');
+          done();
+        });
+    });
+  });
+
+  describe('/GET getContextNames ', () => {
+    it('it should GET', (done) => {
+      chai.request(server)
+        .get('/api/context/names')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.have.property('names');
+          done();
+        });
+    });
+  });
+
+  describe('/GET analyze ', () => {
+    it('it should GET ', (done) => {
+      chai.request(server)
+        .get('/api/analyze/ec2/i-03ca172443e06c4e1')
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('array');
+          res.body[0].should.have.property('Tests');
+          done();
+        });
+    });
+  });
 });

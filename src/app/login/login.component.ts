@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
+  response: any;
   credentials: TokenPayload = {
     username: '',
     password: ''
@@ -24,7 +25,8 @@ export class LoginComponent implements OnInit {
   login() {
     this.incorrectPassword = false;
     this.userNotFound = false;
-    this.authenticationService.login(this.credentials).subscribe(() => {
+    this.authenticationService.login(this.credentials).subscribe(data => {
+      this.response = data;
       this.router.navigateByUrl('/profile');
     }, (err) => {
       // Login validations

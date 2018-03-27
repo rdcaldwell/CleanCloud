@@ -9,6 +9,7 @@ import { AnalyticsComponent } from '../analytics/analytics.component';
   styleUrls: ['./ec2.component.css']
 })
 export class Ec2Component implements OnInit {
+  responseFromAWS: any;
   public ec2Instances: Array<EC2Instance> = [];
   constructor(private amazonWebService: AmazonWebService,
     public dialog: MatDialog) { }
@@ -56,6 +57,8 @@ export class Ec2Component implements OnInit {
         setInterval(() => {
           this.updateStatus();
         }, 5000);
+      } else {
+          this.responseFromAWS = reservations;
       }
     });
   }
@@ -72,12 +75,15 @@ export class Ec2Component implements OnInit {
             }
           }
         }
+      } else {
+          this.responseFromAWS = reservations;
       }
     });
   }
 
   createInstance() {
     this.amazonWebService.create('ec2').subscribe(data => {
+      this.responseFromAWS = data;
       this.updateInstances();
     });
   }
@@ -85,7 +91,11 @@ export class Ec2Component implements OnInit {
   terminateInstances() {
     for (const instance of this.ec2Instances) {
       if (instance.checked) {
-        this.amazonWebService.terminateAWS('ec2', instance.id).subscribe();
+        this.amazonWebService.terminateAWS('ec2', instance.id).subscribe(data => {
+          this.responseFromAWS = data;
+        });
+      } else {
+        this.responseFromAWS = 'No instances checked for termination';
       }
     }
   }
@@ -124,7 +134,7 @@ export class Ec2Component implements OnInit {
   }
 }
 
-interface EC2Instance {
+export interface EC2Instance {
   id: string;
   context: string;
   name: string;
