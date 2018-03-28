@@ -1,88 +1,262 @@
 /* eslint-disable */
-require('dotenv').config({ path: '../../../.env' });
-const server = require('../../../server-mock');
-const chai = require('chai');
-const chaiHttp = require('chai-http');
+require('dotenv').config({
+  path: '../../../.env'
+});
+const EC2_CONTROLLER = require('../controllers/ec2');
+const http_mocks = require('node-mocks-http');
+const should = require('should')
+const AWS = require('aws-sdk-mock');
 
-const should = chai.should();
-
-chai.use(chaiHttp);
+const buildResponse = () => {
+  return http_mocks.createResponse({
+    eventEmitter: require('events').EventEmitter
+  });
+};
 
 describe('EC2', () => {
-  describe('/GET describe ec2', () => {
-    it('it should GET all running ec2 instances', (done) => {
-      chai.request(server)
-        .get('/api/describe/ec2')
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a('array');
-          res.body[0].Instances[0].InstanceId.should.be.equal('i-03ca172443e06c4e1');
-          done();
-        });
+  describe('/GET describe', () => {
+    it('should describe no ec2 data', (done) => {
+      AWS.mock('EC2', 'describeInstances', {
+        "Reservations": []
+      });
+
+      const res = buildResponse();
+      const req = http_mocks.createRequest({
+        method: 'GET',
+        url: '/api/ec2/describe',
+      });
+
+
+      res.on('end', () => {
+        res._getData().should.equal('"No ec2 data"');
+        done();
+      });
+
+      EC2_CONTROLLER.describe(req, res);
+      AWS.restore('EC2');
+    });
+
+    it('should describe running ec2 instances', (done) => {
+      AWS.mock('EC2', 'describeInstances', {
+        "Reservations": [{}]
+      });
+
+      const res = buildResponse();
+      const req = http_mocks.createRequest({
+        method: 'GET',
+        url: '/api/ec2/describe',
+      });
+
+      res.on('end', () => {
+        res._getData().should.instanceOf(Object);
+        done();
+      });
+
+      EC2_CONTROLLER.describe(req, res);
+      AWS.restore('EC2');
+    });
+
+    it('should describe error', (done) => {
+      AWS.mock('EC2', 'describeInstances', (callback) => {
+        callback("Error", null);
+      });
+
+      const res = buildResponse();
+      const req = http_mocks.createRequest({
+        method: 'GET',
+        url: '/api/ec2/describe'
+      });
+
+      res.on('end', () => {
+        res._getData().should.equal('"Error"');
+        done();
+      });
+
+      EC2_CONTROLLER.describe(req, res);
+      AWS.restore('EC2');
     });
   });
 
-  describe('/GET create ', () => {
-    it('it should GET ', (done) => {
-      chai.request(server)
-        .get('/api/create/ec2')
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a('array');
-          res.body[0].should.have.property('Tests');
-          done();
-        });
+  describe('/GET create', () => {
+    it('should create ec2 instance', (done) => {
+      AWS.mock('EC2', 'runInstances', {
+        "Instances": [{
+          "InstanceId": "i-01cc5e300b08e32d6",
+        }]
+      });
+
+      const res = buildResponse();
+      const req = http_mocks.createRequest({
+        method: 'GET',
+        url: '/api/ec2/create',
+      });
+
+      res.on('end', () => {
+        res._getData().should.equal('"i-01cc5e300b08e32d6 created"');
+        done();
+      });
+
+      EC2_CONTROLLER.create(req, res);
+      AWS.restore('EC2');
+    });
+
+    it('should get create error', (done) => {
+      AWS.mock('EC2', 'runInstances', (params, callback) => {
+        callback("Error", null);
+      });
+
+      const res = buildResponse();
+      const req = http_mocks.createRequest({
+        method: 'GET',
+        url: '/api/ec2/create'
+      });
+
+      res.on('end', () => {
+        res._getData().should.equal('"Error"');
+        done();
+      });
+
+      EC2_CONTROLLER.create(req, res);
+      AWS.restore('EC2');
     });
   });
 
-  describe('/GET terminateById ', () => {
-    it('it should terminate by id ', (done) => {
-      chai.request(server)
-        .get('/api/terminate/ec2/i-03ca172443e06c4e1')
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a('array');
-          res.body[0].should.have.property('Tests');
-          done();
-        });
+  describe('/GET terminate', () => {
+    it('should terminate instance by id', (done) => {
+      AWS.mock('EC2', 'terminateInstances');
+
+      const res = buildResponse();
+      const req = http_mocks.createRequest({
+        method: 'GET',
+        url: '/api/ec2/terminate/i-01cc5e300b08e32d6',
+        params: {
+          id: 'i-01cc5e300b08e32d6'
+        },
+      });
+
+      res.on('end', () => {
+        res._getData().should.equal('"i-01cc5e300b08e32d6 terminated"');
+        done();
+      });
+
+      EC2_CONTROLLER.terminateById(req, res);
+      AWS.restore('EC2');
+    });
+
+    it('should get terminate error', (done) => {
+      AWS.mock('EC2', 'terminateInstances', (params, callback) => {
+        callback("Error", null);
+      });
+
+      const res = buildResponse();
+      const req = http_mocks.createRequest({
+        method: 'GET',
+        url: '/api/ec2/terminate/i-01cc5e300b08e32d6',
+        params: {
+          id: 'i-01cc5e300b08e32d6'
+        }
+      });
+
+      res.on('end', () => {
+        res._getData().should.equal('"Error"');
+        done();
+      });
+
+      EC2_CONTROLLER.terminateById(req, res);
+      AWS.restore('EC2');
     });
   });
 
-  describe('/GET getContextById ', () => {
-    it('it should GET ', (done) => {
-      chai.request(server)
-        .get('/api/context/ec2/i-03ca172443e06c4e1')
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a('array');
-          res.body[0].ImageId.should.be.equal('ami-10fd7020');
-          done();
-        });
+  describe('/GET context', () => {
+    it('should get context by id', (done) => {
+      AWS.mock('EC2', 'describeInstances', {
+        "Reservations": [{}]
+      });
+
+      const res = buildResponse();
+      const req = http_mocks.createRequest({
+        method: 'GET',
+        url: '/api/context/fbi',
+        params: {
+          id: 'fbi'
+        }
+      });
+
+      res.on('end', () => {
+        res._getData().should.instanceOf(Object);
+        done();
+      });
+
+      EC2_CONTROLLER.getContextById(req, res);
+      AWS.restore('EC2');
+    });
+
+    it('should get context error', (done) => {
+      AWS.mock('EC2', 'describeInstances', (params, callback) => {
+        callback("Error", null);
+      });
+
+      const res = buildResponse();
+      const req = http_mocks.createRequest({
+        method: 'GET',
+        url: '/api/context/fbi',
+        params: {
+          id: 'fbi'
+        }
+      });
+
+      res.on('end', () => {
+        res._getData().should.equal('"Error"');
+        done();
+      });
+
+      EC2_CONTROLLER.getContextById(req, res);
+      AWS.restore('EC2');
     });
   });
 
-  describe('/GET getContextNames ', () => {
-    it('it should GET', (done) => {
-      chai.request(server)
-        .get('/api/context/names')
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.have.property('names');
-          done();
-        });
-    });
-  });
+  describe('/GET context names', () => {
+    it('should get context names', (done) => {
+      AWS.mock('EC2', 'describeTags', {
+        "Tags": [{
+          "Key": "Context",
+          "Value": "Test"
+        }]
+      });
 
-  describe('/GET analyze ', () => {
-    it('it should GET ', (done) => {
-      chai.request(server)
-        .get('/api/analyze/ec2/i-03ca172443e06c4e1')
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a('array');
-          res.body[0].should.have.property('Tests');
-          done();
-        });
+      const res = buildResponse();
+      const req = http_mocks.createRequest({
+        method: 'GET',
+        url: '/api/context'
+      });
+
+      res.on('end', () => {
+        res._getData().should.containEql('Test');
+        done();
+      });
+
+      EC2_CONTROLLER.getClusterNames(req, res);
+      AWS.restore('EC2');
+    });
+
+    it('should get context names error', (done) => {
+      AWS.mock('EC2', 'describeTags', (params, callback) => {
+        callback("Error", null);
+      });
+
+      const res = buildResponse();
+      const req = http_mocks.createRequest({
+        method: 'GET',
+        url: '/api/context'
+      });
+
+      res.on('end', () => {
+        res._getData().should.equal('"Error"');
+        done();
+      });
+
+      EC2_CONTROLLER.getClusterNames(req, res);
+      AWS.restore('EC2');
     });
   });
 });

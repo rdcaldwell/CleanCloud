@@ -3,19 +3,18 @@ const AWS = require('aws-sdk');
 const LOGGER = require('log4js').getLogger('EC2');
 const ASYNC = require('async');
 
-const EC2 = new AWS.EC2({
-  apiVersion: '2016-11-15',
-  region: 'us-east-1',
-});
-
 LOGGER.level = 'info';
 
 /* GET EC2 instances */
 module.exports.describe = (req, res) => {
+  const EC2 = new AWS.EC2({
+    apiVersion: '2016-11-15',
+    region: 'us-east-1',
+  });
+
   EC2.describeInstances((err, data) => {
-    if (err) {
-      LOGGER.error(err);
-    } else if (data.Reservations.length) {
+    if (err) res.json(err);
+    else if (data.Reservations.length) {
       res.json(data.Reservations);
     } else {
       res.json('No ec2 data');
@@ -25,6 +24,11 @@ module.exports.describe = (req, res) => {
 
 /* Create EC2 Instance */
 module.exports.create = (req, res) => {
+  const EC2 = new AWS.EC2({
+    apiVersion: '2016-11-15',
+    region: 'us-east-1',
+  });
+
   const params = {
     ImageId: 'ami-1853ac65', // amzn-ami-2011.09.1.x86_64-ebs
     InstanceType: 't2.micro',
@@ -47,7 +51,7 @@ module.exports.create = (req, res) => {
 
   // Create the instance
   EC2.runInstances(params, (err, data) => {
-    if (err) LOGGER.error(err);
+    if (err) res.json(err);
     else {
       LOGGER.info(`${data.Instances[0].InstanceId} created`);
       res.json(`${data.Instances[0].InstanceId} created`);
@@ -57,6 +61,11 @@ module.exports.create = (req, res) => {
 
 /* Terminate EC2 Instances by id */
 module.exports.terminateById = (req, res) => {
+  const EC2 = new AWS.EC2({
+    apiVersion: '2016-11-15',
+    region: 'us-east-1',
+  });
+
   const InstanceValue = req.params.id;
   const instanceIds = [];
   instanceIds.push(InstanceValue);
@@ -66,7 +75,7 @@ module.exports.terminateById = (req, res) => {
   };
   // Create the instance
   EC2.terminateInstances(params, (err) => {
-    if (err) res.json('Could not terminate instances', err);
+    if (err) res.json(err);
     else {
       LOGGER.info(`${InstanceValue} terminated`);
       res.json(`${InstanceValue} terminated`);
@@ -75,6 +84,11 @@ module.exports.terminateById = (req, res) => {
 };
 
 module.exports.getContextById = (req, res) => {
+  const EC2 = new AWS.EC2({
+    apiVersion: '2016-11-15',
+    region: 'us-east-1',
+  });
+
   const params = {
     Filters: [{
       Name: 'tag-value',
@@ -83,8 +97,9 @@ module.exports.getContextById = (req, res) => {
       ],
     }],
   };
+
   EC2.describeInstances(params, (err, data) => {
-    if (err) LOGGER.error(err);
+    if (err) res.json(err);
     else if (data.Reservations.length) {
       res.json(data.Reservations);
     }
@@ -92,6 +107,11 @@ module.exports.getContextById = (req, res) => {
 };
 
 module.exports.getClusterNames = (req, res) => {
+  const EC2 = new AWS.EC2({
+    apiVersion: '2016-11-15',
+    region: 'us-east-1',
+  });
+
   const context = {
     names: [],
   };
@@ -102,15 +122,17 @@ module.exports.getClusterNames = (req, res) => {
     }],
   };
   EC2.describeTags(params, (err, data) => {
-    if (err) LOGGER.info(err);
-    ASYNC.forEachOf(data.Tags, (tag, i, callback) => {
-      if (tag.Key === 'Context' && context.names.indexOf(tag.Key) < 0) {
-        context.names.push(tag.Value);
-      }
-      callback();
-    }, (loopErr) => {
-      if (loopErr) LOGGER.error(loopErr);
-      else res.json(context);
-    });
+    if (err) res.json(err);
+    else {
+      ASYNC.forEachOf(data.Tags, (tag, i, callback) => {
+        if (tag.Key === 'Context' && context.names.indexOf(tag.Key) < 0) {
+          context.names.push(tag.Value);
+        }
+        callback();
+      }, (loopErr) => {
+        if (loopErr) LOGGER.error(loopErr);
+        else res.json(context);
+      });
+    }
   });
 };
