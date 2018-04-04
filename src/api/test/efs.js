@@ -57,7 +57,7 @@ describe('EFS', () => {
     });
 
     it('should describe error', (done) => {
-      AWS.mock('EFS', 'describeFileSystems', (callback) => {
+      AWS.mock('EFS', 'describeFileSystems', ({}, callback) => {
         callback("Error", null);
       });
 
@@ -198,8 +198,8 @@ describe('EFS', () => {
     });
 
     // Todo, something to do with params in controller is causing this?
-    xit('should get describe by id error', (done) => {
-      AWS.mock('EFS', 'describeTags', (callback) => {
+    it('should get describe by id error', (done) => {
+      AWS.mock('EFS', 'describeTags', ({}, callback) => {
         callback("Error", null);
       });
 
@@ -213,7 +213,6 @@ describe('EFS', () => {
       });
 
       res.on('end', () => {
-        res.json(res._getData())
         res._getData().should.equal('"Error"');
         done();
       });

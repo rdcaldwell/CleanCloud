@@ -23,7 +23,7 @@ module.exports.describe = (req, res) => {
     apiVersion: '2014-10-31',
     region: 'us-east-2',
   });
-  RDS.describeDBInstances((err, data) => {
+  RDS.describeDBInstances({}, (err, data) => {
     if (err) res.json(err);
     else if (data.DBInstances.length) {
       res.json(data.DBInstances);

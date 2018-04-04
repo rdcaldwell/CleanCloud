@@ -57,7 +57,7 @@ describe('RDS', () => {
     });
 
     it('should describe error', (done) => {
-      AWS.mock('RDS', 'describeDBInstances', (callback) => {
+      AWS.mock('RDS', 'describeDBInstances', ({}, callback) => {
         callback("Error", null);
       });
 
@@ -200,8 +200,8 @@ describe('RDS', () => {
     });
 
     // Todo, callback issue same as efs
-    xit('should get describe by id error', (done) => {
-      AWS.mock('RDS', 'listTagsForResource', (callback) => {
+    it('should get describe by id error', (done) => {
+      AWS.mock('RDS', 'listTagsForResource', ({}, callback) => {
         callback("Error", null);
       });
 
@@ -215,7 +215,6 @@ describe('RDS', () => {
       });
 
       res.on('end', () => {
-        res.json(res._getData())
         res._getData().should.equal('"Error"');
         done();
       });

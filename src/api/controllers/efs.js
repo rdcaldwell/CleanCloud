@@ -10,7 +10,7 @@ module.exports.describe = (req, res) => {
     region: 'us-east-2',
   });
 
-  EFS.describeFileSystems((err, data) => {
+  EFS.describeFileSystems({}, (err, data) => {
     if (err) res.json(err);
     else if (data.FileSystems.length) {
       res.json(data.FileSystems);
