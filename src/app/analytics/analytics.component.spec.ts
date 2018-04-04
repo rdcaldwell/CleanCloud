@@ -14,7 +14,8 @@ describe('AnalyticsComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ AnalyticsComponent ],
       imports: [ HttpModule, MatDialogModule ],
-      providers: [ AmazonWebService, {provide: MAT_DIALOG_DATA, useValue: {}},
+      providers: [ AmazonWebService, {provide: MAT_DIALOG_DATA, useValue:
+          {data: { response: {'test': 'test'}, name: 'name' }}},
         {provide: MatDialogModule, useValue: {}}, {provide: MatDialogRef, useValue: {}} ]
     })
       .compileComponents();
@@ -26,7 +27,8 @@ describe('AnalyticsComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  // Todo Line 54 issues
+  xit('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

@@ -33,7 +33,7 @@ describe('JanitorComponent', () => {
   });
 
   // Todo
-  // dialog issue
+  // dialog issue, dialog.open isn't a function, need to provide a stub
   // xit('should hav', fakeAsync(inject([AmazonWebService, XHRBackend],
   //   (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
   //     const mockResponse = [
@@ -56,4 +56,63 @@ describe('JanitorComponent', () => {
   //
   //     component.createJanitor();
   //   })));
+
+
+  it('should destroy janitor if janitor is checked',
+    (inject([AmazonWebService, XHRBackend],
+      (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
+
+        const mockResponse = 'destroyed';
+
+        mockBackend.connections.subscribe((connection) => {
+          connection.mockRespond(new Response(new ResponseOptions({
+            body: JSON.stringify(mockResponse)
+          })));
+        });
+
+        component.janitors.push({
+          'id': '717002997396',
+          'region': 'us-west-2',
+          'defaultEmail': 'test@test.com',
+          'summaryEmail': 'test2@test.com',
+          'sourceEmail': 'test2@test.com',
+          'isMonkeyTime': 'true',
+          'port': 0,
+          'checked': true
+        });
+
+        const spy = spyOn(component, 'getJanitors');
+        component.destroyJanitor();
+
+        expect(spy).toHaveBeenCalled();
+      })));
+
+  it('should not destroy janitor if janitor is not checked',
+    (inject([AmazonWebService, XHRBackend],
+      (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
+
+        const mockResponse = 'destroyed';
+
+        mockBackend.connections.subscribe((connection) => {
+          connection.mockRespond(new Response(new ResponseOptions({
+            body: JSON.stringify(mockResponse)
+          })));
+        });
+
+        component.janitors.push({
+          'id': '717002997396',
+          'region': 'us-west-2',
+          'defaultEmail': 'test@test.com',
+          'summaryEmail': 'test2@test.com',
+          'sourceEmail': 'test2@test.com',
+          'isMonkeyTime': 'true',
+          'port': 0,
+          'checked': false
+        });
+
+        const spy = spyOn(component, 'getJanitors');
+        component.destroyJanitor();
+
+        expect(spy).toHaveBeenCalledTimes(0);
+      })));
 });

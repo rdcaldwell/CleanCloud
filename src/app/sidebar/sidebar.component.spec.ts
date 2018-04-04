@@ -33,5 +33,4 @@ describe('SidebarComponent', () => {
   xit('should create', () => {
     expect(component).toBeTruthy();
   });
-
 });

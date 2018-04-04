@@ -340,7 +340,7 @@ describe('RdsComponent', () => {
     expect(test).toEqual(runningHours);
   });
 
-  it('should setup rds instances', async(inject([AmazonWebService, XHRBackend],
+  it('should setup rds instances', (inject([AmazonWebService, XHRBackend],
     (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
       const mockResponse = [{
         'DBInstanceIdentifier': 'instance-test2',
@@ -472,7 +472,7 @@ describe('RdsComponent', () => {
       });
     })));
 
-  it('should not setup rds instances with no rds data', async(inject([AmazonWebService, XHRBackend],
+  it('should not setup rds instances with no rds data', (inject([AmazonWebService, XHRBackend],
     (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
 
       const mockResponse = 'No rds data';

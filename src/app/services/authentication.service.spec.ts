@@ -80,7 +80,14 @@ describe('AuthenticationService', () => {
   //   inject([AuthenticationService], (service: AuthenticationService) => {
   //
   //     const spy = spyOn(router, 'navigateByUrl');
-  //     service.login();
+  //
+  //     const token = {
+  //       email: 'test@test.com',
+  //       password: 'pq',
+  //
+  //     }
+  //
+  //     service.login(token);
   //     expect(spy).toHaveBeenCalled();
   //   }));
 });
