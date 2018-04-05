@@ -199,7 +199,6 @@ describe('RDS', () => {
       AWS.restore('RDS');
     });
 
-    // Todo, callback issue same as efs
     it('should get describe by id error', (done) => {
       AWS.mock('RDS', 'listTagsForResource', ({}, callback) => {
         callback("Error", null);

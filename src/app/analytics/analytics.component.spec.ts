@@ -15,7 +15,7 @@ describe('AnalyticsComponent', () => {
       declarations: [ AnalyticsComponent ],
       imports: [ HttpModule, MatDialogModule ],
       providers: [ AmazonWebService, {provide: MAT_DIALOG_DATA, useValue:
-          {data: { response: {'test': 'test'}, name: 'name' }}},
+          { response: [{'Timestamp': '2018-03-23T01:50:20.000Z', 'Average': '1'}]}},
         {provide: MatDialogModule, useValue: {}}, {provide: MatDialogRef, useValue: {}} ]
     })
       .compileComponents();
@@ -27,8 +27,7 @@ describe('AnalyticsComponent', () => {
     fixture.detectChanges();
   });
 
-  // Todo Line 54 issues
-  xit('should create', () => {
+  it('should create', () => {
     expect(component).toBeTruthy();
   });
 });

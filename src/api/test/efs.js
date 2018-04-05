@@ -197,7 +197,6 @@ describe('EFS', () => {
       AWS.restore('EFS');
     });
 
-    // Todo, something to do with params in controller is causing this?
     it('should get describe by id error', (done) => {
       AWS.mock('EFS', 'describeTags', ({}, callback) => {
         callback("Error", null);

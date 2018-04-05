@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import { AmazonWebService } from '../services/amazonweb.service';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import * as d3 from 'd3';
@@ -22,7 +22,6 @@ export class AnalyticsComponent implements OnInit {
 
   ngOnInit() {
     let data = this.data.response;
-
     // set the dimensions of the canvas
     const margin = { top: 20, right: 20, bottom: 200, left: 40 },
       width = 1080 - margin.left - margin.right,

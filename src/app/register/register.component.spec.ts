@@ -35,22 +35,61 @@ describe('RegisterComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // Header errors thrown
-  // it('should test register method', () => {
-  //   component.credentials = {
-  //     email: 'email',
-  //     username: 'uname',
-  //     password: 'pword',
-  //     firstName: 'fname',
-  //     lastName: 'lname',
-  //   };
-  //   expect(component.credentials.email).toBe('email');
-  //   component.register();
-  // });
+  it('should test register method', fakeAsync(inject([AuthenticationService],
+    (authenticationService: AuthenticationService) => {
+    component.credentials = {
+      email: 'email',
+      username: 'uname',
+      password: 'pword',
+      firstName: 'fname',
+      lastName: 'lname',
+    };
+    const spy = spyOn(authenticationService, 'register').and.returnValue({ subscribe: () => {} });
+    component.register();
+    expect(spy).toHaveBeenCalled();
+  })));
 
   // it('should catch error in register method', fakeAsync(inject([AuthenticationService],
   //   (authenticationService: AuthenticationService) => {
   //   //spyOn(authenticationService, 'register').and.returnValue(Observable.throw({status: 404}));
   //   //component.register();
   // })));
+
+  it('should validate Email', (inject([AuthenticationService],
+    (authenticationService: AuthenticationService) => {
+    component.credentials.email = 'testemail@email.com';
+    spyOn(authenticationService, 'validate').and.returnValue({ subscribe:
+        (data) => {component.emailFound = true; } });
+
+    component.validateEmail();
+    expect(component.emailFound).toEqual(true);
+  })));
+
+  it('should not validate Email', (inject([AuthenticationService],
+    (authenticationService: AuthenticationService) => {
+      spyOn(authenticationService, 'validate').and.returnValue({ subscribe:
+          (data) => {component.emailFound = true; } });
+
+      component.validateEmail();
+      expect(component.emailFound).toEqual(undefined);
+    })));
+
+  it('should validate username', (inject([AuthenticationService],
+    (authenticationService: AuthenticationService) => {
+      component.credentials.username = 'test';
+      spyOn(authenticationService, 'validate').and.returnValue({ subscribe:
+          (data) => {component.usernameFound = true; } });
+
+      component.validateUsername();
+      expect(component.usernameFound).toEqual(true);
+    })));
+
+  it('should not validate username', (inject([AuthenticationService],
+    (authenticationService: AuthenticationService) => {
+      spyOn(authenticationService, 'validate').and.returnValue({ subscribe:
+          (data) => {component.usernameFound = true; } });
+
+      component.validateUsername();
+      expect(component.usernameFound).toEqual(undefined);
+    })));
 });

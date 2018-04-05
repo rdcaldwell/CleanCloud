@@ -32,9 +32,9 @@ describe('JanitorComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // Todo
+  // Todo, looks like this is an integration test with dialog?
   // dialog issue, dialog.open isn't a function, need to provide a stub
-  // xit('should hav', fakeAsync(inject([AmazonWebService, XHRBackend],
+  // xit('should create the janitor', fakeAsync(inject([AmazonWebService, XHRBackend],
   //   (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
   //     const mockResponse = [
   //       {

@@ -139,7 +139,6 @@ describe('ClusterComponent', () => {
       expect(component.responseFromAWS).toEqual(mockResponse);
     })));
 
-  // Todo response needs fixed
   it('should not add an EFS instance to clusterInstances', fakeAsync(inject([AmazonWebService, XHRBackend],
     (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
       const mockResponse = [
@@ -172,7 +171,6 @@ describe('ClusterComponent', () => {
       expect(component.clusterInstances).toEqual([]);
     })));
 
-  // Todo response needs fixed
   it('should add an EC2 instance to clusterInstances', fakeAsync(inject([AmazonWebService, XHRBackend],
     (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
       const mockResponse = [
@@ -305,7 +303,6 @@ describe('ClusterComponent', () => {
       expect(component.clusterInstances[0].id).toEqual('i-090fa76267723011c');
     })));
 
-  // Todo response needs fixed
   it('should add an RDS instance to clusterInstances', fakeAsync(inject([AmazonWebService, XHRBackend],
     (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
       const mockResponse = [
@@ -412,7 +409,6 @@ describe('ClusterComponent', () => {
       expect(component.clusterInstances[0].serviceType).toEqual('rds');
     })));
 
-  // Todo response needs fixed
   it('should not add an RDS instance to clusterInstances', fakeAsync(inject([AmazonWebService, XHRBackend],
     (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
       const mockResponse = [

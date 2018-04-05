@@ -41,6 +41,7 @@ describe('LoginComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  // Todo get working tests for input validation
   // it('should not find the username', () => {
   //   component.credentials.password = 'password';
   //   component.credentials.username = 'a';
@@ -74,17 +75,16 @@ describe('LoginComponent', () => {
   //   expect(component.incorrectPassword).toBe(true);
   // })));
 
-  // Todo
-  xit('should not find user', (inject([AuthenticationService, XHRBackend],
-    (authenticationService: AuthenticationService, mockBackend: MockBackend) => {
-        component.credentials.password = 'test@test.com';
-        component.credentials.username = 'admin';
-
-
-        mockBackend.connections.subscribe((connection) => {
-          connection.mockError(new Error('User not found'));
-        });
-
-        component.login();
-    })));
+  // it('should not find user', (inject([AuthenticationService, XHRBackend],
+  //   (authenticationService: AuthenticationService, mockBackend: MockBackend) => {
+  //       component.credentials.password = 'test@test.com';
+  //       component.credentials.username = 'admin';
+  //
+  //
+  //       mockBackend.connections.subscribe((connection) => {
+  //         connection.mockError(new Error('User not found'));
+  //       });
+  //
+  //       component.login();
+  //   })));
 });
