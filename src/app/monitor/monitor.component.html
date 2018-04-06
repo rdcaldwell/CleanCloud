@@ -22,29 +22,28 @@
             <span>{{ cluster.destructionDate | amDateFormat: 'M/D h:mm A' }}</span>
           </td>
           <td *ngIf="!cluster.destroyed && cluster.marked">
-            <span matTooltip="Destroy Now" *ngIf="cluster.marked" class="option-button" (click)="destroy(cluster)">
+            <span matTooltip="Destroy Now" class="option-button" (click)="destroy(cluster)">
               <i class="fas fa-bomb fa-lg"></i>
             </span>
           </td>
           <td *ngIf="!cluster.destroyed && cluster.marked">
-            <span matTooltip="Cancel Destruction" *ngIf="cluster.marked" class="option-button" (click)="unmark(cluster)">
+            <span matTooltip="Cancel Destruction" class="option-button" (click)="unmark(cluster)">
               <i class="fas fa-ban fa-lg"></i>
             </span>
           </td>
-          <td *ngIf="!cluster.destroyed && !cluster.marked && cluster.marked !== null" colspan="2">
-            <span *ngIf="cluster.marked !== null && !cluster.marked">Not yet marked for destruction</span>
+          <td *ngIf="!cluster.destroyed && !cluster.marked && janitorRunning" colspan="2">
+            <span>Not yet marked for destruction</span>
           </td>
-          <td *ngIf="!cluster.destroyed && cluster.marked === null" colspan="2">
-              <span *ngIf="cluster.marked === null">Not being monitored</span>
-            </td>
-          <td *ngIf="!cluster.destroyed">
-            <span matTooltip="Monitor" *ngIf="cluster.monitored !== null && !cluster.monitored" class="option-button" (click)="optIn(cluster)">
+          <td *ngIf="!cluster.destroyed && !janitorRunning" colspan="3">
+            <span>Janitor not running</span>
+          </td>
+          <td *ngIf="!cluster.destroyed && janitorRunning">
+            <span matTooltip="Monitor" *ngIf="!cluster.monitored" class="option-button" (click)="optIn(cluster)">
               <i class="fas fa-eye fa-lg"></i>
             </span>
             <span matTooltip="Don't Monitor" *ngIf="cluster.monitored" class="option-button" (click)="optOut(cluster)">
               <i class="fas fa-eye-slash fa-lg"></i>
             </span>
-            <span *ngIf="cluster.monitored === null">Janitor not running</span>
           </td>
           <td *ngIf="cluster.destroyed" colspan="3">
             Cluster has been destroyed

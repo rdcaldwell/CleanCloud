@@ -30,9 +30,7 @@
           Please enter a password greater than or equal to 6 characters.
         </div>
       </div>
-      <button type="submit" class="cldn-btn" [disabled]="usernameFound ||
-          emailFound || !credentials.username || isEmail.invalid ||
-          !credentials.phoneNumber || credentials.password.length < 6">Register</button>
+      <button type="submit" class="cldn-btn" [disabled]="usernameFound || emailFound || !credentials.username || isEmail.invalid || credentials.password.length < 6">Register</button>
     </form>
   </div>
 </div>

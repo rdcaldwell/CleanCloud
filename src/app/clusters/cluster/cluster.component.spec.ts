@@ -1,7 +1,7 @@
 import {async, ComponentFixture, fakeAsync, inject, TestBed} from '@angular/core/testing';
 
 import { ClusterComponent } from './cluster.component';
-import {AmazonWebService} from '../services/amazonweb.service';
+import {AmazonWebService} from '../../services/amazonweb.service';
 import {HttpModule, Response, ResponseOptions, XHRBackend} from '@angular/http';
 import {MockBackend} from '@angular/http/testing';
 
@@ -81,7 +81,7 @@ describe('ClusterComponent', () => {
   it('should get cluster name', () => {
     const tags = [{Key: 'test', Value: '1'}, {Key: 'Name', Value: 'clusterName'}];
 
-    const output = component.getName(tags);
+    const output = component.getTag(tags, 'Name');
 
     expect(output).toEqual('clusterName');
   });
@@ -89,7 +89,7 @@ describe('ClusterComponent', () => {
   it('should not get cluster name', () => {
     const tags = [{Key: 'test', Value: 1}, {Key: '2', Value: 'test'}];
 
-    const output = component.getName(tags);
+    const output = component.getTag(tags, 'Name');
 
     expect(output).toEqual(undefined);
   });

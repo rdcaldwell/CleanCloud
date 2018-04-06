@@ -9,8 +9,9 @@ const ClusterSchema = new mongoose.Schema({
   monkeyPort: Number,
   resourceIds: [],
   jobIndex: Number,
+  launchTime: Date,
   destructionDate: Date,
   region: String,
 });
 
-mongoose.model('Cluster', ClusterSchema);
+module.exports.Model = mongoose.model('Cluster', ClusterSchema);

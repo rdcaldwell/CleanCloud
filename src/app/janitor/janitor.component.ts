@@ -10,15 +10,15 @@ import { JanitorDialogComponent } from './janitordialog/janitordialog.component'
 })
 export class JanitorComponent implements OnInit {
 
-  public ports: Array<number> = [];
-
   public janitors: Array<any> = [];
+  public janitorRunning: boolean;
 
   constructor(private amazonWebService: AmazonWebService,
-     public dialog: MatDialog) { }
+    public dialog: MatDialog) { }
 
   ngOnInit() {
     this.getJanitors();
+    this.isJanitorRunning();
   }
 
   getJanitors() {
@@ -27,7 +27,6 @@ export class JanitorComponent implements OnInit {
       for (const janitor of janitors) {
         const janitorData = {
           id: janitor._id,
-          region: janitor.region,
           defaultEmail: janitor.defaultEmail,
           summaryEmail: janitor.summaryEmail,
           sourceEmail: janitor.sourceEmail,
@@ -36,7 +35,6 @@ export class JanitorComponent implements OnInit {
           checked: false
         };
         this.janitors.push(janitorData);
-        this.ports.push(janitorData.port);
       }
     });
   }
@@ -48,6 +46,7 @@ export class JanitorComponent implements OnInit {
 
     janitorDialog.afterClosed().subscribe(result => {
       this.getJanitors();
+      this.isJanitorRunning();
     });
   }
 
@@ -56,12 +55,15 @@ export class JanitorComponent implements OnInit {
       if (janitor.checked) {
         this.amazonWebService.destroyJanitor(janitor.id).subscribe((data) => {
           this.getJanitors();
+          this.isJanitorRunning();
         });
       }
     }
   }
 
-  isPortUsed(port) {
-    return this.ports.includes(port);
+  isJanitorRunning() {
+    this.amazonWebService.isJanitorRunning().subscribe((running) => {
+      this.janitorRunning = running;
+    });
   }
 }

@@ -9,8 +9,11 @@ import { AnalyticsComponent } from '../analytics/analytics.component';
   styleUrls: ['./ec2.component.css']
 })
 export class Ec2Component implements OnInit {
-  responseFromAWS: any;
+
+  public responseFromAWS: any;
   public ec2Instances: Array<EC2Instance> = [];
+  public totalCost = 0;
+
   constructor(private amazonWebService: AmazonWebService,
     public dialog: MatDialog) { }
 
@@ -56,9 +59,9 @@ export class Ec2Component implements OnInit {
         }
         setInterval(() => {
           this.updateStatus();
-        }, 5000);
+        }, 30000);
       } else {
-          this.responseFromAWS = reservations;
+        this.responseFromAWS = reservations;
       }
     });
   }
@@ -76,15 +79,8 @@ export class Ec2Component implements OnInit {
           }
         }
       } else {
-          this.responseFromAWS = reservations;
+        this.responseFromAWS = reservations;
       }
-    });
-  }
-
-  createInstance() {
-    this.amazonWebService.create('ec2').subscribe(data => {
-      this.responseFromAWS = data;
-      this.updateInstances();
     });
   }
 
@@ -120,17 +116,6 @@ export class Ec2Component implements OnInit {
   getRunningHours(startTime): number {
     const hours = moment.duration(moment().diff(startTime)).asHours();
     return Math.round(hours * 100) / 100;
-  }
-
-  getCost(hours, instance): number {
-    let totalCost = 0;
-    this.amazonWebService.getPrice('ec2', {
-      region: instance.Placement.AvailabilityZone,
-      type: instance.InstanceType,
-    }).subscribe(price => {
-      totalCost = hours * price;
-    });
-    return totalCost;
   }
 }
 

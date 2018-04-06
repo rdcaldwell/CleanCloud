@@ -7,3 +7,11 @@
 .navbar {
     border-radius: 0px;
 }
+
+.navbar-brand {
+  transition: color .10s ease-in-out, background-color .15s;
+}
+
+a.navbar-brand:hover {
+  color: #9bc3ff;
+}

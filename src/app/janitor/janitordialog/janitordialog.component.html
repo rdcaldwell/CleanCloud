@@ -1,17 +1,13 @@
 <div class="dialog-header">
   <h2 class="float-left">CONFIGURE JANITOR</h2>
-  <div (click)="close()"><i class="fas fa-times float-right"></i></div>
+  <div (click)="close()">
+    <i class="fas fa-times float-right"></i>
+  </div>
 </div>
 <form (submit)="runJanitor()">
   <div class="form-group row">
-    <label class="col-sm-3 col-form-label" for="region">Region</label>
-    <select class="col-sm-9 form-control" name="region" [(ngModel)]="janitorConfig.region">
-      <option *ngFor="let region of regions" [ngValue]="region.name">{{ region.location }}</option>
-    </select>
-  </div>
-  <div class="form-group row">
-    <label class="col-sm-3 col-form-label" for="port">Port</label>
-    <input type="text" class="col-sm-9 form-control" name="port" placeholder="Port Number" [(ngModel)]="janitorConfig.port">
+    <label class="col-sm-3 col-form-label" for="sourceEmail">Age Threshold</label>
+    <input type="text" class="col-sm-9 form-control" name="threshold" placeholder="Instance Age Threshold" [(ngModel)]="janitorConfig.threshold">
   </div>
   <div class="form-group row">
     <label class="col-sm-3 col-form-label" for="defaultEmail">Default Email</label>

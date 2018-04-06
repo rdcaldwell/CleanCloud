@@ -8,6 +8,7 @@ const JanitorSchema = new mongoose.Schema({
   notificationDaysBeforeTermination: String,
   isMonkeyTime: Boolean,
   port: Number,
+  threshold: Number,
 });
 
-mongoose.model('Janitor', JanitorSchema);
+module.exports.Model = mongoose.model('Janitor', JanitorSchema);

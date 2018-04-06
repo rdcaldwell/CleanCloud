@@ -2,15 +2,16 @@ const AWS = require('aws-sdk');
 const LOGGER = require('log4js').getLogger('analytics');
 const moment = require('moment');
 
-const CLOUD_WATCH = new AWS.CloudWatch({
-  apiVersion: '2010-08-01',
-  region: 'us-east-1',
-});
-
 LOGGER.level = 'info';
 
 /* Analyze EC2 instances by id */
 module.exports.analyzeById = (req, res) => {
+  const CLOUD_WATCH = new AWS.CloudWatch({
+    apiVersion: '2010-08-01',
+    region: 'us-east-1',
+  });
+
+  // CPU Utilization for last 2 running hours
   const params = {
     EndTime: new Date(),
     MetricName: 'CPUUtilization',
@@ -27,6 +28,7 @@ module.exports.analyzeById = (req, res) => {
     Unit: 'Percent',
   };
 
+  // AWS SDK
   CLOUD_WATCH.getMetricStatistics(params, (err, data) => {
     if (err) LOGGER.error(err);
     else res.json(data);

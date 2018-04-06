@@ -45,7 +45,13 @@ export class RegisterComponent {
   }
 
   register() {
-    this.authenticationService.register(this.credentials).subscribe(() => {
+    this.authenticationService.register(this.credentials).subscribe((data) => {
+      alert(data);
+      this.credentials.email = '';
+      this.credentials.username = '';
+      this.credentials.firstName = '';
+      this.credentials.lastName = '';
+      this.credentials.password = '';
     }, (err) => {
       console.error(err);
     });

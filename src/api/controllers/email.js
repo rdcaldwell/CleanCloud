@@ -88,7 +88,7 @@ mailListener.on('mail', () => {
         });
         stream.once('end', () => {
           const ids = htmlToText.fromString(buffer.toString()).trim().split(',');
-          CLUSTER_CONTROLLER.findClusters(ids);
+          CLUSTER_CONTROLLER.markClustersFromEmail(ids);
         });
       });
     });

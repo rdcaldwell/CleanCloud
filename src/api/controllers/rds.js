@@ -3,7 +3,7 @@ const LOGGER = require('log4js').getLogger('RDS');
 
 const RDS = new AWS.RDS({
   apiVersion: '2014-10-31',
-  region: 'us-east-2',
+  region: 'us-east-1',
 });
 
 LOGGER.level = 'info';
@@ -27,34 +27,6 @@ module.exports.describe = (req, res) => {
       res.json(data.DBInstances);
     } else {
       res.json('No rds data');
-    }
-  });
-};
-
-module.exports.create = (req, res) => {
-  const params = {
-    DBInstanceClass: 'db.t2.micro',
-    DBInstanceIdentifier: 'instance-test',
-    Engine: 'postgres',
-    EngineVersion: '9.6.5',
-    AvailabilityZone: 'us-east-2a',
-    DBName: 'db_test',
-    MasterUsername: 'rdc',
-    MasterUserPassword: 'password',
-    AllocatedStorage: 20,
-    Tags: [{
-      Key: 'Context',
-      Value: 'Test',
-    }, {
-      Key: 'Name',
-      Value: 'Test-rdc',
-    }],
-  };
-  RDS.createDBInstance(params, (err, data) => {
-    if (err) res.json(err);
-    else {
-      LOGGER.info(`${data.DBInstance.DBInstanceIdentifier} created`);
-      res.json(`${data.DBInstance.DBInstanceIdentifier} created`);
     }
   });
 };

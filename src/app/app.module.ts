@@ -12,7 +12,8 @@ import { HeaderComponent } from './header/header.component';
 import { LoginComponent } from './login/login.component';
 import { ProfileComponent } from './profile/profile.component';
 import { RegisterComponent } from './register/register.component';
-import { ClusterComponent } from './cluster/cluster.component';
+import { ClustersComponent } from './clusters/clusters.component';
+import { ClusterComponent } from './clusters/cluster/cluster.component';
 import { Ec2Component } from './ec2/ec2.component';
 import { EfsComponent } from './efs/efs.component';
 import { RdsComponent } from './rds/rds.component';
@@ -24,19 +25,14 @@ import { AmazonWebService } from './services/amazonweb.service';
 import { AuthenticationService } from './services/authentication.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
-  MatInputModule,
-  MatSelectModule,
   MatSidenavModule,
-  ErrorStateMatcher,
-  ShowOnDirtyErrorStateMatcher,
   MatDialogModule,
   MatTooltipModule
 } from '@angular/material';
-import { BrowserXhr } from '@angular/http';
-import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 
 const routes: Routes = [
   { path: '', redirectTo: 'instances', pathMatch: 'full' },
+  { path: 'clusters', component: ClustersComponent, canActivate: [AuthenticationService] },
   { path: 'instances', component: DashboardComponent, canActivate: [AuthenticationService] },
   { path: 'monitor', component: MonitorComponent, canActivate: [AuthenticationService] },
   { path: 'janitor', component: JanitorComponent, canActivate: [AuthenticationService] },
@@ -60,7 +56,8 @@ const routes: Routes = [
     SidebarComponent,
     JanitorComponent,
     MonitorComponent,
-    JanitorDialogComponent
+    JanitorDialogComponent,
+    ClustersComponent
   ],
   entryComponents: [
     JanitorComponent,
@@ -75,8 +72,6 @@ const routes: Routes = [
     FormsModule,
     HttpClientModule,
     MomentModule,
-    MatInputModule,
-    MatSelectModule,
     MatSidenavModule,
     MatDialogModule,
     MatTooltipModule,

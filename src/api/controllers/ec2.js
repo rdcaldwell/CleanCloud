@@ -22,43 +22,6 @@ module.exports.describe = (req, res) => {
   });
 };
 
-/* Create EC2 Instance */
-module.exports.create = (req, res) => {
-  const EC2 = new AWS.EC2({
-    apiVersion: '2016-11-15',
-    region: 'us-east-1',
-  });
-
-  const params = {
-    ImageId: 'ami-1853ac65', // amzn-ami-2011.09.1.x86_64-ebs
-    InstanceType: 't2.micro',
-    MinCount: 1,
-    MaxCount: 1,
-    TagSpecifications: [{
-      ResourceType: 'instance',
-      Tags: [{
-        Key: 'Context',
-        Value: 'Test',
-      }, {
-        Key: 'Name',
-        Value: 'Test-rdc',
-      }, {
-        Key: 'startedBy',
-        Value: 'rdc',
-      }],
-    }],
-  };
-
-  // Create the instance
-  EC2.runInstances(params, (err, data) => {
-    if (err) res.json(err);
-    else {
-      LOGGER.info(`${data.Instances[0].InstanceId} created`);
-      res.json(`${data.Instances[0].InstanceId} created`);
-    }
-  });
-};
-
 /* Terminate EC2 Instances by id */
 module.exports.terminateById = (req, res) => {
   const EC2 = new AWS.EC2({

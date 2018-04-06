@@ -38,25 +38,6 @@ describe('Ec2Component', () => {
     expect(spy).toHaveBeenCalled();
   });
 
-  it('should createInstance', fakeAsync(inject([AmazonWebService, XHRBackend],
-    (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
-      const mockResponse = 'instance-test2 created';
-
-      mockBackend.connections.subscribe((connection) => {
-        connection.mockRespond(new Response(new ResponseOptions({
-          body: JSON.stringify(mockResponse)
-        })));
-      });
-
-      // Skips this function
-      const spy = spyOn(component, 'updateInstances').and.returnValue(true);
-
-      component.createInstance();
-
-      expect(spy).toHaveBeenCalled();
-      expect(component.responseFromAWS).toEqual(mockResponse);
-    })));
-
   it('should terminateInstances with instance checked',
     fakeAsync(inject([AmazonWebService, XHRBackend],
       (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {

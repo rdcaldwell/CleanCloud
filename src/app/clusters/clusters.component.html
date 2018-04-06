@@ -1,0 +1,4 @@
+<ng-container *ngFor="let context of context.names">
+  <app-cluster [title]="context"></app-cluster>
+</ng-container>
+<section *ngIf="!context.names[0]">There are no Clusters running.</section>

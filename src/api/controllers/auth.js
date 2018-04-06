@@ -1,10 +1,8 @@
 const passport = require('passport');
-const mongoose = require('mongoose');
-
-const USER = mongoose.model('User');
+const User = require('../models/users');
 
 module.exports.register = (req, res) => {
-  const user = new USER();
+  const user = new User.Model();
   user.username = req.body.username;
   user.email = req.body.email;
   user.firstName = req.body.firstName;
@@ -13,10 +11,7 @@ module.exports.register = (req, res) => {
   user.save((err) => {
     if (err) res.json(err);
 
-    res.status(200);
-    res.json({
-      token: user.generateJwt(),
-    });
+    res.status(200).json(`user ${user.username} registered`);
   });
 };
 
@@ -46,7 +41,7 @@ module.exports.profileRead = (req, res) => {
       message: 'UnauthorizedError: private profile',
     });
   } else {
-    USER.findById(req.payload._id).exec((err, user) => {
+    User.Model.findById(req.payload._id).exec((err, user) => {
       if (err) res.json(err);
       else res.status(200).json(user);
     });
@@ -60,7 +55,7 @@ module.exports.validateUsername = (req, res) => {
     found: false,
   };
   // Customer database query on passed id
-  USER.findOne({
+  User.Model.findOne({
     username: req.params.id,
   }, (err, customer) => {
     if (!customer) jsonData.found = false;
@@ -76,7 +71,7 @@ module.exports.validateEmail = (req, res) => {
     found: false,
   };
   // Customer database query on passed email
-  USER.findOne({
+  User.Model.findOne({
     email: req.params.id,
   }, (err, customer) => {
     if (!customer) jsonData.found = false;

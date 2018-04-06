@@ -1,5 +1,5 @@
 <section>
-  <h2>EC2 INSTANCES</h2>
+  <h2>EC2</h2>
   <div class="button-bar">
     <button type="button" class="btn btn-outline-danger" id="terminate-EC2" (click)="terminateInstances()">
       <i class="fas fa-trash-alt fa-lg"></i>
@@ -43,36 +43,3 @@
   </table>
   <span *ngIf="!ec2Instances[0]">There are no EC2 instances running.</span>
 </section>
-
-<!-- Modal
-<div class="modal fade" id="createEC2" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Launch EC2 Instance</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form>
-                    <div class="form-group">
-                        <label for="InstanceName">Instance Name</label>
-                        <input type="text" class="form-control" id="InstanceName" name="InstanceName" placeholder="Enter Instance Name">
-                    </div>
-                    <div class="form-group">
-                        <label for="Zone">Select Zone</label>
-                        <select multiple class="form-control" id="Zone" name="Zone">
-                            <option value="us-east-1">US East (N. Virgina)</option>
-                            <option value="us-east-2">US East (Ohio)</option>
-                            <option value="us-west-1">US West (N. California)</option>
-                            <option value="us-west-2">US West (Oregon)</option>
-                        </select>
-                    </div>
-                    <button (click)="create('ec2')" class="btn btn-primary">Submit</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
--->

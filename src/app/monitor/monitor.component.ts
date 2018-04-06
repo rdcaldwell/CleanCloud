@@ -7,7 +7,9 @@ import { AmazonWebService } from '../services/amazonweb.service';
   styleUrls: ['./monitor.component.css']
 })
 export class MonitorComponent implements OnInit {
+
   public clusters = [];
+  public janitorRunning: boolean;
 
   constructor(private amazonWebService: AmazonWebService) { }
 
@@ -17,18 +19,21 @@ export class MonitorComponent implements OnInit {
         this.clusters.push(cluster);
       }
     });
+    this.isJanitorRunning();
   }
 
   optOut(cluster) {
     for (const resource of cluster.resourceIds) {
-      this.amazonWebService.optOut(cluster.monkeyPort, resource).subscribe();
+      this.amazonWebService.optOut(resource).subscribe();
+      this.amazonWebService.removeMonitor(cluster._id).subscribe();
     }
     cluster.monitored = false;
   }
 
   optIn(cluster) {
     for (const resource of cluster.resourceIds) {
-      this.amazonWebService.optIn(cluster.monkeyPort, resource).subscribe();
+      this.amazonWebService.optIn(resource).subscribe();
+      this.amazonWebService.addMonitor(cluster._id).subscribe();
     }
     cluster.monitored = true;
   }
@@ -50,5 +55,11 @@ export class MonitorComponent implements OnInit {
       }
     }
     return false;
+  }
+
+  isJanitorRunning() {
+    this.amazonWebService.isJanitorRunning().subscribe((running) => {
+      this.janitorRunning = running;
+    });
   }
 }

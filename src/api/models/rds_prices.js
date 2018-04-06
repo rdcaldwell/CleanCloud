@@ -9,4 +9,4 @@ const RdsPriceSchema = new mongoose.Schema({
   collection: 'rds_prices',
 });
 
-mongoose.model('RdsPrice', RdsPriceSchema);
+module.exports.Model = mongoose.model('RdsPrice', RdsPriceSchema);

@@ -8,8 +8,10 @@ import * as moment from 'moment';
   styleUrls: ['./rds.component.css']
 })
 export class RdsComponent implements OnInit {
-  responseFromAWS: any;
+
+  public responseFromAWS: any;
   public rdsInstances: Array<RDSInstance> = [];
+  public totalCost = 0;
 
   constructor(private amazonWebService: AmazonWebService) { }
 
@@ -22,12 +24,21 @@ export class RdsComponent implements OnInit {
           });
           getRunningHours.then((hours: number) => {
             const getTotalCost = new Promise((resolve, reject) => {
-              resolve(this.getCost(hours, instance));
+              if (instance.AvailabilityZone) {
+                this.amazonWebService.getPrice('rds', {
+                  region: instance.AvailabilityZone,
+                  type: instance.DBInstanceClass,
+                  DB: instance.Engine
+                }).subscribe(price => {
+                  resolve(hours * price);
+                });
+              } else {
+                resolve(0);
+              }
             });
             getTotalCost.then((price: number) => {
               this.rdsInstances.push({
                 id: instance.DBInstanceIdentifier,
-                context: '',
                 name: instance.DBName,
                 type: instance.DBInstanceClass,
                 engine: instance.Engine,
@@ -43,7 +54,7 @@ export class RdsComponent implements OnInit {
         }
         setInterval(() => {
           this.updateStatus();
-        }, 5000);
+        }, 30000);
       } else {
         this.responseFromAWS = data;
       }
@@ -66,12 +77,6 @@ export class RdsComponent implements OnInit {
     });
   }
 
-  createInstance() {
-    this.amazonWebService.create('rds').subscribe(data => {
-      this.responseFromAWS = data;
-    });
-  }
-
   terminateInstances() {
     for (const instance of this.rdsInstances) {
       if (instance.checked) {
@@ -88,23 +93,10 @@ export class RdsComponent implements OnInit {
     const hours = moment.duration(moment().diff(startTime)).asHours();
     return Math.round(hours * 100) / 100;
   }
-
-  getCost(hours, instance): number {
-    let totalCost = 0;
-    this.amazonWebService.getPrice('rds', {
-      region: instance.AvailabilityZone,
-      type: instance.DBInstanceClass,
-      DB: instance.Engine
-    }).subscribe(price => {
-      totalCost = hours * price;
-    });
-    return totalCost;
-  }
 }
 
 export interface RDSInstance {
   id: string;
-  context: string;
   name: string;
   type: string;
   engine: string;

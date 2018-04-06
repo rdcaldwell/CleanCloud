@@ -7,7 +7,8 @@ import { AmazonWebService } from '../services/amazonweb.service';
   styleUrls: ['./efs.component.css']
 })
 export class EfsComponent implements OnInit {
-  responseFromAWS: any;
+
+  public responseFromAWS: any;
   public efsInstances: Array<EFSInstance> = [];
 
   constructor(private amazonWebService: AmazonWebService) { }
@@ -29,7 +30,7 @@ export class EfsComponent implements OnInit {
         }
         setInterval(() => {
           this.updateStatus();
-        }, 5000);
+        }, 30000);
       } else {
         this.responseFromAWS = data;
       }
@@ -49,12 +50,6 @@ export class EfsComponent implements OnInit {
       } else {
         this.responseFromAWS = data;
       }
-    });
-  }
-
-  createInstance() {
-    this.amazonWebService.create('efs').subscribe(data => {
-      this.responseFromAWS = data;
     });
   }
 

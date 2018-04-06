@@ -16,7 +16,7 @@ describe('AuthenticationService', () => {
       imports: [ HttpModule, HttpClientModule, RouterTestingModule.withRoutes([
         { path: 'login', redirectTo: '/'}
       ]) ]
-    })
+    });
     router = TestBed.get(Router);
     router.initialNavigation();
   });

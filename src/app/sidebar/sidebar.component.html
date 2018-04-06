@@ -1,6 +1,12 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav #sidenav mode="side" class="sidenav" opened="true" [fixedInViewport]="true" [fixedTopGap]="60">
     <div *ngIf="authenticationService.isLoggedIn()" class="nav-item">
+      <a class="nav-link" routerLinkActive="active-link" routerLink="/clusters">
+        Clusters
+        <i class="fas fa-cubes fa-lg sidebar"></i>
+      </a>
+    </div>
+    <div *ngIf="authenticationService.isLoggedIn()" class="nav-item">
       <a class="nav-link" routerLinkActive="active-link" routerLink="/instances">
         Instances
         <i class="fab fa-aws fa-lg sidebar"></i>

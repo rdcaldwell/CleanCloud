@@ -1,11 +1,9 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const mongoose = require('mongoose');
-
-const User = mongoose.model('User');
+const User = require('../models/users');
 
 passport.use(new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
-  User.findOne({ username: username }, (err, user) => {
+  User.Model.findOne({ username: username }, (err, user) => {
     if (err) return done(err);
     // Return if user not found in database
     if (!user) {

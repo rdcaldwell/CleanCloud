@@ -8,4 +8,4 @@ const Ec2PriceSchema = new mongoose.Schema({
   collection: 'ec2_prices',
 });
 
-mongoose.model('Ec2Price', Ec2PriceSchema);
+module.exports.Model = mongoose.model('Ec2Price', Ec2PriceSchema);

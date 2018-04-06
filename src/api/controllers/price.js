@@ -1,8 +1,6 @@
 /* eslint no-param-reassign:0 */
-const mongoose = require('mongoose');
-
-const EC2_PRICE = mongoose.model('Ec2Price');
-const RDS_PRICE = mongoose.model('RdsPrice');
+const Ec2Price = require('../models/ec2_prices');
+const RdsPrice = require('../models/rds_prices');
 
 const getRegion = (region) => {
   if (region.startsWith('us-east-1')) {
@@ -20,7 +18,7 @@ const getRegion = (region) => {
 module.exports.getEc2Price = (req, res) => {
   const region = getRegion(req.body.region);
 
-  EC2_PRICE.findOne({
+  Ec2Price.Model.findOne({
     Region: region,
     Type: req.body.type,
   }, (err, doc) => {
@@ -31,7 +29,7 @@ module.exports.getEc2Price = (req, res) => {
 module.exports.getRdsPrice = (req, res) => {
   const region = getRegion(req.body.region);
 
-  RDS_PRICE.findOne({
+  RdsPrice.Model.findOne({
     Region: region,
     Type: req.body.type,
     DB: req.body.DB,

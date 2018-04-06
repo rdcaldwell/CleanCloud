@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { AmazonWebService } from '../services/amazonweb.service';
+import { AmazonWebService } from '../../services/amazonweb.service';
 import * as moment from 'moment';
 @Component({
   selector: 'app-cluster',
@@ -7,18 +7,13 @@ import * as moment from 'moment';
   styleUrls: ['./cluster.component.css']
 })
 export class ClusterComponent implements OnInit {
+
   @Input() title: any;
-  createdOn: string;
-  startedBy: string;
-  orgImportPath: string;
-  version: string;
-  reason: string;
-  highAvailability: string;
-  monitor = true;
-  context: any = [];
+  public startedBy: string;
+  public context: any = [];
   public clusterInstances: Array<ClusterInstance> = [];
-  totalCost = 0;
-  responseFromAWS: any;
+  public totalCost = 0;
+  public responseFromAWS: any;
 
   constructor(private amazonWebService: AmazonWebService) { }
 
@@ -37,11 +32,16 @@ export class ClusterComponent implements OnInit {
             const instanceData = {
               serviceType: 'ec2',
               id: instance.InstanceId,
-              name: this.getName(instance.Tags),
+              name: this.getTag(instance.Tags, 'Name'),
               status: instance.State.Name
             };
+
             ec2Hours += moment.duration(moment().diff(instance.LaunchTime)).asHours();
+
+            this.startedBy = this.getTag(instance.Tags, 'startedBy');
+
             this.clusterInstances.push(instanceData);
+
             this.amazonWebService.getPrice('ec2', {
               region: instance.Placement.AvailabilityZone,
               type: instance.InstanceType,
@@ -127,9 +127,9 @@ export class ClusterComponent implements OnInit {
     });
   }
 
-  getName(tags) {
+  getTag(tags, key) {
     for (const tag of tags) {
-      if (tag.Key === 'Name') {
+      if (tag.Key === key) {
         return tag.Value;
       }
     }

@@ -3,7 +3,7 @@ const LOGGER = require('log4js').getLogger('EFS');
 
 const EFS = new AWS.EFS({
   apiVersion: '2015-02-01',
-  region: 'us-east-2',
+  region: 'us-east-1',
 });
 
 LOGGER.level = 'info';
@@ -18,34 +18,6 @@ module.exports.describe = (req, res) => {
     } else {
       res.json('No efs data');
     }
-  });
-};
-
-/* Create EFS instance */
-module.exports.create = (req, res) => {
-  const params = {
-    CreationToken: 'tokenstring',
-    PerformanceMode: 'generalPurpose',
-  };
-  EFS.createFileSystem(params, (err, data) => {
-    if (err) res.json(err);
-    const tagParams = {
-      FileSystemId: data.FileSystemId,
-      Tags: [{
-        Key: 'Context',
-        Value: 'Test2',
-      }, {
-        Key: 'Name',
-        Value: 'Test-rdc2',
-      }],
-    };
-    EFS.createTags(tagParams, (tagErr) => {
-      if (tagErr) res.json(tagErr);
-      else {
-        LOGGER.info(`${tagParams.FileSystemId} created`);
-        res.json(`${tagParams.FileSystemId} created`);
-      }
-    });
   });
 };
 

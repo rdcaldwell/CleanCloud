@@ -1,18 +1,16 @@
 <section>
-  <h2>JANITORS</h2>
+  <h2>JANITOR</h2>
   <div class="button-bar">
-    <button type="button" class="btn btn-outline-success" id="create-Janitor" (click)="createJanitor()"><i class="fas fa-plus fa-lg"></i></button>
-    <button type="button" class="btn btn-outline-danger" id="terminate-Janitor" (click)="destroyJanitor()"><i class="fas fa-trash-alt fa-lg"></i></button>
-    <!--<button type="button" class="btn btn-outline-primary" id="analyze-EC2" (click)="analyze('ec2')"><i class="far fa-chart-bar fa-lg"></i></button>-->
-    <!--<button type="button" class="btn btn-outline-primary" id="cost-EC2"><i class="fas fa-dollar-sign fa-lg"></i></button>-->
+    <button *ngIf="!janitorRunning" type="button" class="btn btn-outline-success" id="create-Janitor" (click)="createJanitor()"><i class="fas fa-plus fa-lg"></i></button>
+    <button *ngIf="janitorRunning" type="button" class="btn btn-outline-danger" id="terminate-Janitor" (click)="destroyJanitor()"><i class="fas fa-trash-alt fa-lg"></i></button>
   </div>
   <table id="JanitorTable" class="table">
     <thead>
       <tr>
         <th scope="col"></th>            
         <th scope="col"></th>
-        <th scope="col">Region</th>
         <th scope="col">Port</th>
+        <th scope="col">Threshold</th>
         <th scope="col">Default Email</th>        
         <th scope="col">Summary Email</th>
         <th scope="col">Source Email</th>
@@ -27,8 +25,8 @@
             </div>
         </td>
         <td><i class="fas fa-cog fa-spin"></i></td>
-        <td>{{ janitor.region }}</td>
         <td>{{ janitor.port }}</td>
+        <td>{{ janitor.threshold }}</td>
         <td>{{ janitor.defaultEmail }}</td>
         <td>{{ janitor.summaryEmail }}</td>
         <td>{{ janitor.sourceEmail }}</td>

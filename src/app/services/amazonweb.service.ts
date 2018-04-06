@@ -8,18 +8,30 @@ export class AmazonWebService {
 
   constructor(private http: Http) {}
 
-  optOut(port, resourceId) {
-    return this.http.post(`/simianarmy/api/v1/janitor`, {
+  optOut(resourceId) {
+    return this.http.post(`http://localhost:8080/simianarmy/api/v1/janitor`, {
       'eventType': 'OPTOUT',
       'resourceId': resourceId
     }).map(res => res.json());
   }
 
-  optIn(port, resourceId) {
-    return this.http.post(`/simianarmy/api/v1/janitor`, {
+  optIn(resourceId) {
+    return this.http.post(`http://localhost:8080/simianarmy/api/v1/janitor`, {
       'eventType': 'OPTIN',
       'resourceId': resourceId
     }).map(res => res.json());
+  }
+
+  isJanitorRunning() {
+    return this.http.get(`/api/janitor/running`).map(res => res.json());
+  }
+
+  addMonitor(id) {
+    return this.http.get(`/api/cluster/monitor/add/${id}`).map(res => res.json());
+  }
+
+  removeMonitor(id) {
+    return this.http.get(`/api/cluster/monitor/remove/${id}`).map(res => res.json());
   }
 
   unmarkCluster(name) {

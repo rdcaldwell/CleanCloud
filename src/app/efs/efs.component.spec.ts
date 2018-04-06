@@ -1,11 +1,11 @@
-import {async, ComponentFixture, fakeAsync, inject, TestBed} from '@angular/core/testing';
+import { async, ComponentFixture, fakeAsync, inject, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 
-import {EfsComponent, EFSInstance} from './efs.component';
-import {MomentModule} from 'angular2-moment';
-import {AmazonWebService} from '../services/amazonweb.service';
-import {HttpModule, Response, ResponseOptions, XHRBackend} from '@angular/http';
-import {MockBackend} from '@angular/http/testing';
+import { EfsComponent, EFSInstance } from './efs.component';
+import { MomentModule } from 'angular2-moment';
+import { AmazonWebService } from '../services/amazonweb.service';
+import { HttpModule, Response, ResponseOptions, XHRBackend } from '@angular/http';
+import { MockBackend } from '@angular/http/testing';
 
 describe('EfsComponent', () => {
   let component: EfsComponent;
@@ -13,8 +13,8 @@ describe('EfsComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ FormsModule, MomentModule, HttpModule ],
-      declarations: [ EfsComponent ],
+      imports: [FormsModule, MomentModule, HttpModule],
+      declarations: [EfsComponent],
       providers: [AmazonWebService,
         { provide: XHRBackend, useClass: MockBackend }]
     })
@@ -231,20 +231,4 @@ describe('EfsComponent', () => {
 
         expect(component.responseFromAWS).toEqual(mockResponse);
       })));
-
-
-  it('should createInstance', fakeAsync(inject([AmazonWebService, XHRBackend],
-    (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
-      const mockResponse = 'efs-instance-test created';
-
-      mockBackend.connections.subscribe((connection) => {
-        connection.mockRespond(new Response(new ResponseOptions({
-          body: JSON.stringify(mockResponse)
-        })));
-      });
-
-      component.createInstance();
-
-      expect(component.responseFromAWS).toEqual(mockResponse);
-    })));
 });

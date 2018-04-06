@@ -128,7 +128,6 @@ describe('RdsComponent', () => {
 
         component.rdsInstances.push({
           id: 'instance-test2',
-          context: '',
           name: 'db_test2',
           type: 'RDS',
           engine: 'postgres',
@@ -246,7 +245,6 @@ describe('RdsComponent', () => {
 
         component.rdsInstances.push({
           id: 'instance',
-          context: '',
           name: 'db_test2',
           type: 'RDS',
           engine: 'postgres',
@@ -284,21 +282,6 @@ describe('RdsComponent', () => {
       expect(component.responseFromAWS).toEqual(mockResponse);
     })));
 
-  it('should createInstance', fakeAsync(inject([AmazonWebService, XHRBackend],
-    (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
-      const mockResponse = 'instance-test2 created';
-
-      mockBackend.connections.subscribe((connection) => {
-        connection.mockRespond(new Response(new ResponseOptions({
-          body: JSON.stringify(mockResponse)
-        })));
-      });
-
-      component.createInstance();
-
-      expect(component.responseFromAWS).toEqual(mockResponse);
-    })));
-
   it('should terminateInstances with instance checked',
     fakeAsync(inject([AmazonWebService, XHRBackend],
       (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
@@ -312,7 +295,6 @@ describe('RdsComponent', () => {
 
         component.rdsInstances.push({
           id: 'instance-test2',
-          context: '',
           name: 'db_test2',
           type: 'RDS',
           engine: 'postgres',
@@ -332,7 +314,6 @@ describe('RdsComponent', () => {
   it('should not terminateInstances with instance not checked', () => {
     component.rdsInstances.push({
       id: 'instance-test2',
-      context: '',
       name: 'instance-test2',
       type: 'RDS',
       engine: 'postgres',
@@ -457,11 +438,14 @@ describe('RdsComponent', () => {
         })));
       });
 
+      const price = 0.02;
       const hours = 24;
-      const cost = hours * 0.02;
+      const cost = hours * price;
 
       spyOn(component, 'getRunningHours').and.returnValue(hours);
-      spyOn(component, 'getCost').and.returnValue(cost);
+      spyOn(amazonWebService, 'getPrice').and.callFake(() => {
+        return Observable.of(price);
+      });
 
       const setUpInstance = new Promise((resolve) => {
         resolve({
@@ -502,19 +486,5 @@ describe('RdsComponent', () => {
       component.ngOnInit();
 
       expect(component.responseFromAWS).toEqual(mockResponse);
-    })));
-
-  it('should get cost', async(inject([AmazonWebService, XHRBackend],
-    (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
-      const price = 0.02;
-      const hours = 40;
-
-      spyOn(amazonWebService, 'getPrice').and.callFake(() => {
-        return Observable.of(price);
-      });
-
-      const cost = component.getCost(hours, {});
-
-      expect(cost).toEqual(hours * price);
     })));
 });

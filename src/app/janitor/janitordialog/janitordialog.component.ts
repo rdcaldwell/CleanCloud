@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { AmazonWebService } from '../../services/amazonweb.service';
 import { JanitorComponent } from '../janitor.component';
 
@@ -10,32 +10,12 @@ import { JanitorComponent } from '../janitor.component';
 })
 export class JanitorDialogComponent {
 
-  public regions: Array<RegionProperties> = [
-    {
-      name: 'us-west-2',
-      location: 'Oregon'
-    },
-    {
-      name: 'us-east-1',
-      location: 'North Virgina'
-    },
-    {
-      name: 'us-east-2',
-      location: 'Ohio'
-    },
-    {
-      name: 'ap-south-1',
-      location: 'Mumbai'
-    },
-  ];
-
-  janitorConfig: JanitorProperties = {
-    region: '',
+  public janitorConfig: JanitorProperties = {
     defaultEmail: '',
     summaryEmail: '',
     sourceEmail: '',
     isMonkeyTime: true,
-    port: 8080
+    threshold: null,
   };
 
   constructor(public dialogRef: MatDialogRef<JanitorDialogComponent>,
@@ -53,16 +33,10 @@ export class JanitorDialogComponent {
   }
 }
 
-interface RegionProperties {
-  name: string;
-  location: string;
-}
-
-interface JanitorProperties {
-  region: string;
+export interface JanitorProperties {
   defaultEmail: string;
   summaryEmail: string;
   sourceEmail: string;
   isMonkeyTime: boolean;
-  port: number;
+  threshold: number;
 }

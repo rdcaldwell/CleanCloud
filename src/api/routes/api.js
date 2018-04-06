@@ -27,6 +27,7 @@ ROUTER.get('/auth/email/:id', AUTH_CONTROLLER.validateEmail);
 /* Janitor Controller */
 ROUTER.post('/janitor/run', JANITOR_CONTROLLER.run);
 ROUTER.get('/janitor/destroy/:id', JANITOR_CONTROLLER.destroyById);
+ROUTER.get('/janitor/running', JANITOR_CONTROLLER.isJanitorRunningRoute);
 ROUTER.get('/janitors', JANITOR_CONTROLLER.getJanitors);
 
 /* Job Controller */
@@ -34,22 +35,21 @@ ROUTER.get('/job/cancel/:id', JOB_CONTROLLER.cancelJob);
 
 /* Cluster Controller */
 ROUTER.get('/clusters', CLUSTER_CONTROLLER.getClusters);
+ROUTER.get('/cluster/monitor/remove/:id', CLUSTER_CONTROLLER.removeClusterMonitor);
+ROUTER.get('/cluster/monitor/add/:id', CLUSTER_CONTROLLER.addClusterMonitor);
 ROUTER.get('/context/:id', EC2_CONTROLLER.getContextById);
 ROUTER.get('/context', EC2_CONTROLLER.getClusterNames);
 
 /* EC2 Controller */
-ROUTER.get('/ec2/create', EC2_CONTROLLER.create);
 ROUTER.get('/ec2/describe', EC2_CONTROLLER.describe);
 ROUTER.get('/ec2/terminate/:id', EC2_CONTROLLER.terminateById);
 
 /* EFS Controller */
-ROUTER.get('/efs/create', EFS_CONTROLLER.create);
 ROUTER.get('/efs/describe', EFS_CONTROLLER.describe);
 ROUTER.get('/efs/describe/tags/:id', EFS_CONTROLLER.describeTagsById);
 ROUTER.get('/efs/terminate/:id', EFS_CONTROLLER.terminateById);
 
 /* RDS Controller */
-ROUTER.get('/rds/create', RDS_CONTROLLER.create);
 ROUTER.get('/rds/describe', RDS_CONTROLLER.describe);
 ROUTER.get('/rds/describe/tags/:id', RDS_CONTROLLER.describeTagsById);
 ROUTER.get('/rds/terminate/:id', RDS_CONTROLLER.terminateById);
