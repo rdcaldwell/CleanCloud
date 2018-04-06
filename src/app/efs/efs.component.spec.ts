@@ -142,7 +142,7 @@ describe('EfsComponent', () => {
       expect(component.responseFromAWS).toEqual(mockResponse);
     })));
 
-  it('should setup rds instances with efs data', async(inject([AmazonWebService, XHRBackend],
+  it('should setup efs instances with efs data', (inject([AmazonWebService, XHRBackend],
     (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
 
       const mockResponse = [

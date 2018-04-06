@@ -14,7 +14,8 @@ describe('AnalyticsComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ AnalyticsComponent ],
       imports: [ HttpModule, MatDialogModule ],
-      providers: [ AmazonWebService, {provide: MAT_DIALOG_DATA, useValue: {}},
+      providers: [ AmazonWebService, {provide: MAT_DIALOG_DATA, useValue:
+          { response: [{'Timestamp': '2018-03-23T01:50:20.000Z', 'Average': '1'}]}},
         {provide: MatDialogModule, useValue: {}}, {provide: MatDialogRef, useValue: {}} ]
     })
       .compileComponents();
@@ -26,7 +27,7 @@ describe('AnalyticsComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

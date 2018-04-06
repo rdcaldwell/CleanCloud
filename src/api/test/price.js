@@ -8,24 +8,11 @@
 //
 // chai.use(chaiHttp);
 //
-// describe('Janitor', () => {
-//   describe('/POST run', () => {
-//     it('it should a ', (done) => {
-//       chai.request(server)
-//         .post('/api/janitor/run')
-//         .end((err, res) => {
-//           res.should.have.status(200);
-//           res.body.should.be.a('array');
-//           res.body[0].should.have.property('SUCCESS');
-//           done();
-//         });
-//     });
-//   });
-//
-//   describe('/GET getJanitors', () => {
+// describe('Cost', () => {
+//   describe('/GET getCostByName', () => {
 //     it('it should GET ', (done) => {
 //       chai.request(server)
-//         .get('/api/janitors')
+//         .get('/api/cost/name')
 //         .end((err, res) => {
 //           res.should.have.status(200);
 //           res.body.should.be.a('array');
@@ -35,10 +22,23 @@
 //     });
 //   });
 //
-//   describe('/GET destroyById', () => {
+//   describe('/GET getCostByContext', () => {
 //     it('it should GET ', (done) => {
 //       chai.request(server)
-//         .get('/api/janitor/destroy/i-03ca172443e06c4e1')
+//         .get('/api/cost/context')
+//         .end((err, res) => {
+//           res.should.have.status(200);
+//           res.body.should.be.a('array');
+//           res.body[0].should.have.property('Tests');
+//           done();
+//         });
+//     });
+//   });
+//
+//   describe('/GET getContextTags', () => {
+//     it('it should GET ', (done) => {
+//       chai.request(server)
+//         .get('/api/cost/tags')
 //         .end((err, res) => {
 //           res.should.have.status(200);
 //           res.body.should.be.a('array');

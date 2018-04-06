@@ -3,7 +3,7 @@ import {async, ComponentFixture, fakeAsync, inject, TestBed} from '@angular/core
 import { LoginComponent } from './login.component';
 import {FormsModule} from '@angular/forms';
 import {MatDialogModule} from '@angular/material';
-import {HttpModule, XHRBackend} from '@angular/http';
+import {HttpModule, Response, ResponseOptions, ResponseType, XHRBackend} from '@angular/http';
 import {MomentModule} from 'angular2-moment';
 import {AuthenticationService} from '../services/authentication.service';
 import {HttpClientModule, HttpErrorResponse} from '@angular/common/http';
@@ -41,6 +41,7 @@ describe('LoginComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  // Todo get working tests for input validation
   // it('should not find the username', () => {
   //   component.credentials.password = 'password';
   //   component.credentials.username = 'a';
@@ -74,11 +75,16 @@ describe('LoginComponent', () => {
   //   expect(component.incorrectPassword).toBe(true);
   // })));
 
-  // Todo needs expectation
-  it('should login', () => {
-        component.credentials.password = 'test@test.com';
-        component.credentials.username = 'admin';
-
-        component.login();
-    });
+  // it('should not find user', (inject([AuthenticationService, XHRBackend],
+  //   (authenticationService: AuthenticationService, mockBackend: MockBackend) => {
+  //       component.credentials.password = 'test@test.com';
+  //       component.credentials.username = 'admin';
+  //
+  //
+  //       mockBackend.connections.subscribe((connection) => {
+  //         connection.mockError(new Error('User not found'));
+  //       });
+  //
+  //       component.login();
+  //   })));
 });
