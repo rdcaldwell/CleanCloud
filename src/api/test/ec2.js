@@ -77,50 +77,6 @@ describe('EC2', () => {
     });
   });
 
-  describe('/GET create', () => {
-    it('should create ec2 instance', (done) => {
-      AWS.mock('EC2', 'runInstances', {
-        "Instances": [{
-          "InstanceId": "i-01cc5e300b08e32d6",
-        }],
-      });
-
-      const res = buildResponse();
-      const req = HTTP_MOCKS.createRequest({
-        method: 'GET',
-        url: '/api/ec2/create',
-      });
-
-      res.on('end', () => {
-        res._getData().should.equal('"i-01cc5e300b08e32d6 created"');
-        done();
-      });
-
-      EC2_CONTROLLER.create(req, res);
-      AWS.restore('EC2');
-    });
-
-    it('should get create error', (done) => {
-      AWS.mock('EC2', 'runInstances', (params, callback) => {
-        callback("Error", null);
-      });
-
-      const res = buildResponse();
-      const req = HTTP_MOCKS.createRequest({
-        method: 'GET',
-        url: '/api/ec2/create',
-      });
-
-      res.on('end', () => {
-        res._getData().should.equal('"Error"');
-        done();
-      });
-
-      EC2_CONTROLLER.create(req, res);
-      AWS.restore('EC2');
-    });
-  });
-
   describe('/GET terminate', () => {
     it('should terminate instance by id', (done) => {
       AWS.mock('EC2', 'terminateInstances');

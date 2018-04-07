@@ -77,50 +77,6 @@ describe('RDS', () => {
     });
   });
 
-  describe('/GET create', () => {
-    it('should create rds instance', (done) => {
-      AWS.mock('RDS', 'createDBInstance', {
-        "DBInstance": {
-          "DBInstanceIdentifier": "db-test"
-        }
-      });
-
-      const res = buildResponse();
-      const req = http_mocks.createRequest({
-        method: 'GET',
-        url: '/api/rds/create',
-      });
-
-      res.on('end', () => {
-        res._getData().should.equal('"db-test created"');
-        done();
-      });
-
-      RDS_CONTROLLER.create(req, res);
-      AWS.restore('RDS');
-    });
-
-    it('should get create error', (done) => {
-      AWS.mock('RDS', 'createDBInstance', (params, callback) => {
-        callback("Error", null);
-      });
-
-      const res = buildResponse();
-      const req = http_mocks.createRequest({
-        method: 'GET',
-        url: '/api/rds/create'
-      });
-
-      res.on('end', () => {
-        res._getData().should.equal('"Error"');
-        done();
-      });
-
-      RDS_CONTROLLER.create(req, res);
-      AWS.restore('RDS');
-    });
-  });
-
   describe('/GET terminateById', () => {
     it('should terminate instance by id', (done) => {
       AWS.mock('RDS', 'deleteDBInstance', {

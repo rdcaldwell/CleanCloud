@@ -1,12 +1,12 @@
-import {TestBed, inject, ComponentFixture} from '@angular/core/testing';
+import { TestBed, inject, ComponentFixture } from '@angular/core/testing';
 
 import { AuthenticationService } from './authentication.service';
-import {HttpModule} from '@angular/http';
-import {HttpClientModule} from '@angular/common/http';
-import {RouterTestingModule} from '@angular/router/testing';
-import {company} from 'aws-sdk/clients/importexport';
-import {LoginComponent} from '../login/login.component';
-import {Router} from '@angular/router';
+import { HttpModule } from '@angular/http';
+import { HttpClientModule } from '@angular/common/http';
+import { RouterTestingModule } from '@angular/router/testing';
+import { company } from 'aws-sdk/clients/importexport';
+import { LoginComponent } from '../login/login.component';
+import { Router } from '@angular/router';
 import Spy = jasmine.Spy;
 
 describe('AuthenticationService', () => {
@@ -14,15 +14,15 @@ describe('AuthenticationService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [AuthenticationService],
-      imports: [ HttpModule, HttpClientModule, RouterTestingModule.withRoutes([
-        { path: 'login', redirectTo: '/'}
-      ]) ]
+      imports: [HttpModule, HttpClientModule, RouterTestingModule.withRoutes([
+        { path: 'login', redirectTo: '/' }
+      ])]
     });
     router = TestBed.get(Router);
     router.initialNavigation();
   });
 
-  afterEach( () => {
+  afterEach(() => {
     localStorage.removeItem('janitor-token');
   });
 
@@ -50,12 +50,14 @@ describe('AuthenticationService', () => {
     }));
 
   // Todo, need to make a token with updating expiration
-  xit('should return true if user is logged in',
+  it('should return true if user is logged in',
     inject([AuthenticationService], (service: AuthenticationService) => {
+      jasmine.clock().mockDate(new Date('April 6, 2018'));
       localStorage.setItem('janitor-token',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YTdlNTIwNzdiZTc2ZT' +
-        'ZmMDI2MGJkM2IiLCJlbWFpbCI6InJkY0BmaXNjaGVyaW50ZXJuYXRpb25hbC5jb20iLCJ1c2VyIjoiYWRt' +
-        'aW4iLCJleHAiOjE1MjI2ODgwMTUsImlhdCI6MTUyMjA4MzIxNX0.Dccbi-3E4YRIDKFgpUFV1XRoebHurdpnizut-rxxZBc');
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YTdlNTIwNzdiZTc2ZTZmMD' +
+        'I2MGJkM2IiLCJlbWFpbCI6ImFkbWluQGZpc2NoZXJpbnRlcm5hdGlvbmFsLmNvbSIsInVzZX' +
+        'IiOiJhZG1pbiIsImV4cCI6MTUyMzY2NTY5NiwiaWF0IjoxNTIzMDYwODk2fQ.kBJL7-y-_-8' +
+        'n_WENX5hBluQ46hmwIYXc-K37ZNS8lN0');
 
       // let token = localStorage.getItem('janitor-token');
       // token

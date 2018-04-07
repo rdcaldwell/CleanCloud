@@ -77,52 +77,6 @@ describe('EFS', () => {
     });
   });
 
-  describe('/GET create', () => {
-    it('should create efs instance', (done) => {
-      AWS.mock('EFS', 'createFileSystem', {
-        "FileSystemId": 'fs-7339c10a'
-      });
-
-      AWS.mock('EFS', 'createTags', {
-        "FileSystemId": 'fs-7339c10a'
-      });
-
-      const res = buildResponse();
-      const req = http_mocks.createRequest({
-        method: 'GET',
-        url: '/api/efs/create',
-      });
-
-      res.on('end', () => {
-        res._getData().should.equal('"fs-7339c10a created"');
-        done();
-      });
-
-      EFS_CONTROLLER.create(req, res);
-      AWS.restore('EFS');
-    });
-
-    it('should get create error', (done) => {
-      AWS.mock('EFS', 'createFileSystem', (params, callback) => {
-        callback("Error", null);
-      });
-
-      const res = buildResponse();
-      const req = http_mocks.createRequest({
-        method: 'GET',
-        url: '/api/efs/create'
-      });
-
-      res.on('end', () => {
-        res._getData().should.equal('"Error"');
-        done();
-      });
-
-      EFS_CONTROLLER.create(req, res);
-      AWS.restore('EFS');
-    });
-  });
-
   describe('/GET terminate', () => {
     it('should terminate instance by id', (done) => {
       AWS.mock('EFS', 'deleteFileSystem');
