@@ -3,6 +3,7 @@ import { ClustersComponent } from './clusters.component';
 import { ClusterComponent } from './cluster/cluster.component';
 import { HttpModule, Response, ResponseOptions, XHRBackend } from '@angular/http';
 import { MockBackend } from '@angular/http/testing';
+import {AmazonWebService} from '../services/amazonweb.service';
 
 describe('ClustersComponent', () => {
   let component: ClustersComponent;
@@ -14,7 +15,8 @@ describe('ClustersComponent', () => {
         ClustersComponent,
         ClusterComponent
       ],
-      providers: [
+      imports: [ HttpModule ],
+      providers: [ AmazonWebService,
         MockBackend,
         { provide: XHRBackend, useClass: MockBackend }
       ]

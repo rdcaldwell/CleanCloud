@@ -31,7 +31,7 @@ describe('Auth', () => {
 
       const res = buildResponse();
       const req = HTTP_MOCKS.createRequest({
-        method: 'POST',
+        method: 'GET',
         url: '/auth/profile',
         payload: user,
       });
@@ -47,7 +47,7 @@ describe('Auth', () => {
     it('should get profile error', (done) => {
       const res = buildResponse();
       const req = HTTP_MOCKS.createRequest({
-        method: 'POST',
+        method: 'GET',
         url: '/auth/profile',
         payload: {},
       });
@@ -62,7 +62,7 @@ describe('Auth', () => {
     });
   });
 
-  describe('/GET register', () => {
+  describe('/POST register', () => {
     it('should register', (done) => {
       const res = buildResponse();
       const req = HTTP_MOCKS.createRequest({
@@ -114,6 +114,124 @@ describe('Auth', () => {
       AUTH_CONTROLLER.register(req, res);
 
       SaveMockError.restore();
+    });
+  });
+
+  // Todo
+  describe('validate username', () => {
+    it('should validate username', () => {
+      const res = buildResponse();
+      const req = HTTP_MOCKS.createRequest({
+        method: 'POST',
+        url: '/auth/username/test',
+        params: {
+          id: 'test'
+        },
+      });
+
+      const user = {
+        id: 'test',
+      };
+
+      const mock = {
+        exec: (callback) => {
+          callback(null, user);
+        },
+      };
+      const SaveMockError = sinon.stub(User.Model, 'findOne').yields(mock);
+
+      res.on('end', () => {
+        res._getStatusCode().should.equal(200);
+        res._getData().should.containEql('test');
+        res._getData().should.instanceOf(Object);
+        done();
+      });
+
+      AUTH_CONTROLLER.validateUsername(req, res);
+
+      SaveMockError.restore();
+    });
+
+    it('should not validate username', () => {
+      const res = buildResponse();
+      const req = HTTP_MOCKS.createRequest({
+        method: 'POST',
+        url: '/auth/username/t',
+        params: {
+          id: 't'
+        },
+      });
+
+      const SaveMockError = sinon.mock(User.Model.prototype).expects('save').yields('Error');
+
+      res.on('end', () => {
+        res._getData().should.equal('"Error"');
+        done();
+      });
+
+      AUTH_CONTROLLER.validateUsername(req, res);
+
+      SaveMockError.restore();
+    });
+  });
+
+  // Todo
+  describe('validate email', () => {
+    it('should validate email', () => {
+      const res = buildResponse();
+      const req = HTTP_MOCKS.createRequest({
+        method: 'POST',
+        url: '/auth/email/test@test.com',
+        params: {
+          id: 'test@test.com'
+        },
+      });
+
+      const user = {
+        id: 'test@test.com',
+      };
+
+      const mock = {
+        exec: (callback) => {
+          callback(null, user);
+        },
+      };
+      const SaveMockError = sinon.stub(User.Model, 'findOne').yields(mock);
+
+      res.on('end', () => {
+        res._getStatusCode().should.equal(200);
+        res._getData().should.instanceOf(Object);
+        res._getData().should.containEql('test@test.com');
+        done();
+      });
+      AUTH_CONTROLLER.validateEmail(req, res);
+
+      SaveMockError.restore();
+    });
+  });
+
+  describe('/POST login', () => {
+    it('should login', () => {
+      const res = buildResponse();
+      const req = HTTP_MOCKS.createRequest({
+        method: 'POST',
+        url: '/auth/login',
+        body: {
+          username: 'admin',
+          email: 'test@fischer.com',
+          firstName: 'fname',
+          lastName: 'lname',
+          password: 'password',
+        },
+      });
+
+      // Todo, circular structure reference issue?
+      res.on('end', () => {
+        res._getStatusCode().should.equal(200);
+        done();
+      });
+
+      AUTH_CONTROLLER.login(req, res);
     });
   });
 });

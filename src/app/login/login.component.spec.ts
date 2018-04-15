@@ -75,16 +75,42 @@ describe('LoginComponent', () => {
   //   expect(component.incorrectPassword).toBe(true);
   // })));
 
+  // Todo, mock errors not working
   // it('should not find user', (inject([AuthenticationService, XHRBackend],
   //   (authenticationService: AuthenticationService, mockBackend: MockBackend) => {
-  //       component.credentials.password = 'test@test.com';
-  //       component.credentials.username = 'admin';
   //
   //
-  //       mockBackend.connections.subscribe((connection) => {
-  //         connection.mockError(new Error('User not found'));
-  //       });
+  //       // mockBackend.connections.subscribe((err) => {
+  //       //   err.mockError(new Error('User not found'));
+  //       // });
   //
   //       component.login();
+  //
+  //       expect(component.incorrectPassword).toBe(false);
+  //       expect(component.userNotFound).toBe(false);
   //   })));
+  //
+  it('should retain original state', () => {
+      component.login();
+
+      expect(component.incorrectPassword).toBe(false);
+      expect(component.userNotFound).toBe(false);
+    });
+
+  // it('should not validate the password',
+  //   fakeAsync(inject([AuthenticationService, XHRBackend],
+  //     (authenticationService: AuthenticationService, mockBackend: MockBackend) => {
+  //
+  //   component.credentials.password = 'passw';
+  //   component.credentials.username = 'admin';
+  //
+  //       spyOn(authenticationService, 'login').and.returnValue({ subscribe:
+  //           (err) => {
+  //               error: {message: 'User not found'}
+  //       }
+  //       });
+  //
+  //   component.login();
+  //   expect(component.incorrectPassword).toBe(true);
+  // })));
 });
