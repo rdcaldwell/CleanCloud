@@ -55,7 +55,7 @@ describe('ClusterComponent', () => {
         expect(component.responseFromAWS).toEqual(mockResponse);
       })));
 
-  it('should terminate all instances within cluster using AWS',
+  it('should terminate all instances within cluster using Jenkins',
     fakeAsync(inject([AmazonWebService, XHRBackend],
       (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
         const mockResponse = 'instance terminated';

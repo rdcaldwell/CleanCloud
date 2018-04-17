@@ -22,7 +22,8 @@ module.exports.getEc2Price = (req, res) => {
     Region: region,
     Type: req.body.type,
   }, (err, doc) => {
-    res.json(doc.Price);
+    if (!doc) res.json('Error')
+    else res.json(doc.Price);
   });
 };
 
@@ -34,6 +35,7 @@ module.exports.getRdsPrice = (req, res) => {
     Type: req.body.type,
     DB: req.body.DB,
   }, (err, doc) => {
-    res.json(doc.Price);
+    if (!doc) res.json('Error')
+    else res.json(doc.Price);
   });
 };
