@@ -1,45 +1,58 @@
 <section>
-  <h2>EC2</h2>
-  <div class="button-bar">
-    <button type="button" class="btn btn-outline-danger" id="terminate-EC2" (click)="terminateInstances()">
-      <i class="fas fa-trash-alt fa-lg"></i>
-    </button>
+  <div class="row">
+    <div class="col-md-6">
+      <h2>EC2</h2>
+    </div>
+    <div *ngIf="!loading" class="col-md-6">
+      <button type="button" class="float-right btn btn-outline-danger" id="terminate-EC2" (click)="terminateInstances()">
+        <i class="fas fa-trash-alt fa-lg"></i>
+      </button>
+    </div>
   </div>
-  <table id="EC2Table" class="table">
-    <thead>
-      <tr>
-        <th scope="col"></th>
-        <th scope="col">ID</th>
-        <th scope="col">Context</th>
-        <th scope="col">Name</th>
-        <th scope="col">Type</th>
-        <th scope="col">Zone</th>
-        <th scope="col">Status</th>
-        <th scope="col">Hours</th>
-        <th scope="col">Cost</th>
-        <th scope="col">Launch Time</th>
-        <th scope="col">Analyze</th>
-      </tr>
-    </thead>
-    <tbody *ngFor="let instance of ec2Instances">
-      <tr>
-        <td>
-          <div class="form-check">
-            <input type="checkbox" [(ngModel)]="instance.checked">
-          </div>
-        </td>
-        <th>{{ instance.id }}</th>
-        <td>{{ instance.context }}</td>
-        <td>{{ instance.name }}</td>
-        <td>{{ instance.type }}</td>
-        <td>{{ instance.zone }}</td>
-        <td>{{ instance.status }}</td>
-        <td>{{ instance.runningHours | number : '1.2' }}</td>
-        <td>${{ instance.cost | number : '1.2-2' }}</td>
-        <td>{{ instance.creationDate | amDateFormat: 'M/D h:mm A' }}</td>
-        <td><span matTooltip="Instance Analytics" class="analyze" (click)="openAnalytics(instance)"><i class="far fa-chart-bar fa-lg"></i></span></td>
-      </tr>
-    </tbody>
-  </table>
-  <span *ngIf="!ec2Instances[0]">There are no EC2 instances running.</span>
+  <div class="text-center" *ngIf="loading">
+    <i class="fas fa-spinner fa-pulse fa-2x"></i>
+  </div>
+  <ng-container *ngIf="!loading">
+    <table id="EC2Table" class="table">
+      <thead>
+        <tr>
+          <th scope="col"></th>
+          <th scope="col">ID</th>
+          <th scope="col">Context</th>
+          <th scope="col">Name</th>
+          <th scope="col">Type</th>
+          <th scope="col">Zone</th>
+          <th scope="col">Status</th>
+          <th scope="col">Hours</th>
+          <th scope="col">Cost</th>
+          <th scope="col">Launch Time</th>
+          <th scope="col">Analyze</th>
+        </tr>
+      </thead>
+      <tbody *ngFor="let instance of ec2Instances">
+        <tr>
+          <td>
+            <div class="form-check">
+              <input type="checkbox" [(ngModel)]="instance.checked">
+            </div>
+          </td>
+          <th>{{ instance.id }}</th>
+          <td>{{ instance.context }}</td>
+          <td>{{ instance.name }}</td>
+          <td>{{ instance.type }}</td>
+          <td>{{ instance.zone }}</td>
+          <td>{{ instance.status }}</td>
+          <td>{{ instance.runningHours | number : '1.2' }}</td>
+          <td>${{ instance.cost | number : '1.2-2' }}</td>
+          <td>{{ instance.creationDate | amDateFormat: 'M/D h:mm A' }}</td>
+          <td>
+            <span matTooltip="Instance Analytics" class="analyze" (click)="openAnalytics(instance)">
+              <i class="far fa-chart-bar fa-lg"></i>
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <span *ngIf="!ec2Instances[0]">There are no EC2 instances running.</span>
+  </ng-container>
 </section>

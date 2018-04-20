@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { AmazonWebService } from '../services/amazonweb.service';
 import { MatDialog } from '@angular/material';
 import { JanitorDialogComponent } from './janitordialog/janitordialog.component';
+import { JanitorService } from '../services/janitor.service';
 
 @Component({
   selector: 'app-janitor',
@@ -12,8 +13,10 @@ export class JanitorComponent implements OnInit {
 
   public janitors: Array<any> = [];
   public janitorRunning: boolean;
+  public thresholdUnit = 'minutes';
+  public loading = true;
 
-  constructor(private amazonWebService: AmazonWebService,
+  constructor(private janitorService: JanitorService,
     public dialog: MatDialog) { }
 
   ngOnInit() {
@@ -23,19 +26,11 @@ export class JanitorComponent implements OnInit {
 
   getJanitors() {
     this.janitors = [];
-    this.amazonWebService.getJanitors().subscribe(janitors => {
+    this.janitorService.getJanitors().subscribe(janitors => {
       for (const janitor of janitors) {
-        const janitorData = {
-          id: janitor._id,
-          defaultEmail: janitor.defaultEmail,
-          summaryEmail: janitor.summaryEmail,
-          sourceEmail: janitor.sourceEmail,
-          isMonkeyTime: janitor.isMonkeyTime,
-          port: janitor.port,
-          checked: false
-        };
-        this.janitors.push(janitorData);
+        this.janitors.push(janitor);
       }
+      this.loading = false;
     });
   }
 
@@ -52,17 +47,16 @@ export class JanitorComponent implements OnInit {
 
   destroyJanitor() {
     for (const janitor of this.janitors) {
-      if (janitor.checked) {
-        this.amazonWebService.destroyJanitor(janitor.id).subscribe((data) => {
-          this.getJanitors();
-          this.isJanitorRunning();
-        });
-      }
+      this.janitorService.destroyJanitor(janitor._id).subscribe(data => {
+        this.getJanitors();
+        this.isJanitorRunning();
+        alert(data);
+      });
     }
   }
 
   isJanitorRunning() {
-    this.amazonWebService.isJanitorRunning().subscribe((running) => {
+    this.janitorService.isJanitorRunning().subscribe(running => {
       this.janitorRunning = running;
     });
   }

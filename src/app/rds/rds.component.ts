@@ -12,6 +12,7 @@ export class RdsComponent implements OnInit {
   public responseFromAWS: any;
   public rdsInstances: Array<RDSInstance> = [];
   public totalCost = 0;
+  public loading = true;
 
   constructor(private amazonWebService: AmazonWebService) { }
 
@@ -22,6 +23,7 @@ export class RdsComponent implements OnInit {
           const getRunningHours = new Promise((resolve, reject) => {
             resolve(this.getRunningHours(instance.InstanceCreateTime));
           });
+
           getRunningHours.then((hours: number) => {
             const getTotalCost = new Promise((resolve, reject) => {
               if (instance.AvailabilityZone) {
@@ -36,13 +38,14 @@ export class RdsComponent implements OnInit {
                 resolve(0);
               }
             });
+
             getTotalCost.then((price: number) => {
               this.rdsInstances.push({
                 id: instance.DBInstanceIdentifier,
                 name: instance.DBName,
                 type: instance.DBInstanceClass,
                 engine: instance.Engine,
-                zone: instance.AvailabilityZone,
+                zone: instance.AvailabilityZone.slice(0, -1),
                 status: instance.DBInstanceStatus,
                 creationDate: instance.InstanceCreateTime,
                 runningHours: hours,
@@ -58,6 +61,7 @@ export class RdsComponent implements OnInit {
       } else {
         this.responseFromAWS = data;
       }
+      this.loading = false;
     });
   }
 
@@ -80,7 +84,7 @@ export class RdsComponent implements OnInit {
   terminateInstances() {
     for (const instance of this.rdsInstances) {
       if (instance.checked) {
-        this.amazonWebService.terminateAWS('rds', instance.id).subscribe(data => {
+        this.amazonWebService.destroy('rds', instance.id, instance.zone).subscribe(data => {
           this.responseFromAWS = data;
         });
       } else {

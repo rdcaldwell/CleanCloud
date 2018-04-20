@@ -9,6 +9,8 @@ const JanitorSchema = new mongoose.Schema({
   isMonkeyTime: Boolean,
   port: Number,
   threshold: Number,
+  frequency: Number,
+  frequencyUnit: String,
 });
 
 module.exports.Model = mongoose.model('Janitor', JanitorSchema);

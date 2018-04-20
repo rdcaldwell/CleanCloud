@@ -5,6 +5,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { MomentModule } from 'angular2-moment';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatSidenavModule, MatDialogModule, MatTooltipModule } from '@angular/material';
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { AnalyticsComponent } from './analytics/analytics.component';
@@ -23,12 +25,11 @@ import { JanitorDialogComponent } from './janitor/janitordialog/janitordialog.co
 import { MonitorComponent } from './monitor/monitor.component';
 import { AmazonWebService } from './services/amazonweb.service';
 import { AuthenticationService } from './services/authentication.service';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import {
-  MatSidenavModule,
-  MatDialogModule,
-  MatTooltipModule
-} from '@angular/material';
+import { ClusterService } from './services/cluster.service';
+import { JanitorService } from './services/janitor.service';
+import { JenkinsService } from './services/jenkins.service';
+import { JobService } from './services/job.service';
+import { SimianArmyService } from './services/simianarmy.service';
 
 const routes: Routes = [
   { path: '', redirectTo: 'instances', pathMatch: 'full' },
@@ -80,6 +81,11 @@ const routes: Routes = [
   providers: [
     AmazonWebService,
     AuthenticationService,
+    ClusterService,
+    JanitorService,
+    JenkinsService,
+    JobService,
+    SimianArmyService,
   ],
   bootstrap: [AppComponent]
 })

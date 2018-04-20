@@ -15,8 +15,9 @@ function createJanitor(janitorConfig) {
   janitor.summaryEmail = janitorConfig.summaryEmail;
   janitor.sourceEmail = janitorConfig.sourceEmail;
   janitor.isMonkeyTime = janitorConfig.isMonkeyTime;
-  janitor.threshold = janitor.threshold;
-  janitor.port = janitor.ports;
+  janitor.threshold = janitorConfig.threshold;
+  janitor.frequency = janitorConfig.frequency;
+  janitor.frequencyUnit = janitorConfig.frequencyUnit;
   janitor.save();
 }
 
@@ -33,9 +34,21 @@ module.exports.run = (req, res) => {
       SIMIANARMY_JANITOR_SUMMARYEMAIL_TO: req.body.summaryEmail,
       SIMIANARMY_JANITOR_NOTIFICATION_SOURCEEMAIL: req.body.sourceEmail,
       SIMIANARMY_JANITOR_RULE_ORPHANEDINSTANCERULE_INSTANCEAGETHRESHOLD: req.body.threshold,
+      SIMIANARMY_SCHEDULER_FREQUENCY: req.body.frequency,
+      SIMIANARMY_SCHEDULER_FREQUENCYUNIT: req.body.frequencyUnit,
     },
   };
   janitorConfig.ports[8080] = 8080;
+
+  Cluster.Model.update({}, {
+    monkeyPort: 8080,
+    monitored: true,
+  }, {
+    multi: true,
+  }, (err) => {
+    if (err) LOGGER.err(err);
+    else LOGGER.info('updated cluster');
+  });
 
   dockerJanitor = run('rdcaldwell/janitor:latest', janitorConfig);
   process.stdin.pipe(dockerJanitor.stdin);

@@ -8,7 +8,7 @@ LOGGER.level = 'info';
 module.exports.analyzeById = (req, res) => {
   const CLOUD_WATCH = new AWS.CloudWatch({
     apiVersion: '2010-08-01',
-    region: 'us-east-1',
+    region: req.query.region,
   });
 
   // CPU Utilization for last 2 running hours
@@ -20,7 +20,7 @@ module.exports.analyzeById = (req, res) => {
     StartTime: new Date(moment().subtract(2, 'hours')),
     Dimensions: [{
       Name: 'InstanceId',
-      Value: req.body.id,
+      Value: req.query.id,
     }],
     Statistics: [
       'Average',

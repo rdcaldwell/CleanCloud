@@ -1,4 +1,9 @@
-<ng-container *ngFor="let context of context.names">
-  <app-cluster [title]="context"></app-cluster>
+<div class="text-center" *ngIf="loading">
+  <i class="fas fa-spinner fa-pulse fa-2x"></i>
+</div>
+<ng-container *ngIf="!loading">
+  <ng-container *ngFor="let cluster of context">
+    <app-cluster [cluster]="cluster"></app-cluster>
+  </ng-container>
 </ng-container>
-<section *ngIf="!context.names[0]">There are no Clusters running.</section>
+<section *ngIf="!loading && !context[0]">There are no Clusters running.</section>

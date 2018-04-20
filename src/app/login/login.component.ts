@@ -8,17 +8,17 @@ import { Router } from '@angular/router';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  response: any;
-  credentials: TokenPayload = {
+
+  public incorrectPassword = false;
+  public userNotFound = false;
+  public response: any;
+  public credentials: TokenPayload = {
     username: '',
     password: ''
   };
 
-  incorrectPassword = false;
-  userNotFound = false;
-
   constructor(private authenticationService: AuthenticationService,
-              private router: Router) { }
+    private router: Router) { }
 
   ngOnInit() { }
 

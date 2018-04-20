@@ -1,9 +1,10 @@
-import {async, ComponentFixture, fakeAsync, inject, TestBed} from '@angular/core/testing';
-
+import { async, ComponentFixture, fakeAsync, inject, TestBed } from '@angular/core/testing';
 import { ClusterComponent } from './cluster.component';
-import {AmazonWebService} from '../../services/amazonweb.service';
-import {HttpModule, Response, ResponseOptions, XHRBackend} from '@angular/http';
-import {MockBackend} from '@angular/http/testing';
+import { AmazonWebService } from '../../services/amazonweb.service';
+import { HttpModule, Response, ResponseOptions, XHRBackend } from '@angular/http';
+import { MockBackend } from '@angular/http/testing';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/of';
 
 describe('ClusterComponent', () => {
   let component: ClusterComponent;
@@ -11,7 +12,7 @@ describe('ClusterComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ClusterComponent ],
+      declarations: [ClusterComponent],
       imports: [HttpModule],
       providers: [AmazonWebService,
         { provide: XHRBackend, useClass: MockBackend }]
@@ -79,7 +80,7 @@ describe('ClusterComponent', () => {
       })));
 
   it('should get cluster name', () => {
-    const tags = [{Key: 'test', Value: '1'}, {Key: 'Name', Value: 'clusterName'}];
+    const tags = [{ Key: 'test', Value: '1' }, { Key: 'Name', Value: 'clusterName' }];
 
     const output = component.getTag(tags, 'Name');
 
@@ -87,7 +88,7 @@ describe('ClusterComponent', () => {
   });
 
   it('should not get cluster name', () => {
-    const tags = [{Key: 'test', Value: 1}, {Key: '2', Value: 'test'}];
+    const tags = [{ Key: 'test', Value: 1 }, { Key: '2', Value: 'test' }];
 
     const output = component.getTag(tags, 'Name');
 
@@ -515,37 +516,41 @@ describe('ClusterComponent', () => {
       expect(component.clusterInstances).toEqual([]);
     })));
 
-  // Todo Isn't setting id, name, and status, response is wrong
-  it('should add an EFS instance to clusterInstances', fakeAsync(inject([AmazonWebService, XHRBackend],
-    (amazonWebService: AmazonWebService, mockBackend: MockBackend) => {
-      const mockResponse = [
-        {
-          'Key': 'context',
-          'Value': 'Test'
-        },
-        {
-          'Key': 'name',
-          'Value': 'Test-efs'
-        },
-        {
-          'Key': 'lifecyclestate',
-          'Value': 'available'
-        },
-        {
-          'Key': 'filesystemid',
-          'Value': 'ID'
-        }
-      ];
-
-      mockBackend.connections.subscribe((connection) => {
-        connection.mockRespond(new Response(new ResponseOptions({
-          body: JSON.stringify(mockResponse)
-        })));
+  it('should add an EFS instance to clusterInstances', fakeAsync(inject([AmazonWebService],
+    (amazonWebService: AmazonWebService) => {
+      spyOn(amazonWebService, 'describe').and.callFake(() => {
+        return Observable.of([
+          {
+            'OwnerId': '451623778925',
+            'CreationToken': 'fischer',
+            'FileSystemId': 'fs-821cc3ca',
+            'CreationTime': '2018-04-08T16:00:29.000Z',
+            'LifeCycleState': 'available',
+            'Name': null,
+            'NumberOfMountTargets': 0,
+            'SizeInBytes': {
+              'Value': 6144,
+              'Timestamp': null
+            },
+            'PerformanceMode': 'generalPurpose',
+            'Encrypted': false
+          }
+        ]);
       });
 
-      component.title = 'Test-efs';
-      component.getEFSContext();
+      spyOn(amazonWebService, 'describeTags').and.callFake(() => {
+        return Observable.of([
+          {
+            'Key': 'Context',
+            'Value': 'fischer'
+          }
+        ]);
+      });
 
-      expect(component.clusterInstances[0].serviceType).toEqual('efs');
+      component.title = 'fischer';
+      component.getEFSContext();
+      console.log(component.clusterInstances[0]);
+
+      expect(component.clusterInstances[0].id).toEqual('fs-821cc3ca');
     })));
 });

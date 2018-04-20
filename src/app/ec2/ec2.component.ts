@@ -13,6 +13,7 @@ export class Ec2Component implements OnInit {
   public responseFromAWS: any;
   public ec2Instances: Array<EC2Instance> = [];
   public totalCost = 0;
+  public loading = true;
 
   constructor(private amazonWebService: AmazonWebService,
     public dialog: MatDialog) { }
@@ -46,7 +47,7 @@ export class Ec2Component implements OnInit {
                   name: instance.Tags.length > 0 ? this.getTag(instance.Tags, 'Name') : null,
                   type: instance.InstanceType,
                   dns: instance.PublicDnsName,
-                  zone: instance.Placement.AvailabilityZone,
+                  zone: instance.Placement.AvailabilityZone.slice(0, -1),
                   status: instance.State.Name,
                   creationDate: instance.LaunchTime,
                   runningHours: hours,
@@ -63,6 +64,7 @@ export class Ec2Component implements OnInit {
       } else {
         this.responseFromAWS = reservations;
       }
+      this.loading = false;
     });
   }
 
@@ -87,7 +89,7 @@ export class Ec2Component implements OnInit {
   terminateInstances() {
     for (const instance of this.ec2Instances) {
       if (instance.checked) {
-        this.amazonWebService.terminateAWS('ec2', instance.id).subscribe(data => {
+        this.amazonWebService.destroy('ec2', instance.id, instance.zone).subscribe(data => {
           this.responseFromAWS = data;
         });
       } else {

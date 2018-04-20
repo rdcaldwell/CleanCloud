@@ -1,56 +1,61 @@
 <section>
   <div class="instance-section">
     <h2>MONITOR</h2>
-    <table id="{{title}}Table" class="table">
-      <thead>
-        <tr>
-          <th scope="col">Context</th>
-          <th scope="col">Owner</th>
-          <th scope="col">Region</th>
-          <th *ngIf="isAnyClusterMarked()" scope="col">Destruction Date</th>
-          <th scope="col">Destroy</th>
-          <th scope="col">Cancel</th>
-          <th scope="col">Monitor Option</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let cluster of clusters">
-          <td>{{ cluster.context }}</td>
-          <td>{{ cluster.startedBy }}</td>
-          <td>{{ cluster.region }}</td>
-          <td *ngIf="isAnyClusterMarked()">
-            <span>{{ cluster.destructionDate | amDateFormat: 'M/D h:mm A' }}</span>
-          </td>
-          <td *ngIf="!cluster.destroyed && cluster.marked">
-            <span matTooltip="Destroy Now" class="option-button" (click)="destroy(cluster)">
-              <i class="fas fa-bomb fa-lg"></i>
-            </span>
-          </td>
-          <td *ngIf="!cluster.destroyed && cluster.marked">
-            <span matTooltip="Cancel Destruction" class="option-button" (click)="unmark(cluster)">
-              <i class="fas fa-ban fa-lg"></i>
-            </span>
-          </td>
-          <td *ngIf="!cluster.destroyed && !cluster.marked && janitorRunning" colspan="2">
-            <span>Not yet marked for destruction</span>
-          </td>
-          <td *ngIf="!cluster.destroyed && !janitorRunning" colspan="3">
-            <span>Janitor not running</span>
-          </td>
-          <td *ngIf="!cluster.destroyed && janitorRunning">
-            <span matTooltip="Monitor" *ngIf="!cluster.monitored" class="option-button" (click)="optIn(cluster)">
-              <i class="fas fa-eye fa-lg"></i>
-            </span>
-            <span matTooltip="Don't Monitor" *ngIf="cluster.monitored" class="option-button" (click)="optOut(cluster)">
-              <i class="fas fa-eye-slash fa-lg"></i>
-            </span>
-          </td>
-          <td *ngIf="cluster.destroyed" colspan="3">
-            Cluster has been destroyed
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <span *ngIf="!clusters[0]">There are no Clusters running.</span>
+    <div class="text-center" *ngIf="loading">
+      <i class="fas fa-spinner fa-pulse fa-2x"></i>
+    </div>
+    <ng-container *ngIf="!loading">
+      <table id="MonitorTable" class="table">
+        <thead>
+          <tr>
+            <th scope="col">Context</th>
+            <th scope="col">Owner</th>
+            <th scope="col">Region</th>
+            <th *ngIf="isAnyClusterMarked()" scope="col">Destruction Date</th>
+            <th scope="col">Destroy</th>
+            <th scope="col">Cancel</th>
+            <th scope="col">Monitor Option</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cluster of clusters">
+            <td>{{ cluster.context }}</td>
+            <td>{{ cluster.startedBy }}</td>
+            <td>{{ cluster.region }}</td>
+            <td *ngIf="isAnyClusterMarked()">
+              <span>{{ cluster.destructionDate | amDateFormat: 'M/D h:mm A' }}</span>
+            </td>
+            <td *ngIf="!cluster.destroyed && cluster.marked">
+              <span matTooltip="Destroy Now" class="option-button" (click)="destroy(cluster)">
+                <i class="fas fa-bomb fa-lg"></i>
+              </span>
+            </td>
+            <td *ngIf="!cluster.destroyed && cluster.marked">
+              <span matTooltip="Cancel Destruction" class="option-button" (click)="cancelJob(cluster)">
+                <i class="fas fa-ban fa-lg"></i>
+              </span>
+            </td>
+            <td *ngIf="!cluster.destroyed && !cluster.marked && janitorRunning" colspan="2">
+              <span>Not yet marked for destruction</span>
+            </td>
+            <td *ngIf="!cluster.destroyed && !janitorRunning" colspan="3">
+              <span>Janitor not running</span>
+            </td>
+            <td *ngIf="!cluster.destroyed && janitorRunning">
+              <span matTooltip="Monitor" *ngIf="!cluster.monitored" class="option-button" (click)="optIn(cluster)">
+                <i class="fas fa-eye fa-lg"></i>
+              </span>
+              <span matTooltip="Don't Monitor" *ngIf="cluster.monitored" class="option-button" (click)="optOut(cluster)">
+                <i class="fas fa-eye-slash fa-lg"></i>
+              </span>
+            </td>
+            <td *ngIf="cluster.destroyed" colspan="3">
+              Cluster has been destroyed
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <span *ngIf="!clusters[0]">There are no Clusters running.</span>
+    </ng-container>
   </div>
 </section>

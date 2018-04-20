@@ -10,6 +10,8 @@ export interface User {
   _id: string;
   email: string;
   username: string;
+  firstName: string;
+  lastName: string;
   exp: number;
   iat: number;
 }
@@ -28,6 +30,7 @@ export interface TokenPayload {
 
 @Injectable()
 export class AuthenticationService {
+
   private token: string;
 
   constructor(private httpClient: HttpClient, private http: Http, private router: Router) { }

@@ -3,13 +3,13 @@
   "version": "0.0.0",
   "license": "MIT",
   "engines": {
-    "node": "7.4.0",
-    "npm": "4.0.5"
+    "node": "9.3.0",
+    "npm": "5.6.0"
   },
   "scripts": {
-    "start": "ng build && node server.js",
+    "start": "ng build --prod && node server.js",
     "karma": "ng test --code-coverage",
-    "mocha": "nyc mocha src/api/test/*.js",
+    "mocha": "nyc mocha src/api/test/price.js",
     "dev": "ng serve --proxy-config proxy.json | nodemon server.js"
   },
   "private": true,

@@ -1,38 +1,49 @@
 <section>
-  <h2>JANITOR</h2>
-  <div class="button-bar">
-    <button *ngIf="!janitorRunning" type="button" class="btn btn-outline-success" id="create-Janitor" (click)="createJanitor()"><i class="fas fa-plus fa-lg"></i></button>
-    <button *ngIf="janitorRunning" type="button" class="btn btn-outline-danger" id="terminate-Janitor" (click)="destroyJanitor()"><i class="fas fa-trash-alt fa-lg"></i></button>
+  <div class="row">
+    <div class="col-md-6">
+      <h2>JANITOR</h2>
+    </div>
+    <div *ngIf="!loading" class="col-md-6">
+      <span class="float-right" *ngIf="janitorRunning">
+        <i class="fas fa-cog fa-spin fa-2x"></i>
+      </span>
+      <button *ngIf="!janitorRunning" type="button" class="float-right btn btn-outline-success" id="create-Janitor" (click)="createJanitor()">
+        <i class="fas fa-plus fa-lg"></i>
+      </button>
+    </div>
   </div>
-  <table id="JanitorTable" class="table">
-    <thead>
-      <tr>
-        <th scope="col"></th>            
-        <th scope="col"></th>
-        <th scope="col">Port</th>
-        <th scope="col">Threshold</th>
-        <th scope="col">Default Email</th>        
-        <th scope="col">Summary Email</th>
-        <th scope="col">Source Email</th>
-        <th scope="col">Is Monkey Time?</th>
-      </tr>
-    </thead>
-    <tbody *ngFor="let janitor of janitors; let i = index">
-      <tr>
-        <td>
-            <div class="form-check">
-                <input type="checkbox" [(ngModel)]="janitor.checked">
-            </div>
-        </td>
-        <td><i class="fas fa-cog fa-spin"></i></td>
-        <td>{{ janitor.port }}</td>
-        <td>{{ janitor.threshold }}</td>
-        <td>{{ janitor.defaultEmail }}</td>
-        <td>{{ janitor.summaryEmail }}</td>
-        <td>{{ janitor.sourceEmail }}</td>
-        <td>{{ janitor.isMonkeyTime }}</td>
-      </tr>
-    </tbody>
-  </table>
-  <span *ngIf="!janitors[0]">There are no Janitors running.</span>
+  <div class="text-center" *ngIf="loading">
+    <i class="fas fa-spinner fa-pulse fa-2x"></i>
+  </div>
+  <ng-container *ngIf="!loading">
+    <table id="JanitorTable" class="table">
+      <thead>
+        <tr>
+          <th scope="col">Frequency</th>
+          <th scope="col">Threshold</th>
+          <th scope="col">Default Email</th>
+          <th scope="col">Summary Email</th>
+          <th scope="col">Source Email</th>
+          <th scope="col">Is Monkey Time?</th>
+          <th scope="col" *ngIf="janitorRunning">Stop Janitor</th>
+        </tr>
+      </thead>
+      <tbody *ngFor="let janitor of janitors; let i = index">
+        <tr>
+          <td>{{ janitor.frequency }} {{ janitor.frequencyUnit | lowercase }}</td>
+          <td>{{ janitor.threshold }} {{ thresholdUnit }}</td>
+          <td>{{ janitor.defaultEmail }}</td>
+          <td>{{ janitor.summaryEmail }}</td>
+          <td>{{ janitor.sourceEmail }}</td>
+          <td>{{ janitor.isMonkeyTime }}</td>
+          <td *ngIf="janitorRunning">
+            <button type="button" class="btn btn-outline-danger" id="terminate-Janitor" (click)="destroyJanitor()">
+              <i class="fas fa-trash-alt fa-lg"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <span *ngIf="!janitors[0]">There are no Janitors running.</span>
+  </ng-container>
 </section>

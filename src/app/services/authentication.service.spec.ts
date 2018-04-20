@@ -49,7 +49,6 @@ describe('AuthenticationService', () => {
       expect(returnval).toBeNull();
     }));
 
-  // Todo, need to make a token with updating expiration
   it('should return true if user is logged in',
     inject([AuthenticationService], (service: AuthenticationService) => {
       jasmine.clock().mockDate(new Date('April 6, 2018'));
@@ -59,8 +58,6 @@ describe('AuthenticationService', () => {
         'IiOiJhZG1pbiIsImV4cCI6MTUyMzY2NTY5NiwiaWF0IjoxNTIzMDYwODk2fQ.kBJL7-y-_-8' +
         'n_WENX5hBluQ46hmwIYXc-K37ZNS8lN0');
 
-      // let token = localStorage.getItem('janitor-token');
-      // token
       const returnval = service.isLoggedIn();
       expect(returnval).toBe(true);
     }));

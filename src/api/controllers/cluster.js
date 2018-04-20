@@ -7,11 +7,7 @@ const EMAIL_CONTROLLER = require('./email');
 const JOB_CONTROLLER = require('./job');
 const JANITOR_CONTROLLER = require('./janitor');
 const Cluster = require('../models/cluster');
-
-const EC2 = new AWS.EC2({
-  apiVersion: '2016-11-15',
-  region: 'us-east-1',
-});
+const UTILS = require('../config/utils');
 
 LOGGER.level = 'info';
 
@@ -67,7 +63,6 @@ module.exports.getClusters = (req, res) => {
 
 /* Removes monitor tag from cluster after it has been opted out */
 module.exports.removeClusterMonitor = (req, res) => {
-  LOGGER.debug(req.params.id);
   Cluster.Model.findOne({
     _id: req.params.id,
   }, (err, cluster) => {
@@ -75,7 +70,7 @@ module.exports.removeClusterMonitor = (req, res) => {
     else {
       cluster.monitored = false;
       cluster.save();
-      res.json(`${cluster._id} monitor removed`);
+      res.json('Monitor removed');
     }
   });
 };
@@ -89,7 +84,7 @@ module.exports.addClusterMonitor = (req, res) => {
     else {
       cluster.monitored = true;
       cluster.save();
-      res.json(`${cluster._id} monitor added`);
+      res.json('Monitor added');
     }
   });
 };
@@ -102,8 +97,13 @@ module.exports.cleanClusterDB = () => {
     else {
       ASYNC.forEachOf(clusters, (cluster) => {
         let isFound = false;
+        const EC2 = new AWS.EC2({
+          apiVersion: '2016-11-15',
+          region: cluster.region,
+        });
+
         EC2.describeTags({}, (tagerr, data) => {
-          if (tagerr) LOGGER.info(tagerr);
+          if (tagerr) LOGGER.error(tagerr);
           else {
             ASYNC.forEachOf(data.Tags, (tag, i, callback) => {
               if (tag.Value === cluster.context) isFound = true;
@@ -128,42 +128,52 @@ module.exports.cleanClusterDB = () => {
 /* Adds clusters in AWS that are not in the DB */
 module.exports.setClusterDB = () => {
   LOGGER.info('Setting up cluster DB');
+
   const namesPromise = new Promise((resolve, reject) => {
     const cluster = [];
-    EC2.describeInstances((describeErr, data) => {
-      if (describeErr) LOGGER.error(describeErr);
-      else if (data.Reservations.length !== 0) {
-        ASYNC.forEachOf(data.Reservations, (reservation, index, callback) => {
-          ASYNC.forEachOf(reservation.Instances, (describedInstance) => {
-            if (describedInstance.Tags.length) {
-              const temp = {
-                name: null,
-                startedBy: null,
-                region: null,
-                launchTime: null,
-              };
+    ASYNC.forEachOf(UTILS.regions, (awsRegion, i, regionCallback) => {
+      const EC2 = new AWS.EC2({
+        apiVersion: '2016-11-15',
+        region: awsRegion,
+      });
 
-              ASYNC.forEachOf(describedInstance.Tags, (tag, j, tagCallback) => {
-                if (tag.Key === 'Context' && cluster.indexOf(tag.Key) < 0) {
-                  temp.name = tag.Value;
-                  temp.region = describedInstance.Placement.AvailabilityZone.slice(0, -1);
-                  temp.launchTime = describedInstance.LaunchTime;
-                } else if (tag.Key === 'startedBy') {
-                  temp.startedBy = tag.Value;
-                }
-                tagCallback();
-              }, (tagErr) => {
-                if (temp.name !== null) {
-                  cluster.push(temp);
-                }
-              });
-            }
+      EC2.describeInstances((describeErr, data) => {
+        if (describeErr) LOGGER.error(describeErr);
+        else if (data.Reservations.length !== 0) {
+          ASYNC.forEachOf(data.Reservations, (reservation, index, callback) => {
+            ASYNC.forEachOf(reservation.Instances, (describedInstance) => {
+              if (describedInstance.Tags.length) {
+                const temp = {
+                  name: null,
+                  startedBy: null,
+                  region: null,
+                  launchTime: null,
+                };
+
+                ASYNC.forEachOf(describedInstance.Tags, (tag, j, tagCallback) => {
+                  if (tag.Key === 'Context' && cluster.indexOf(tag.Key) < 0) {
+                    temp.name = tag.Value;
+                    temp.region = describedInstance.Placement.AvailabilityZone.slice(0, -1);
+                    temp.launchTime = describedInstance.LaunchTime;
+                  } else if (tag.Key === 'startedBy') {
+                    temp.startedBy = tag.Value;
+                  }
+                  tagCallback();
+                }, (tagErr) => {
+                  if (temp.name !== null) {
+                    cluster.push(temp);
+                  }
+                });
+              }
+            });
+            callback();
+          }, () => {
+            regionCallback();
           });
-          callback();
-        }, (loopErr) => {
-          resolve(cluster);
-        });
-      }
+        }
+      });
+    }, (regionErr) => {
+      resolve(cluster);
     });
   });
 
@@ -182,7 +192,7 @@ module.exports.setClusterDB = () => {
               destructionDate: null,
               jobIndex: null,
               resourceIds: [],
-              name: clusterDatum.name,
+              context: clusterDatum.name,
               startedBy: clusterDatum.startedBy,
               region: clusterDatum.region,
               launchTime: clusterDatum.launchTime,
@@ -207,6 +217,11 @@ module.exports.setClusterDB = () => {
               }],
             };
 
+            const EC2 = new AWS.EC2({
+              apiVersion: '2016-11-15',
+              region: clusterDatum.region,
+            });
+
             EC2.describeInstances(params, (ec2err, ec2data) => {
               if (ec2err) LOGGER.error(ec2err);
               else if (ec2data.Reservations.length) {
@@ -225,7 +240,7 @@ module.exports.setClusterDB = () => {
 
         contextDataPromise.then((contextData) => {
           const newCluster = new Cluster.Model();
-          newCluster.context = contextData.name;
+          newCluster.context = contextData.context;
           newCluster.startedBy = contextData.startedBy;
           newCluster.monitored = contextData.monitored;
           newCluster.marked = contextData.marked;
@@ -237,7 +252,7 @@ module.exports.setClusterDB = () => {
           newCluster.region = contextData.region;
           newCluster.launchTime = contextData.launchTime;
           newCluster.save();
-          LOGGER.info(`${contextData.name} cluster added to db`);
+          LOGGER.info(`${contextData.context} cluster added to db`);
         }).catch(() => {});
       });
     });

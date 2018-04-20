@@ -1,35 +1,42 @@
+/* eslint no-param-reassign:0 */
 const AWS = require('aws-sdk');
 const LOGGER = require('log4js').getLogger('RDS');
+const ASYNC = require('async');
+const UTILS = require('../config/utils');
 
 LOGGER.level = 'info';
 
-/* GET EFS instances */
-module.exports.describeTagsById = (req, res) => {
-  const RDS = new AWS.RDS({
-    apiVersion: '2014-10-31',
-    region: 'us-east-2',
-  });
-  RDS.listTagsForResource({
-    ResourceName: req.params.id,
-  }, (err, data) => {
-    if (err) res.json(err);
-    else res.json(data.TagList);
-  });
-};
-
 /* GET RDS DB instances */
 module.exports.describe = (req, res) => {
-  const RDS = new AWS.RDS({
-    apiVersion: '2014-10-31',
-    region: 'us-east-2',
-  });
-  RDS.describeDBInstances({}, (err, data) => {
-    if (err) res.json(err);
-    else if (data.DBInstances.length) {
-      res.json(data.DBInstances);
-    } else {
-      res.json('No rds data');
-    }
+  const rdsData = [];
+  ASYNC.forEachOf(UTILS.regions, (awsRegion, i, callback) => {
+    const RDS = new AWS.RDS({
+      apiVersion: '2014-10-31',
+      region: awsRegion,
+    });
+
+    RDS.describeDBInstances({}, (err, data) => {
+      if (err) res.json(err);
+      else if (data.DBInstances.length) {
+        ASYNC.forEachOf(data.DBInstances, (dbInstance, j, tagCallback) => {
+          RDS.listTagsForResource({
+            ResourceName: dbInstance.DBInstanceArn,
+          }, (tagerr, tagdata) => {
+            dbInstance.Tags = tagdata.TagList;
+            rdsData.push(dbInstance);
+
+            tagCallback();
+          });
+        }, () => {
+          callback();
+        });
+      } else {
+        callback();
+      }
+    });
+  }, () => {
+    if (rdsData.length) res.json(rdsData);
+    else res.json('No rds data');
   });
 };
 
@@ -37,14 +44,17 @@ module.exports.describe = (req, res) => {
 module.exports.terminateById = (req, res) => {
   const RDS = new AWS.RDS({
     apiVersion: '2014-10-31',
-    region: 'us-east-2',
+    region: req.query.region,
   });
-  const params = {
-    DBInstanceIdentifier: req.params.id,
+
+  RDS.deleteDBInstance({
+    DBInstanceIdentifier: req.query.id,
     SkipFinalSnapshot: true,
-  };
-  RDS.deleteDBInstance(params, (err, data) => {
+  }, (err, data) => {
     if (err) res.json(err);
-    else res.json(`${data.DBInstance.DBInstanceIdentifier} terminated`);
+    else {
+      LOGGER.info(`${data.DBInstance.DBInstanceIdentifier} terminated`);
+      res.json(`${data.DBInstance.DBInstanceIdentifier} terminated`);
+    }
   });
 };

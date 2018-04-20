@@ -10,6 +10,7 @@ export class EfsComponent implements OnInit {
 
   public responseFromAWS: any;
   public efsInstances: Array<EFSInstance> = [];
+  public loading = true;
 
   constructor(private amazonWebService: AmazonWebService) { }
 
@@ -19,8 +20,9 @@ export class EfsComponent implements OnInit {
         for (const instance of data) {
           const instanceData = {
             id: instance.FileSystemId,
-            context: '',
-            name: '',
+            context: this.getTag(instance.Tags, 'Context'),
+            name: this.getTag(instance.Tags, 'Name'),
+            zone: this.getTag(instance.Tags, 'Region'),
             size: instance.SizeInBytes.Value,
             status: instance.LifeCycleState,
             creationDate: instance.CreationTime,
@@ -34,6 +36,7 @@ export class EfsComponent implements OnInit {
       } else {
         this.responseFromAWS = data;
       }
+      this.loading = false;
     });
   }
 
@@ -56,7 +59,7 @@ export class EfsComponent implements OnInit {
   terminateInstances() {
     for (const instance of this.efsInstances) {
       if (instance.checked) {
-        this.amazonWebService.terminateAWS('efs', instance.id).subscribe(data => {
+        this.amazonWebService.destroy('efs', instance.id, instance.zone).subscribe(data => {
           this.responseFromAWS = data;
         });
       } else {
@@ -64,12 +67,22 @@ export class EfsComponent implements OnInit {
       }
     }
   }
+
+  getTag(tags, key) {
+    for (const tag of tags) {
+      if (tag.Key === key) {
+        return tag.Value;
+      }
+    }
+  }
+
 }
 
 export interface EFSInstance {
   id: string;
   context: string;
   name: string;
+  zone: string;
   size: number;
   status: string;
   creationDate: string;
