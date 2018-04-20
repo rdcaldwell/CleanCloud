@@ -140,7 +140,7 @@ module.exports.setClusterDB = () => {
       EC2.describeInstances((describeErr, data) => {
         if (describeErr) LOGGER.error(describeErr);
         else if (data.Reservations.length !== 0) {
-          ASYNC.forEachOf(data.Reservations, (reservation, index, callback) => {
+          ASYNC.forEachOf(data.Reservations, (reservation, index) => {
             ASYNC.forEachOf(reservation.Instances, (describedInstance) => {
               if (describedInstance.Tags.length) {
                 const temp = {
@@ -166,11 +166,9 @@ module.exports.setClusterDB = () => {
                 });
               }
             });
-            callback();
-          }, () => {
-            regionCallback();
           });
         }
+        regionCallback();
       });
     }, (regionErr) => {
       resolve(cluster);

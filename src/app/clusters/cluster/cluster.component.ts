@@ -70,7 +70,7 @@ export class ClusterComponent implements OnInit, AfterViewInit {
       if (instances !== 'No efs data') {
         for (const instance of instances) {
           for (const tag of instance.Tags) {
-            if (tag.Value === this.cluster.name) {
+            if (tag.Key === 'Context' && tag.Value === this.cluster.name) {
               const instanceData = {
                 serviceType: 'efs',
                 id: instance.FileSystemId,
@@ -93,7 +93,7 @@ export class ClusterComponent implements OnInit, AfterViewInit {
       if (instances !== 'No rds data') {
         for (const instance of instances) {
           for (const tag of instance.Tags) {
-            if (tag.Value === this.cluster.name) {
+            if (tag.Key === 'Context' && tag.Value === this.cluster.name) {
               const instanceData = {
                 serviceType: 'rds',
                 id: instance.DBInstanceIdentifier,
