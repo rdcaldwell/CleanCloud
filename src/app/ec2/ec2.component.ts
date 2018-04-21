@@ -13,16 +13,17 @@ export class Ec2Component implements OnInit {
   public responseFromAWS: any;
   public ec2Instances: Array<EC2Instance> = [];
   public totalCost = 0;
-  public loading = true;
+  public loading: boolean;
 
   constructor(private amazonWebService: AmazonWebService,
     public dialog: MatDialog) { }
 
   ngOnInit() {
-    this.updateInstances();
+    this.setupInstances();
   }
 
-  updateInstances() {
+  setupInstances() {
+    this.loading = true;
     this.ec2Instances = [];
     this.amazonWebService.describe('ec2').subscribe(reservations => {
       if (reservations !== 'No ec2 data') {
@@ -58,9 +59,6 @@ export class Ec2Component implements OnInit {
             });
           }
         }
-        setInterval(() => {
-          this.updateStatus();
-        }, 30000);
       } else {
         this.responseFromAWS = reservations;
       }
@@ -68,25 +66,8 @@ export class Ec2Component implements OnInit {
     });
   }
 
-  updateStatus() {
-    this.amazonWebService.describe('ec2').subscribe(reservations => {
-      if (reservations !== 'No ec2 data') {
-        for (const reservation of reservations) {
-          for (const instance of reservation.Instances) {
-            for (const ec2Instance of this.ec2Instances) {
-              if (ec2Instance.id === instance.InstanceId) {
-                ec2Instance.status = instance.State.Name;
-              }
-            }
-          }
-        }
-      } else {
-        this.responseFromAWS = reservations;
-      }
-    });
-  }
-
   terminateInstances() {
+    this.loading = true;
     for (const instance of this.ec2Instances) {
       if (instance.checked) {
         this.amazonWebService.destroy('ec2', instance.id, instance.zone).subscribe(data => {
@@ -96,6 +77,9 @@ export class Ec2Component implements OnInit {
         this.responseFromAWS = 'No instances checked for termination';
       }
     }
+    setTimeout(() => {
+      this.setupInstances();
+    }, 3000);
   }
 
   openAnalytics(instance) {

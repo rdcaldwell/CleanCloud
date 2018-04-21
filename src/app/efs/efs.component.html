@@ -4,9 +4,14 @@
       <h2>EFS</h2>
     </div>
     <div *ngIf="!loading" class="col-md-6">
-      <button type="button" class="float-right btn btn-outline-danger" id="terminate-AWS-EFS" (click)="terminateInstances()">
-        <i class="fas fa-trash-alt fa-lg"></i>
-      </button>
+      <div class="float-right button-bar">
+        <button type="button" class="btn btn-outline-primary" id="refresh-EFS" (click)="setupInstances()">
+          <i class="fas fa-sync-alt fa-lg"></i>
+        </button>
+        <button type="button" class="float-right btn btn-outline-danger" id="terminate-AWS-EFS" (click)="terminateInstances()">
+          <i class="fas fa-trash-alt fa-lg"></i>
+        </button>
+      </div>
     </div>
   </div>
   <div class="text-center" *ngIf="loading">

@@ -10,11 +10,17 @@ export class EfsComponent implements OnInit {
 
   public responseFromAWS: any;
   public efsInstances: Array<EFSInstance> = [];
-  public loading = true;
+  public loading: boolean;
 
   constructor(private amazonWebService: AmazonWebService) { }
 
   ngOnInit() {
+    this.setupInstances();
+  }
+
+  setupInstances() {
+    this.loading = true;
+    this.efsInstances = [];
     this.amazonWebService.describe('efs').subscribe(data => {
       if (data !== 'No efs data') {
         for (const instance of data) {
@@ -30,9 +36,6 @@ export class EfsComponent implements OnInit {
           };
           this.efsInstances.push(instanceData);
         }
-        setInterval(() => {
-          this.updateStatus();
-        }, 30000);
       } else {
         this.responseFromAWS = data;
       }
@@ -40,32 +43,20 @@ export class EfsComponent implements OnInit {
     });
   }
 
-  updateStatus() {
-    this.amazonWebService.describe('efs').subscribe(data => {
-      if (data !== 'No efs data') {
-        for (const instance of data) {
-          for (const efsInstance of this.efsInstances) {
-            if (efsInstance.id === instance.FileSystemId) {
-              efsInstance.status = instance.LifeCycleState;
-            }
-          }
-        }
-      } else {
-        this.responseFromAWS = data;
-      }
-    });
-  }
-
   terminateInstances() {
+    this.loading = true;
     for (const instance of this.efsInstances) {
       if (instance.checked) {
-        this.amazonWebService.destroy('efs', instance.id, instance.zone).subscribe(data => {
+        this.amazonWebService.destroy('efs', instance.id, 'ap-southeast-2').subscribe(data => {
           this.responseFromAWS = data;
         });
       } else {
         this.responseFromAWS = 'No instances checked for termination';
       }
     }
+    setTimeout(() => {
+      this.setupInstances();
+    }, 3000);
   }
 
   getTag(tags, key) {

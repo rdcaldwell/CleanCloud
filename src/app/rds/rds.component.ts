@@ -12,11 +12,17 @@ export class RdsComponent implements OnInit {
   public responseFromAWS: any;
   public rdsInstances: Array<RDSInstance> = [];
   public totalCost = 0;
-  public loading = true;
+  public loading: boolean;
 
   constructor(private amazonWebService: AmazonWebService) { }
 
   ngOnInit() {
+    this.setupInstances();
+  }
+
+  setupInstances() {
+    this.loading = true;
+    this.rdsInstances = [];
     this.amazonWebService.describe('rds').subscribe(data => {
       if (data !== 'No rds data') {
         for (const instance of data) {
@@ -45,7 +51,7 @@ export class RdsComponent implements OnInit {
                 name: instance.DBName,
                 type: instance.DBInstanceClass,
                 engine: instance.Engine,
-                zone: instance.AvailabilityZone.slice(0, -1),
+                zone: (instance.AvailabilityZone) ? instance.AvailabilityZone.slice(0, -1) : '',
                 status: instance.DBInstanceStatus,
                 creationDate: instance.InstanceCreateTime,
                 runningHours: hours,
@@ -55,9 +61,6 @@ export class RdsComponent implements OnInit {
             });
           });
         }
-        setInterval(() => {
-          this.updateStatus();
-        }, 30000);
       } else {
         this.responseFromAWS = data;
       }
@@ -65,23 +68,8 @@ export class RdsComponent implements OnInit {
     });
   }
 
-  updateStatus() {
-    this.amazonWebService.describe('rds').subscribe(data => {
-      if (data !== 'No rds data') {
-        for (const instance of data) {
-          for (const rdsInstance of this.rdsInstances) {
-            if (rdsInstance.id === instance.DBInstanceIdentifier) {
-              rdsInstance.status = instance.DBInstanceStatus;
-            }
-          }
-        }
-      } else {
-        this.responseFromAWS = data;
-      }
-    });
-  }
-
   terminateInstances() {
+    this.loading = true;
     for (const instance of this.rdsInstances) {
       if (instance.checked) {
         this.amazonWebService.destroy('rds', instance.id, instance.zone).subscribe(data => {
@@ -91,6 +79,9 @@ export class RdsComponent implements OnInit {
         this.responseFromAWS = 'No instances checked for termination';
       }
     }
+    setTimeout(() => {
+      this.setupInstances();
+    }, 3000);
   }
 
   getRunningHours(startTime): number {

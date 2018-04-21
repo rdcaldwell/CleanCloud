@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { AmazonWebService } from '../../services/amazonweb.service';
 import * as moment from 'moment';
 import { ClusterService } from '../../services/cluster.service';
@@ -8,7 +8,7 @@ import { JenkinsService } from '../../services/jenkins.service';
   templateUrl: './cluster.component.html',
   styleUrls: ['./cluster.component.css']
 })
-export class ClusterComponent implements OnInit, AfterViewInit {
+export class ClusterComponent implements OnInit {
 
   @Input() public cluster: any;
   public startedBy: string;
@@ -23,13 +23,15 @@ export class ClusterComponent implements OnInit, AfterViewInit {
     private jenkinsService: JenkinsService) { }
 
   ngOnInit() {
+    this.setupInstances();
+  }
+
+  setupInstances() {
+    this.clusterInstances = [];
+    this.totalCost = 0;
     this.getEFSContext();
     this.getEC2Context();
     this.getRDSContext();
-  }
-
-  ngAfterViewInit() {
-    this.loading = false;
   }
 
   getEC2Context() {
@@ -62,6 +64,7 @@ export class ClusterComponent implements OnInit, AfterViewInit {
       } else {
         this.responseFromAWS = reservations;
       }
+      this.loading = false;
     });
   }
 
@@ -119,17 +122,25 @@ export class ClusterComponent implements OnInit, AfterViewInit {
   }
 
   terminateClusterAWS() {
+    this.loading = true;
     for (const instance of this.clusterInstances) {
       this.amazonWebService.destroy(instance.serviceType, instance.id, this.cluster.region).subscribe(data => {
         this.responseFromAWS = data;
       });
     }
+    setTimeout(() => {
+      this.setupInstances();
+    }, 5000);
   }
 
   terminateClusterJenkins() {
+    this.loading = true;
     this.jenkinsService.destroy(this.cluster.name).subscribe(data => {
       this.responseFromAWS = data;
     });
+    setTimeout(() => {
+      this.setupInstances();
+    }, 10000);
   }
 
   getTag(tags, key) {

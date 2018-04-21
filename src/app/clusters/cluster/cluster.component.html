@@ -15,6 +15,9 @@
       </div>
       <div class="col-md-3">
         <div class="float-right button-bar">
+          <button type="button" class="btn btn-outline-primary" id="refresh-{{cluster.name}}" (click)="setupInstances()">
+            <i class="fas fa-sync-alt fa-lg"></i>
+          </button>
           <button type="button" class="btn btn-outline-danger" id="terminate-AWS-{{cluster.name}}" (click)="terminateClusterAWS()">
             <i class="fas fa-trash-alt fa-lg "></i>
             <i style="margin-left:10px " class="fab fa-aws fa-lg"></i>
