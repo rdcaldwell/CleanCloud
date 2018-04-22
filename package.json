@@ -10,7 +10,9 @@
     "start": "ng build && node server.js",
     "karma": "ng test --code-coverage",
     "mocha": "nyc mocha src/api/test/*.js",
-    "dev": "ng serve --proxy-config proxy.json | nodemon server.js"
+    "dev": "ng serve --proxy-config proxy.json | nodemon server.js",
+    "testserve": "ng serve --port 8888",
+    "testnode": "node server.js"
   },
   "private": true,
   "dependencies": {
@@ -90,7 +92,6 @@
     "karma-coverage-istanbul-reporter": "^1.2.1",
     "karma-jasmine": "~1.1.0",
     "karma-jasmine-html-reporter": "^0.2.2",
-    "mockery": "^2.1.0",
     "protractor": "~5.1.2",
     "ts-node": "~4.1.0",
     "tslint": "~5.9.1",

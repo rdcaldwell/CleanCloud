@@ -8,6 +8,7 @@ import { EfsComponent } from '../efs/efs.component';
 import { RdsComponent } from '../rds/rds.component';
 import { MomentModule } from 'angular2-moment';
 import { MatDialogModule } from '@angular/material';
+import {AmazonWebService} from '../services/amazonweb.service';
 
 describe('DashboardComponent', () => {
   let component: DashboardComponent;
@@ -27,7 +28,7 @@ describe('DashboardComponent', () => {
         EfsComponent,
         RdsComponent
       ],
-      providers: [
+      providers: [ AmazonWebService,
         MockBackend,
         { provide: XHRBackend, useClass: MockBackend }
       ]

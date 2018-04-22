@@ -49,12 +49,6 @@ describe('RegisterComponent', () => {
     expect(spy).toHaveBeenCalled();
   })));
 
-  // it('should catch error in register method', fakeAsync(inject([AuthenticationService],
-  //   (authenticationService: AuthenticationService) => {
-  //   //spyOn(authenticationService, 'register').and.returnValue(Observable.throw({status: 404}));
-  //   //component.register();
-  // })));
-
   it('should validate Email', (inject([AuthenticationService],
     (authenticationService: AuthenticationService) => {
     component.credentials.email = 'testemail@email.com';

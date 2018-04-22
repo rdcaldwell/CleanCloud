@@ -1,58 +1,59 @@
-// /* eslint-disable */
-// require('dotenv').config({
-//   path: '../../../.env'
-// });
-// const ANALYTICS_CONTROLLER = require('../controllers/analytics');
-// const http_mocks = require('node-mocks-http');
-// const should = require('should')
-// const AWS = require('aws-sdk-mock');
-//
-// const buildResponse = () => {
-//   return http_mocks.createResponse({
-//     eventEmitter: require('events').EventEmitter
-//   });
-// };
-//
-// describe('Analytics', () => {
-//   describe('/GET analyzeByID', () => {
-//     it('should get analysis by Id', (done) => {
-//       AWS.mock('CLOUD_WATCH', 'getMetricStatistics');
-//
-//       const res = buildResponse();
-//       const req = http_mocks.createRequest({
-//         method: 'GET',
-//         url: '/api/analyze',
-//       });
-//
-//
-//       res.on('end', () => {
-//         res._getData().should.equal('"No efs data"');
-//         done();
-//       });
-//
-//       ANALYTICS_CONTROLLER.analyzeById(req, res);
-//       AWS.restore('CLOUD_WATCH');
-//     });
-//
-//     it('should get analysis by Id error', (done) => {
-//       AWS.mock('CLOUD_WATCH', 'getMetricStatistics', (callback) => {
-//         callback("Error", null);
-//       });
-//
-//       const res = buildResponse();
-//       const req = http_mocks.createRequest({
-//         method: 'GET',
-//         url: '/api/analyze',
-//       });
-//
-//
-//       res.on('end', () => {
-//         res._getData().should.equal('"Error"');
-//         done();
-//       });
-//
-//       ANALYTICS_CONTROLLER.analyzeById(req, res);
-//       AWS.restore('CLOUD_WATCH');
-//     });
-//   });
-// });
+/* eslint quotes:0, arrow-body-style:0, quote-props:0,
+ no-underscore-dangle:0, no-undef:0, no-unused-vars:0
+*/
+const ANALYTICS_CONTROLLER = require('../controllers/analytics');
+const HTTP_MOCKS = require('node-mocks-http');
+const should = require('should');
+const sinon = require('sinon');
+const events = require('events');
+const AWS = require('aws-sdk-mock');
+require('../config/tests');
+
+const buildResponse = () => {
+  return HTTP_MOCKS.createResponse({
+    eventEmitter: events.EventEmitter,
+  });
+};
+
+describe('Analytics', () => {
+  describe('/POST analyze', () => {
+    it('should get error profile', () => {
+      AWS.mock('CloudWatch', 'getMetricStatistics', ({}, callback) => {
+        callback("Error", null);
+      });
+      const res = buildResponse();
+      const req = HTTP_MOCKS.createRequest({
+        method: 'POST',
+        url: '/api/analyze',
+        body: { id: '2' },
+      });
+
+      req.on('end', () => {
+        res._getStatusCode().should.equal(401);
+        res._getData().should.instanceOf(Object);
+        done();
+      });
+
+      ANALYTICS_CONTROLLER.analyzeById(req, res);
+      AWS.restore('CloudWatch')
+    });
+    it('should get profile', (done) => {
+      AWS.mock('CloudWatch', 'getMetricStatistics', {});
+      const res = buildResponse();
+      const req = HTTP_MOCKS.createRequest({
+        method: 'POST',
+        url: '/api/analyze',
+        body: { id: '2' },
+      });
+
+      res.on('end', () => {
+        res._getStatusCode().should.equal(200);
+        res._getData().should.instanceOf(Object);
+        done();
+      });
+
+      ANALYTICS_CONTROLLER.analyzeById(req, res);
+      AWS.restore('CloudWatch')
+    });
+  });
+});
