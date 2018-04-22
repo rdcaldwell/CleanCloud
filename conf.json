@@ -1,0 +1,17 @@
+{
+  "templates": {
+    "systemName": "CleanCloud Controller Docs",
+    "includeDate": true,
+    "navType": "vertical",
+    "theme": "cosmo",
+    "linenums": true,
+    "collapseSymbols": true,
+    "inverseNav": true,
+    "outputSourceFiles": true,
+    "outputSourcePath": true,
+    "dateFormat": "M/D/YY h:mm A",
+    "syntaxTheme": "dark",
+    "sort": true,
+    "search": true
+  }
+}

@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>CleanCloud Controller Docs Source: cluster.js</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.dark.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.cosmo.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">CleanCloud Controller Docs</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="module-AnalyticsController.html">AnalyticsController</a></li><li><a href="module-AuthenticationController.html">AuthenticationController</a></li><li><a href="module-ClusterController.html">ClusterController</a></li><li><a href="module-EC2Controller.html">EC2Controller</a></li><li><a href="module-EFSController.html">EFSController</a></li><li><a href="module-EmailController.html">EmailController</a></li><li><a href="module-JanitorController.html">JanitorController</a></li><li><a href="module-JenkinsController.html">JenkinsController</a></li><li><a href="module-JobsController.html">JobsController</a></li><li><a href="module-PriceController.html">PriceController</a></li><li><a href="module-RDSController.html">RDSController</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-12">
+	
+		<div id="main">
+			
+
+		<h1 class="page-title">Source: cluster.js</h1>
+    
+<section>
+    <article>
+        <pre
+            class="sunlight-highlight-javascript linenums">/** @module ClusterController */
+/* eslint no-param-reassign:0, no-unused-vars: 0, consistent-return:0 */
+const ASYNC = require('async');
+const AWS = require('aws-sdk');
+const LOGGER = require('log4js').getLogger('cluster');
+const moment = require('moment');
+const EMAIL_CONTROLLER = require('./email');
+const JOB_CONTROLLER = require('./job');
+const JANITOR_CONTROLLER = require('./janitor');
+const Cluster = require('../models/cluster');
+const UTILS = require('../config/utils');
+
+LOGGER.level = 'info';
+
+/**
+ * Marks cluster for destruction, schedules destruction, and notifies owner via email.
+ * @param {object} cluster - The cluster to be marked.
+ */
+const markCluster = (cluster) => {
+  cluster.marked = true;
+  LOGGER.info(`${cluster.context} marked`);
+  JOB_CONTROLLER.scheduleJob(cluster.context, cluster.startedBy);
+  EMAIL_CONTROLLER.emailStartedBy(cluster.context, cluster.startedBy, 'marked for destruction');
+  cluster.jobIndex = JOB_CONTROLLER.jobs.length - 1;
+  cluster.save();
+};
+
+/**
+ * Finds and marks clusters that are running past the age threshold
+ * @param {array} ids - Ids parsed from email.
+module.exports.markClusters = () => {
+  LOGGER.info('Janitor running');
+  CLUSTER.find({
+    marked: false,
+    monitored: true,
+  }, (err, clusters) => {
+    ASYNC.forEachOf(clusters, (cluster) => {
+      const threshold = new Date(moment(cluster.launchTime).add(1, 'minute'));
+      if (new Date() > threshold) {
+        markCluster(cluster);
+      }
+    });
+  });
+};
+*/
+
+/**
+ * Finds and marks cluster from ids parsed from email.
+ * @param {array} ids - Ids parsed from email.
+ */
+module.exports.markClustersFromEmail = (ids) => {
+  Cluster.Model.find({
+    marked: false,
+  }, (err, clusters) => {
+    ASYNC.forEachOf(clusters, (cluster) => {
+      ASYNC.forEachOf(ids, (id) => {
+        if (cluster.resourceIds.includes(id)) {
+          markCluster(cluster);
+        }
+      });
+    });
+  });
+};
+
+/**
+ * Route for getting all clusters.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - All clusters.
+ */
+module.exports.getClusters = (req, res) => {
+  Cluster.Model.find({}, (err, clusters) => {
+    if (err) res.json(err);
+    else res.json(clusters);
+  });
+};
+
+/**
+ * Route for removing monitor tag from cluster after it has been opted out.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - Message that monitor has been removed.
+ */
+module.exports.removeClusterMonitor = (req, res) => {
+  Cluster.Model.findOne({
+    _id: req.params.id,
+  }, (err, cluster) => {
+    if (err) res.json(err);
+    else {
+      cluster.monitored = false;
+      cluster.save();
+      res.json('Monitor removed');
+    }
+  });
+};
+
+/**
+ * Adds monitor tag from cluster after it has been opted in.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - Message that monitor has been added.
+ */
+module.exports.addClusterMonitor = (req, res) => {
+  Cluster.Model.findOne({
+    _id: req.params.id,
+  }, (err, cluster) => {
+    if (err) res.json(err);
+    else {
+      cluster.monitored = true;
+      cluster.save();
+      res.json('Monitor added');
+    }
+  });
+};
+
+/**
+ * Removes clusters no longer in AWS from DB.
+ */
+module.exports.cleanClusterDB = () => {
+  LOGGER.info('Cleaning up cluster DB');
+  Cluster.Model.find({}, (err, clusters) => {
+    if (err) LOGGER.error(err);
+    else {
+      ASYNC.forEachOf(clusters, (cluster) => {
+        let isFound = false;
+        const EC2 = new AWS.EC2({
+          apiVersion: '2016-11-15',
+          region: cluster.region,
+        });
+
+        EC2.describeTags({}, (tagerr, data) => {
+          if (tagerr) LOGGER.error(tagerr);
+          else {
+            ASYNC.forEachOf(data.Tags, (tag, i, callback) => {
+              if (tag.Value === cluster.context) isFound = true;
+              callback();
+            }, (looperr) => {
+              if (!isFound) {
+                Cluster.Model.findByIdAndRemove({
+                  _id: cluster._id,
+                }, (founderr) => {
+                  if (founderr) LOGGER.error(founderr);
+                  else LOGGER.info(`${cluster.context} removed from db`);
+                });
+              }
+            });
+          }
+        });
+      });
+    }
+  });
+};
+
+/**
+ * Adds clusters in AWS that are not in the DB.
+ */
+module.exports.setClusterDB = () => {
+  LOGGER.info('Setting up cluster DB');
+
+  const namesPromise = new Promise((resolve, reject) => {
+    const cluster = [];
+    ASYNC.forEachOf(UTILS.regions, (awsRegion, i, regionCallback) => {
+      const EC2 = new AWS.EC2({
+        apiVersion: '2016-11-15',
+        region: awsRegion,
+      });
+
+      EC2.describeInstances((describeErr, data) => {
+        if (describeErr) LOGGER.error(describeErr);
+        else if (data.Reservations.length !== 0) {
+          ASYNC.forEachOf(data.Reservations, (reservation, index) => {
+            ASYNC.forEachOf(reservation.Instances, (describedInstance) => {
+              if (describedInstance.Tags.length) {
+                const temp = {
+                  name: null,
+                  startedBy: null,
+                  region: null,
+                  launchTime: null,
+                };
+
+                ASYNC.forEachOf(describedInstance.Tags, (tag, j, tagCallback) => {
+                  if (tag.Key === 'Context' &amp;&amp; cluster.indexOf(tag.Key) &lt; 0) {
+                    temp.name = tag.Value;
+                    temp.region = describedInstance.Placement.AvailabilityZone.slice(0, -1);
+                    temp.launchTime = describedInstance.LaunchTime;
+                  } else if (tag.Key === 'startedBy') {
+                    temp.startedBy = tag.Value;
+                  }
+                  tagCallback();
+                }, (tagErr) => {
+                  if (temp.name !== null) {
+                    cluster.push(temp);
+                  }
+                });
+              }
+            });
+          });
+        }
+        regionCallback();
+      });
+    }, (regionErr) => {
+      resolve(cluster);
+    });
+  });
+
+  namesPromise.then((clusterData) => {
+    ASYNC.forEachOf(clusterData, (clusterDatum) => {
+      Cluster.Model.findOne({
+        context: clusterDatum.name,
+      }, (err, cluster) => {
+        const contextDataPromise = new Promise((resolve, reject) => {
+          if (cluster === null) {
+            const contextData = {
+              monkeyPort: null,
+              monitored: false,
+              marked: false,
+              destroyed: false,
+              destructionDate: null,
+              jobIndex: null,
+              resourceIds: [],
+              context: clusterDatum.name,
+              startedBy: clusterDatum.startedBy,
+              region: clusterDatum.region,
+              launchTime: clusterDatum.launchTime,
+            };
+
+            if (JANITOR_CONTROLLER.isJanitorRunning()) {
+              Cluster.Model.update({}, {
+                monkeyPort: 8080,
+                monitored: true,
+              }, {
+                multi: true,
+              }, (clustererr) => {
+                if (err) LOGGER.err(err);
+                else LOGGER.info('updated cluster');
+              });
+            }
+
+            const params = {
+              Filters: [{
+                Name: 'tag-value',
+                Values: [clusterDatum.name],
+              }],
+            };
+
+            const EC2 = new AWS.EC2({
+              apiVersion: '2016-11-15',
+              region: clusterDatum.region,
+            });
+
+            EC2.describeInstances(params, (ec2err, ec2data) => {
+              if (ec2err) LOGGER.error(ec2err);
+              else if (ec2data.Reservations.length) {
+                ec2data.Reservations.forEach((reservation) => {
+                  reservation.Instances.forEach((instance) => {
+                    contextData.resourceIds.push(instance.InstanceId);
+                  });
+                });
+                resolve(contextData);
+              }
+            });
+          } else {
+            reject(Error('Cluster exists'));
+          }
+        });
+
+        contextDataPromise.then((contextData) => {
+          const newCluster = new Cluster.Model();
+          newCluster.context = contextData.context;
+          newCluster.startedBy = contextData.startedBy;
+          newCluster.monitored = contextData.monitored;
+          newCluster.marked = contextData.marked;
+          newCluster.destroyed = contextData.destroyed;
+          newCluster.destructionDate = contextData.destructionDate;
+          newCluster.jobIndex = contextData.jobIndex;
+          newCluster.resourceIds = contextData.resourceIds;
+          newCluster.monkeyPort = contextData.monkeyPort;
+          newCluster.region = contextData.region;
+          newCluster.launchTime = contextData.launchTime;
+          newCluster.save();
+          LOGGER.info(`${contextData.context} cluster added to db`);
+        }).catch(() => {});
+      });
+    });
+  });
+};
+</pre>
+    </article>
+</section>
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+
+</div>
+</div>
+
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
+
+<footer>
+
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
+	
+		on 4/21/18 8:35 PM
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+<script>
+	$( function () {
+		$( '#main' ).localScroll( {
+			offset : { top : 60 } //offset by the height of your header (give or take a few px, see what works for you)
+		} );
+		$( "dt.name" ).each( function () {
+			var $this = $( this ).find("h4");
+			var icon = $( "<i/>" ).addClass( "icon-plus-sign" ).addClass( "pull-right" ).addClass( "icon-white" );
+			var dt = $(this);
+			var children = dt.next( "dd" );
+
+			dt.prepend( icon ).css( {cursor : "pointer"} );
+			dt.addClass( "member-collapsed" ).addClass( "member" );
+
+
+			children.hide();
+
+			dt.children().on( "click", function () {
+				children = dt.next( "dd" );
+				children.slideToggle( "fast", function () {
+
+					if ( children.is( ":visible" ) ) {
+						icon.addClass( "icon-minus-sign" ).removeClass( "icon-plus-sign" ).removeClass( "icon-white" );
+						dt.addClass( "member-open" ).animate( "member-collapsed" );
+					} else {
+						icon.addClass( "icon-plus-sign" ).removeClass( "icon-minus-sign" ).addClass( "icon-white" );
+						dt.addClass( "member-collapsed" ).removeClass( "member-open" );
+					}
+				} );
+			} );
+
+		} );
+	} );
+</script>
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
+
+
+</body>
+</html>
