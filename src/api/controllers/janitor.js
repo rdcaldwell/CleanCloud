@@ -27,6 +27,21 @@ function createJanitor(janitorConfig) {
 }
 
 /**
+ * Adds running janitor to formulated clusters.
+ */
+const addJanitorToClusters = () => {
+  Cluster.Model.update({}, {
+    monkeyPort: 8080,
+    monitored: true,
+  }, {
+    multi: true,
+  }, (clustererr) => {
+    if (clustererr) LOGGER.err(clustererr);
+    else LOGGER.info('updated cluster');
+  });
+};
+
+/**
  * Route for running the Simian Army Janitor Monkey Docker image.
  * @param {object} req - The request.
  * @param {object} res - The response.
@@ -52,15 +67,7 @@ module.exports.run = (req, res) => {
   };
   janitorConfig.ports[8080] = 8080;
 
-  Cluster.Model.update({}, {
-    monkeyPort: 8080,
-    monitored: true,
-  }, {
-    multi: true,
-  }, (err) => {
-    if (err) LOGGER.err(err);
-    else LOGGER.info('updated cluster');
-  });
+  addJanitorToClusters();
 
   dockerJanitor = run('rdcaldwell/janitor:latest', janitorConfig);
   process.stdin.pipe(dockerJanitor.stdin);
@@ -140,3 +147,5 @@ module.exports.isJanitorRunning = () => dockerJanitor !== undefined;
 module.exports.isJanitorRunningRoute = (req, res) => {
   res.json(dockerJanitor !== undefined);
 };
+
+module.exports.addJanitorToClusters = addJanitorToClusters;

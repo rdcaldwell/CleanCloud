@@ -79,7 +79,7 @@ module.exports.emailStartedBy = (clusterName, startedBy, message) => {
         Charset: 'UTF-8',
       },
     },
-    Source: 'cloudianapp@gmail.com',
+    Source: 'cleancloudapp@gmail.com',
   };
   SES.sendEmail(params, (err, data) => {
     if (err) LOGGER.error(err);

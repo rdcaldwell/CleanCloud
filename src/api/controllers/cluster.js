@@ -152,134 +152,147 @@ module.exports.cleanClusterDB = () => {
 };
 
 /**
+ * Gets all cluster names.
+ * @param {function} callback - Callback function with cluster names.
+ */
+const getClusterNames = (callback) => {
+  const cluster = [];
+  ASYNC.forEachOf(UTILS.regions, (awsRegion, i, regionCallback) => {
+    const EC2 = new AWS.EC2({
+      apiVersion: '2016-11-15',
+      region: awsRegion,
+    });
+
+    EC2.describeInstances((describeErr, data) => {
+      if (describeErr) LOGGER.error(describeErr);
+      else if (data.Reservations.length !== 0) {
+        ASYNC.forEachOf(data.Reservations, (reservation, index) => {
+          ASYNC.forEachOf(reservation.Instances, (describedInstance) => {
+            if (describedInstance.Tags.length) {
+              const temp = {
+                name: null,
+                startedBy: null,
+                region: null,
+                launchTime: null,
+              };
+
+              ASYNC.forEachOf(describedInstance.Tags, (tag, j, tagCallback) => {
+                if (tag.Key === 'Context' && cluster.indexOf(tag.Key) < 0) {
+                  temp.name = tag.Value;
+                  temp.region = describedInstance.Placement.AvailabilityZone.slice(0, -1);
+                  temp.launchTime = describedInstance.LaunchTime;
+                } else if (tag.Key === 'startedBy') {
+                  temp.startedBy = tag.Value;
+                }
+                tagCallback();
+              }, (tagErr) => {
+                if (temp.name !== null) {
+                  cluster.push(temp);
+                }
+              });
+            }
+          });
+        });
+      }
+      regionCallback();
+    });
+  }, () => {
+    callback(cluster);
+  });
+};
+
+/**
+ * Gets all the EC2 instance ids associated with a cluster.
+ * @param {string} name - The name of the cluster.
+ * @param {string} region - The region of the cluster.
+ * @param {function} callback - Callback function with resource ids.
+ */
+const getResourceIds = (name, region, callback) => {
+  const resourceIds = [];
+  const params = {
+    Filters: [{
+      Name: 'tag-value',
+      Values: [name],
+    }],
+  };
+  const EC2 = new AWS.EC2({
+    apiVersion: '2016-11-15',
+    region: region,
+  });
+
+  EC2.describeInstances(params, (ec2err, ec2data) => {
+    if (ec2err) LOGGER.error(ec2err);
+    else if (ec2data.Reservations.length) {
+      ASYNC.forEachOf(ec2data.Reservations, (reservation, i, ec2callback) => {
+        ASYNC.forEachOf(reservation.Instances, (instance) => {
+          resourceIds.push(instance.InstanceId);
+        });
+        ec2callback();
+      }, () => {
+        callback(resourceIds);
+      });
+    }
+  });
+};
+
+/**
+ * Formulates cluster with all necessary data.
+ * @param {object} cluster - The data of the cluster.
+ * @param {function} callback - Callback function with formulated cluster.
+ */
+const formulateCluster = (cluster, callback) => {
+  const contextData = {
+    monkeyPort: null,
+    monitored: false,
+    marked: false,
+    destroyed: false,
+    destructionDate: null,
+    jobIndex: null,
+    resourceIds: [],
+    context: cluster.name,
+    startedBy: cluster.startedBy,
+    region: cluster.region,
+    launchTime: cluster.launchTime,
+  };
+
+  if (JANITOR_CONTROLLER.isJanitorRunning()) {
+    JANITOR_CONTROLLER.addJanitorToClusters();
+  }
+
+  getResourceIds(cluster.name, cluster.region, (resourceIds) => {
+    contextData.resourceIds = resourceIds;
+    callback(contextData);
+  });
+};
+
+/**
  * Adds clusters in AWS that are not in the DB.
  */
 module.exports.setClusterDB = () => {
   LOGGER.info('Setting up cluster DB');
-
-  const namesPromise = new Promise((resolve, reject) => {
-    const cluster = [];
-    ASYNC.forEachOf(UTILS.regions, (awsRegion, i, regionCallback) => {
-      const EC2 = new AWS.EC2({
-        apiVersion: '2016-11-15',
-        region: awsRegion,
-      });
-
-      EC2.describeInstances((describeErr, data) => {
-        if (describeErr) LOGGER.error(describeErr);
-        else if (data.Reservations.length !== 0) {
-          ASYNC.forEachOf(data.Reservations, (reservation, index) => {
-            ASYNC.forEachOf(reservation.Instances, (describedInstance) => {
-              if (describedInstance.Tags.length) {
-                const temp = {
-                  name: null,
-                  startedBy: null,
-                  region: null,
-                  launchTime: null,
-                };
-
-                ASYNC.forEachOf(describedInstance.Tags, (tag, j, tagCallback) => {
-                  if (tag.Key === 'Context' && cluster.indexOf(tag.Key) < 0) {
-                    temp.name = tag.Value;
-                    temp.region = describedInstance.Placement.AvailabilityZone.slice(0, -1);
-                    temp.launchTime = describedInstance.LaunchTime;
-                  } else if (tag.Key === 'startedBy') {
-                    temp.startedBy = tag.Value;
-                  }
-                  tagCallback();
-                }, (tagErr) => {
-                  if (temp.name !== null) {
-                    cluster.push(temp);
-                  }
-                });
-              }
-            });
-          });
-        }
-        regionCallback();
-      });
-    }, (regionErr) => {
-      resolve(cluster);
-    });
-  });
-
-  namesPromise.then((clusterData) => {
+  getClusterNames((clusterData) => {
     ASYNC.forEachOf(clusterData, (clusterDatum) => {
       Cluster.Model.findOne({
         context: clusterDatum.name,
       }, (err, cluster) => {
-        const contextDataPromise = new Promise((resolve, reject) => {
-          if (cluster === null) {
-            const contextData = {
-              monkeyPort: null,
-              monitored: false,
-              marked: false,
-              destroyed: false,
-              destructionDate: null,
-              jobIndex: null,
-              resourceIds: [],
-              context: clusterDatum.name,
-              startedBy: clusterDatum.startedBy,
-              region: clusterDatum.region,
-              launchTime: clusterDatum.launchTime,
-            };
-
-            if (JANITOR_CONTROLLER.isJanitorRunning()) {
-              Cluster.Model.update({}, {
-                monkeyPort: 8080,
-                monitored: true,
-              }, {
-                multi: true,
-              }, (clustererr) => {
-                if (err) LOGGER.err(err);
-                else LOGGER.info('updated cluster');
-              });
-            }
-
-            const params = {
-              Filters: [{
-                Name: 'tag-value',
-                Values: [clusterDatum.name],
-              }],
-            };
-
-            const EC2 = new AWS.EC2({
-              apiVersion: '2016-11-15',
-              region: clusterDatum.region,
-            });
-
-            EC2.describeInstances(params, (ec2err, ec2data) => {
-              if (ec2err) LOGGER.error(ec2err);
-              else if (ec2data.Reservations.length) {
-                ec2data.Reservations.forEach((reservation) => {
-                  reservation.Instances.forEach((instance) => {
-                    contextData.resourceIds.push(instance.InstanceId);
-                  });
-                });
-                resolve(contextData);
-              }
-            });
-          } else {
-            reject(Error('Cluster exists'));
-          }
-        });
-
-        contextDataPromise.then((contextData) => {
-          const newCluster = new Cluster.Model();
-          newCluster.context = contextData.context;
-          newCluster.startedBy = contextData.startedBy;
-          newCluster.monitored = contextData.monitored;
-          newCluster.marked = contextData.marked;
-          newCluster.destroyed = contextData.destroyed;
-          newCluster.destructionDate = contextData.destructionDate;
-          newCluster.jobIndex = contextData.jobIndex;
-          newCluster.resourceIds = contextData.resourceIds;
-          newCluster.monkeyPort = contextData.monkeyPort;
-          newCluster.region = contextData.region;
-          newCluster.launchTime = contextData.launchTime;
-          newCluster.save();
-          LOGGER.info(`${contextData.context} cluster added to db`);
-        }).catch(() => {});
+        if (!cluster) {
+          formulateCluster(clusterDatum, (contextData) => {
+            const newCluster = new Cluster.Model();
+            newCluster.context = contextData.context;
+            newCluster.startedBy = contextData.startedBy;
+            newCluster.monitored = contextData.monitored;
+            newCluster.marked = contextData.marked;
+            newCluster.destroyed = contextData.destroyed;
+            newCluster.destructionDate = contextData.destructionDate;
+            newCluster.jobIndex = contextData.jobIndex;
+            newCluster.resourceIds = contextData.resourceIds;
+            newCluster.monkeyPort = contextData.monkeyPort;
+            newCluster.region = contextData.region;
+            newCluster.launchTime = contextData.launchTime;
+            newCluster.save();
+            LOGGER.info(`${contextData.context} cluster added to db`);
+          });
+        }
       });
     });
   });
