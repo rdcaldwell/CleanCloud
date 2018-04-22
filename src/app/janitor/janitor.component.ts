@@ -19,11 +19,17 @@ export class JanitorComponent implements OnInit {
   constructor(private janitorService: JanitorService,
     public dialog: MatDialog) { }
 
+  /**
+   * Gets all janitors and check if janitor is running on component intialization.
+   */
   ngOnInit() {
     this.getJanitors();
     this.isJanitorRunning();
   }
 
+  /**
+   * Gets all janitors.
+   */
   getJanitors() {
     this.janitors = [];
     this.janitorService.getJanitors().subscribe(janitors => {
@@ -34,6 +40,9 @@ export class JanitorComponent implements OnInit {
     });
   }
 
+  /**
+   * Open janitor configuration modal.
+   */
   createJanitor() {
     const janitorDialog = this.dialog.open(JanitorDialogComponent, {
       width: '40%'
@@ -45,16 +54,22 @@ export class JanitorComponent implements OnInit {
     });
   }
 
-  destroyJanitor() {
-    for (const janitor of this.janitors) {
-      this.janitorService.destroyJanitor(janitor._id).subscribe(data => {
-        this.getJanitors();
-        this.isJanitorRunning();
-        alert(data);
-      });
-    }
+  /**
+   * Destroys janitor instance by id.
+   * @param {string} id - The janitor id.
+   */
+  destroyJanitor(id) {
+    this.janitorService.destroyJanitor(id).subscribe(data => {
+      this.getJanitors();
+      this.isJanitorRunning();
+      alert(data);
+    });
+
   }
 
+  /**
+   * Checks state of the janitor.
+   */
   isJanitorRunning() {
     this.janitorService.isJanitorRunning().subscribe(running => {
       this.janitorRunning = running;

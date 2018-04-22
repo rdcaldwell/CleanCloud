@@ -1,3 +1,4 @@
+/** @module EFSController */
 /* eslint no-param-reassign:0 */
 const ASYNC = require('async');
 const AWS = require('aws-sdk');
@@ -6,7 +7,12 @@ const UTILS = require('../config/utils');
 
 LOGGER.level = 'info';
 
-/* GET EFS instances */
+/**
+ * Route for describing EFS file systems.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - All EFS data.
+ */
 module.exports.describe = (req, res) => {
   const efsData = [];
   ASYNC.forEachOf(UTILS.regions, (awsRegion, i, callback) => {
@@ -43,7 +49,14 @@ module.exports.describe = (req, res) => {
   });
 };
 
-/* Terminate EFS Instances by id */
+/**
+ * Route for terminating EFS file systems by id.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @param {req.query} region - The region of instance
+ * @param {req.query} id - The id of instance.
+ * @returns {object} - Message that file system is terminated.
+ */
 module.exports.terminateById = (req, res) => {
   const EFS = new AWS.EFS({
     apiVersion: '2015-02-01',

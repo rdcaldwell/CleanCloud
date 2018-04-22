@@ -37,7 +37,7 @@
           <td>{{ janitor.sourceEmail }}</td>
           <td>{{ janitor.isMonkeyTime }}</td>
           <td *ngIf="janitorRunning">
-            <button type="button" class="btn btn-outline-danger" id="terminate-Janitor" (click)="destroyJanitor()">
+            <button type="button" class="btn btn-outline-danger" id="terminate-Janitor" (click)="destroyJanitor(janitor._id)">
               <i class="fas fa-trash-alt fa-lg"></i>
             </button>
           </td>

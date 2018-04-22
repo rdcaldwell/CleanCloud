@@ -1,3 +1,4 @@
+/** @module RDSController */
 /* eslint no-param-reassign:0 */
 const AWS = require('aws-sdk');
 const LOGGER = require('log4js').getLogger('RDS');
@@ -6,7 +7,12 @@ const UTILS = require('../config/utils');
 
 LOGGER.level = 'info';
 
-/* GET RDS DB instances */
+/**
+ * Route for describing RDS databases.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - All RDS data.
+ */
 module.exports.describe = (req, res) => {
   const rdsData = [];
   ASYNC.forEachOf(UTILS.regions, (awsRegion, i, callback) => {
@@ -40,7 +46,14 @@ module.exports.describe = (req, res) => {
   });
 };
 
-/* Terminate EFS Instances by id */
+/**
+ * Route for terminating RDS database by id.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @param {req.query} region - The region of instance.
+ * @param {req.query} id - The id of instance.
+ * @returns {object} - Message that database is terminated.
+ */
 module.exports.terminateById = (req, res) => {
   const RDS = new AWS.RDS({
     apiVersion: '2014-10-31',

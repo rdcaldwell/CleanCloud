@@ -14,10 +14,16 @@ export class EfsComponent implements OnInit {
 
   constructor(private amazonWebService: AmazonWebService) { }
 
+  /**
+   * Sets up instances on component initialization.
+   */
   ngOnInit() {
     this.setupInstances();
   }
 
+  /**
+   * Gets all EFS instance data and creates instance array.
+   */
   setupInstances() {
     this.loading = true;
     this.efsInstances = [];
@@ -26,9 +32,9 @@ export class EfsComponent implements OnInit {
         for (const instance of data) {
           const instanceData = {
             id: instance.FileSystemId,
-            context: this.getTag(instance.Tags, 'Context'),
-            name: this.getTag(instance.Tags, 'Name'),
-            zone: this.getTag(instance.Tags, 'Region'),
+            context: this.amazonWebService.getTag(instance.Tags, 'Context'),
+            name: this.amazonWebService.getTag(instance.Tags, 'Name'),
+            zone: this.amazonWebService.getTag(instance.Tags, 'Region'),
             size: instance.SizeInBytes.Value,
             status: instance.LifeCycleState,
             creationDate: instance.CreationTime,
@@ -36,13 +42,13 @@ export class EfsComponent implements OnInit {
           };
           this.efsInstances.push(instanceData);
         }
-      } else {
-        this.responseFromAWS = data;
       }
       this.loading = false;
     });
   }
-
+  /**
+   * Terminates all checked EFS instances.
+   */
   terminateInstances() {
     this.loading = true;
     for (const instance of this.efsInstances) {
@@ -50,23 +56,12 @@ export class EfsComponent implements OnInit {
         this.amazonWebService.destroy('efs', instance.id, 'ap-southeast-2').subscribe(data => {
           this.responseFromAWS = data;
         });
-      } else {
-        this.responseFromAWS = 'No instances checked for termination';
       }
     }
     setTimeout(() => {
       this.setupInstances();
     }, 3000);
   }
-
-  getTag(tags, key) {
-    for (const tag of tags) {
-      if (tag.Key === key) {
-        return tag.Value;
-      }
-    }
-  }
-
 }
 
 export interface EFSInstance {

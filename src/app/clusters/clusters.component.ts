@@ -14,6 +14,9 @@ export class ClustersComponent implements OnInit {
 
   constructor(private clusterService: ClusterService) { }
 
+  /**
+   * Get all cluster names on component initialization.
+   */
   ngOnInit() {
     this.clusterService.contextNames().subscribe(data => {
       this.context = data;

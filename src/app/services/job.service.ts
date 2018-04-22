@@ -8,7 +8,11 @@ export class JobService {
 
   constructor(private http: Http) {}
 
-  cancelJob(name) {
+  /**
+   * API call for canceling the destruction of a cluster.
+   * @param {string} name - The name of the cluster.
+   */
+  cancelJob(name: string) {
     return this.http.get(`/api/job/cancel/${name}`).map(res => res.json());
   }
 

@@ -8,14 +8,22 @@ export class SimianArmyService {
 
   constructor(private http: Http) {}
 
-  optOut(resourceId) {
+  /**
+   * Simian Army REST API call for opting instance out of monitoring.
+   * @param {string} resourceId - The id of the resource.
+   */
+  optOut(resourceId: string) {
     return this.http.post(`http://localhost:8080/simianarmy/api/v1/janitor`, {
       'eventType': 'OPTOUT',
       'resourceId': resourceId
     }).map(res => res.json());
   }
 
-  optIn(resourceId) {
+  /**
+   * Simian Army REST API call for opting instance into monitoring.
+   * @param {string} resourceId - The id of the resource.
+   */
+  optIn(resourceId: string) {
     return this.http.post(`http://localhost:8080/simianarmy/api/v1/janitor`, {
       'eventType': 'OPTIN',
       'resourceId': resourceId

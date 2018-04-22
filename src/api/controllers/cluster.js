@@ -1,3 +1,4 @@
+/** @module ClusterController */
 /* eslint no-param-reassign:0, no-unused-vars: 0, consistent-return:0 */
 const ASYNC = require('async');
 const AWS = require('aws-sdk');
@@ -11,7 +12,10 @@ const UTILS = require('../config/utils');
 
 LOGGER.level = 'info';
 
-/* Marks cluster as it is to be destroyed */
+/**
+ * Marks cluster for destruction, schedules destruction, and notifies owner via email.
+ * @param {object} cluster - The cluster to be marked.
+ */
 const markCluster = (cluster) => {
   cluster.marked = true;
   LOGGER.info(`${cluster.context} marked`);
@@ -21,7 +25,9 @@ const markCluster = (cluster) => {
   cluster.save();
 };
 
-/*
+/**
+ * Finds and marks clusters that are running past the age threshold
+ * @param {array} ids - Ids parsed from email.
 module.exports.markClusters = () => {
   LOGGER.info('Janitor running');
   CLUSTER.find({
@@ -38,7 +44,10 @@ module.exports.markClusters = () => {
 };
 */
 
-/* Finds clusters from ids parsed from email */
+/**
+ * Finds and marks cluster from ids parsed from email.
+ * @param {array} ids - Ids parsed from email.
+ */
 module.exports.markClustersFromEmail = (ids) => {
   Cluster.Model.find({
     marked: false,
@@ -53,7 +62,12 @@ module.exports.markClustersFromEmail = (ids) => {
   });
 };
 
-/* Returns all clusters */
+/**
+ * Route for getting all clusters.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - All clusters.
+ */
 module.exports.getClusters = (req, res) => {
   Cluster.Model.find({}, (err, clusters) => {
     if (err) res.json(err);
@@ -61,7 +75,12 @@ module.exports.getClusters = (req, res) => {
   });
 };
 
-/* Removes monitor tag from cluster after it has been opted out */
+/**
+ * Route for removing monitor tag from cluster after it has been opted out.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - Message that monitor has been removed.
+ */
 module.exports.removeClusterMonitor = (req, res) => {
   Cluster.Model.findOne({
     _id: req.params.id,
@@ -75,7 +94,12 @@ module.exports.removeClusterMonitor = (req, res) => {
   });
 };
 
-/* Adds monitor tag from cluster after it has been opted in */
+/**
+ * Adds monitor tag from cluster after it has been opted in.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - Message that monitor has been added.
+ */
 module.exports.addClusterMonitor = (req, res) => {
   Cluster.Model.findOne({
     _id: req.params.id,
@@ -89,7 +113,9 @@ module.exports.addClusterMonitor = (req, res) => {
   });
 };
 
-/* Removes clusters no longer in AWS from DB */
+/**
+ * Removes clusters no longer in AWS from DB.
+ */
 module.exports.cleanClusterDB = () => {
   LOGGER.info('Cleaning up cluster DB');
   Cluster.Model.find({}, (err, clusters) => {
@@ -125,7 +151,9 @@ module.exports.cleanClusterDB = () => {
   });
 };
 
-/* Adds clusters in AWS that are not in the DB */
+/**
+ * Adds clusters in AWS that are not in the DB.
+ */
 module.exports.setClusterDB = () => {
   LOGGER.info('Setting up cluster DB');
 

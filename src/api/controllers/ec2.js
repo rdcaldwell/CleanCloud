@@ -1,3 +1,4 @@
+/** @module EC2Controller */
 /* eslint consistent-return:0 */
 const AWS = require('aws-sdk');
 const LOGGER = require('log4js').getLogger('EC2');
@@ -6,7 +7,12 @@ const UTILS = require('../config/utils');
 
 LOGGER.level = 'info';
 
-/* GET EC2 instances */
+/**
+ * Route for describing EC2 instances.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - All EC2 data.
+ */
 module.exports.describe = (req, res) => {
   const ec2Data = [];
   ASYNC.forEachOf(UTILS.regions, (awsRegion, i, callback) => {
@@ -29,7 +35,14 @@ module.exports.describe = (req, res) => {
   });
 };
 
-/* Terminate EC2 Instances by id */
+/**
+ * Route for terminating EC2 instances by id.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @param {req.query} region - The region of instance
+ * @param {req.query} id - The id of instance.
+ * @returns {object} - Message that instance is terminated.
+ */
 module.exports.terminateById = (req, res) => {
   const EC2 = new AWS.EC2({
     apiVersion: '2016-11-15',
@@ -53,6 +66,12 @@ module.exports.terminateById = (req, res) => {
   });
 };
 
+/**
+ * Route for getting cluster data by its Context tag.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - Cluster data matching Context tag.
+ */
 module.exports.getContextById = (req, res) => {
   const EC2 = new AWS.EC2({
     apiVersion: '2016-11-15',
@@ -76,6 +95,12 @@ module.exports.getContextById = (req, res) => {
   });
 };
 
+/**
+ * Route for getting all cluster names.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - All cluster names.
+ */
 module.exports.getClusterNames = (req, res) => {
   const context = [];
 

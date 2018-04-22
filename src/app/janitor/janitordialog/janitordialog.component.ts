@@ -25,10 +25,15 @@ export class JanitorDialogComponent {
     private janitorService: JanitorService,
     @Inject(MAT_DIALOG_DATA) public data: any) { }
 
+  /**
+   * Closes modal window.
+   */
   close() {
     this.dialogRef.close();
   }
-
+  /**
+   * Runs the janitor instance.
+   */
   runJanitor() {
     this.janitorService.runJanitor(this.janitorConfig).subscribe(data => {
       this.dialogRef.close();

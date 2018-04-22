@@ -1,3 +1,4 @@
+/** @module JobsController */
 /* eslint no-param-reassign:0, no-unused-vars: 0, consistent-return:0 */
 const schedule = require('node-schedule');
 const LOGGER = require('log4js').getLogger('job');
@@ -11,6 +12,13 @@ const jobs = [];
 
 LOGGER.level = 'info';
 
+/**
+ * Route for canceling scheduled job.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @param {req.params} id - The cluster name.
+ * @returns {object} - Message that job is canceled.
+ */
 module.exports.cancelJob = (req, res) => {
   Cluster.Model.findOne({
     context: req.params.id,
@@ -25,6 +33,11 @@ module.exports.cancelJob = (req, res) => {
   });
 };
 
+/**
+ * Schedules job for cluster destruction and notifying resource owner.
+ * @param {string} name - The name of the cluster.
+ * @param {string} startedBy - The initials of the resource owner.
+ */
 module.exports.scheduleJob = (name, startedBy) => {
   const today = new Date();
   const destructionTime = new Date(moment().add(2, 'minutes'));
@@ -44,6 +57,9 @@ module.exports.scheduleJob = (name, startedBy) => {
   LOGGER.info(`Job scheduled for ${destructionTime}`);
 };
 
+/**
+ * Reschedules jobs in the event the server goes down.
+ */
 module.exports.setJobs = () => {
   LOGGER.info('Setting up scheduled jobs');
 

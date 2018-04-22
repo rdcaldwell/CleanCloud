@@ -1,3 +1,4 @@
+/** @module JanitorController */
 /* eslint no-param-reassign:0 */
 const run = require('docker-run');
 const LOGGER = require('log4js').getLogger('janitor');
@@ -9,6 +10,10 @@ let dockerJanitor;
 
 LOGGER.level = 'info';
 
+/**
+ * Creates new Janitor instance in DB.
+ * @param {object} janitorConfig - The Janitor configuration settings.
+ */
 function createJanitor(janitorConfig) {
   const janitor = new Janitor.Model();
   janitor.defaultEmail = janitorConfig.defaultEmail;
@@ -21,6 +26,13 @@ function createJanitor(janitorConfig) {
   janitor.save();
 }
 
+/**
+ * Route for running the Simian Army Janitor Monkey Docker image.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @param {req.body} janitorConfig - The Janitor configuration settings.
+ * @returns {object} - Message that Janitor is created.
+ */
 module.exports.run = (req, res) => {
   CLUSTER_CONTROLLER.setClusterDB();
 
@@ -61,6 +73,13 @@ module.exports.run = (req, res) => {
   res.json('Janitor created');
 };
 
+/**
+ * Route for destroying Janitor by id.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @param {req.params} id - The id of Janitor.
+ * @returns {object} - Message that Janitor is destroyed.
+ */
 module.exports.destroyById = (req, res) => {
   Janitor.Model.find({
     _id: req.params.id,
@@ -93,6 +112,12 @@ module.exports.destroyById = (req, res) => {
   });
 };
 
+/**
+ * Route for getting all Janitors.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - All Janitors.
+ */
 module.exports.getJanitors = (req, res) => {
   Janitor.Model.find({}, (err, janitors) => {
     if (err) res.json(err);
@@ -100,8 +125,18 @@ module.exports.getJanitors = (req, res) => {
   });
 };
 
+/**
+ * Gets state of the Janitor.
+ * @returns {boolean} - Janitor running state.
+ */
 module.exports.isJanitorRunning = () => dockerJanitor !== undefined;
 
+/**
+ * Route for getting state of the Janitor.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {boolean} - Janitor running state.
+ */
 module.exports.isJanitorRunningRoute = (req, res) => {
   res.json(dockerJanitor !== undefined);
 };

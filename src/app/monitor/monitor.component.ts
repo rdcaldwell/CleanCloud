@@ -22,6 +22,9 @@ export class MonitorComponent implements OnInit {
     private jenkinsService: JenkinsService,
     private janitorService: JanitorService) { }
 
+  /**
+   * Gets all clusters and checks if janitor is running on component initialization.
+   */
   ngOnInit() {
     this.clusterService.getClusters().subscribe(data => {
       for (const cluster of data) {
@@ -32,6 +35,10 @@ export class MonitorComponent implements OnInit {
     this.isJanitorRunning();
   }
 
+  /**
+   * Opt instance out of Simian Army monitoring.
+   * @param {object} cluster - The cluster to be opted out.
+   */
   optOut(cluster) {
     for (const resource of cluster.resourceIds) {
       this.simianArmyService.optOut(resource).subscribe();
@@ -40,6 +47,10 @@ export class MonitorComponent implements OnInit {
     cluster.monitored = false;
   }
 
+  /**
+   * Opt instance into Simian Army monitoring.
+   * @param {object} cluster - The cluster to be opted in.
+   */
   optIn(cluster) {
     for (const resource of cluster.resourceIds) {
       this.simianArmyService.optIn(resource).subscribe();
@@ -48,6 +59,10 @@ export class MonitorComponent implements OnInit {
     cluster.monitored = true;
   }
 
+  /**
+   * Cancel job to destroy cluster.
+   * @param {object} cluster - The cluster of the job to canceled.
+   */
   cancelJob(cluster) {
     this.jobService.cancelJob(cluster.context).subscribe(data => {
       cluster.marked = false;
@@ -55,6 +70,10 @@ export class MonitorComponent implements OnInit {
     });
   }
 
+  /**
+   * Destroy cluster using jenkins.
+   * @param {object} cluster - The cluster to be destroyed.
+   */
   destroy(cluster) {
     this.jenkinsService.destroy(cluster.context).subscribe(data => {
       alert(data);
@@ -62,6 +81,9 @@ export class MonitorComponent implements OnInit {
     });
   }
 
+  /**
+   * Checks if any cluster is marked.
+   */
   isAnyClusterMarked() {
     for (const cluster of this.clusters) {
       if (cluster.marked) {
