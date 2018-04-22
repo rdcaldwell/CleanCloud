@@ -13,7 +13,7 @@ const JOB_CONTROLLER = require('./src/api/controllers/job');
 
 LOGGER.level = 'info';
 
-const API_SERVER = EXPRESS();
+const APP = EXPRESS();
 const PORT = process.env.PORT || '3000';
 // Clean up cluster DB on start up
 CLUSTER_CONTROLLER.cleanClusterDB();
@@ -32,18 +32,26 @@ setInterval(() => {
   CLUSTER_CONTROLLER.cleanClusterDB();
 }, 600000);
 
-if (process.env.ENVIRONMENT === 'PROD') {
-  API_SERVER.use(EXPRESS.static(PATH.join(__dirname, 'dist')));
-}
-API_SERVER.use(BODY_PARSER.json());
-API_SERVER.use('/api', API);
-API_SERVER.use(BODY_PARSER.urlencoded({
+APP.use(BODY_PARSER.json());
+APP.use('/api', API);
+APP.use(BODY_PARSER.urlencoded({
   extended: false,
 }));
 
-API_SERVER.set('port', PORT);
+APP.set('port', PORT);
 
-HTTP.createServer(API_SERVER).listen(PORT, () => LOGGER.info(`API running on localhost:${PORT}`));
-if (process.env.ENVIRONMENT === 'DEV') {
+if (process.env.ENVIRONMENT === 'PROD') {
+  APP.use(EXPRESS.static(PATH.join(__dirname, 'dist')));
+  APP.use('/dashboard/*', (req, res) => {
+    res.sendFile(PATH.join(__dirname, 'dist', 'index.html'));
+  });
+} else if (process.env.ENVIRONMENT === 'DEV') {
   LOGGER.info('Angular running on localhost:4200');
 }
+
+APP.get('*', (req, res) => {
+  res.status(404).redirect('/');
+});
+
+HTTP.createServer(APP).listen(PORT, () => LOGGER.info(`API running on localhost:${PORT}`));
+

@@ -38,7 +38,8 @@ const routes: Routes = [
   { path: 'monitor', component: MonitorComponent, canActivate: [AuthenticationService] },
   { path: 'janitor', component: JanitorComponent, canActivate: [AuthenticationService] },
   { path: 'login', component: LoginComponent },
-  { path: 'profile', component: ProfileComponent, canActivate: [AuthenticationService] }
+  { path: 'profile', component: ProfileComponent, canActivate: [AuthenticationService] },
+  { path: '**', redirectTo: 'instances' },
 ];
 
 @NgModule({
@@ -58,7 +59,7 @@ const routes: Routes = [
     JanitorComponent,
     MonitorComponent,
     JanitorDialogComponent,
-    ClustersComponent
+    ClustersComponent,
   ],
   entryComponents: [
     JanitorComponent,

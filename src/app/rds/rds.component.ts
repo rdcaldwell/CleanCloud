@@ -33,26 +33,24 @@ export class RdsComponent implements OnInit {
       if (data !== 'No rds data') {
         for (const instance of data) {
           const hours = this.amazonWebService.getRunningHours(instance.InstanceCreateTime);
-          if (instance.DBInstanceStatus !== 'creating') {
-            this.amazonWebService.getPrice('rds', {
-              region: instance.AvailabilityZone,
+          this.amazonWebService.getPrice('rds', {
+            region: (instance.DBInstanceStatus !== 'creating') ? instance.AvailabilityZone : '',
+            type: instance.DBInstanceClass,
+            DB: instance.Engine
+          }).subscribe(price => {
+            this.rdsInstances.push({
+              id: instance.DBInstanceIdentifier,
+              name: instance.DBName,
               type: instance.DBInstanceClass,
-              DB: instance.Engine
-            }).subscribe(price => {
-              this.rdsInstances.push({
-                id: instance.DBInstanceIdentifier,
-                name: instance.DBName,
-                type: instance.DBInstanceClass,
-                engine: instance.Engine,
-                zone: (instance.AvailabilityZone) ? instance.AvailabilityZone.slice(0, -1) : '',
-                status: instance.DBInstanceStatus,
-                creationDate: instance.InstanceCreateTime,
-                runningHours: hours,
-                cost: hours * price,
-                checked: false
-              });
+              engine: instance.Engine,
+              zone: (instance.AvailabilityZone) ? instance.AvailabilityZone.slice(0, -1) : '',
+              status: instance.DBInstanceStatus,
+              creationDate: instance.InstanceCreateTime,
+              runningHours: hours,
+              cost: hours * price,
+              checked: false
             });
-          }
+          });
         }
       }
       this.loading = false;
