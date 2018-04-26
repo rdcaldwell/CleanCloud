@@ -15,10 +15,11 @@
   <div class="text-center" *ngIf="loading">
     <i class="fas fa-spinner fa-pulse fa-2x"></i>
   </div>
-  <ng-container *ngIf="!loading">
+  <ng-container *ngIf="!loading && janitorRunning">
     <table id="JanitorTable" class="table">
       <thead>
         <tr>
+          <th scope="col">Region</th>
           <th scope="col">Frequency</th>
           <th scope="col">Threshold</th>
           <th scope="col">Default Email</th>
@@ -28,8 +29,9 @@
           <th scope="col" *ngIf="janitorRunning">Stop Janitor</th>
         </tr>
       </thead>
-      <tbody *ngFor="let janitor of janitors; let i = index">
+      <tbody>
         <tr>
+          <td>{{ janitor.region }}</td>
           <td>{{ janitor.frequency }} {{ janitor.frequencyUnit | lowercase }}</td>
           <td>{{ janitor.threshold }} {{ thresholdUnit }}</td>
           <td>{{ janitor.defaultEmail }}</td>
@@ -37,13 +39,13 @@
           <td>{{ janitor.sourceEmail }}</td>
           <td>{{ janitor.isMonkeyTime }}</td>
           <td *ngIf="janitorRunning">
-            <button type="button" class="btn btn-outline-danger" id="terminate-Janitor" (click)="destroyJanitor(janitor._id)">
+            <button type="button" class="btn btn-outline-danger" id="terminate-Janitor" (click)="destroyJanitor()">
               <i class="fas fa-trash-alt fa-lg"></i>
             </button>
           </td>
         </tr>
       </tbody>
     </table>
-    <span *ngIf="!janitors[0]">There are no Janitors running.</span>
   </ng-container>
+  <span *ngIf="!janitorRunning">There are no Janitors running.</span>
 </section>

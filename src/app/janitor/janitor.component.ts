@@ -11,7 +11,7 @@ import { JanitorService } from '../services/janitor.service';
 })
 export class JanitorComponent implements OnInit {
 
-  public janitors: Array<any> = [];
+  public janitor: any = {};
   public janitorRunning: boolean;
   public thresholdUnit = 'minutes';
   public loading = true;
@@ -23,19 +23,19 @@ export class JanitorComponent implements OnInit {
    * Gets all janitors and check if janitor is running on component intialization.
    */
   ngOnInit() {
-    this.getJanitors();
     this.isJanitorRunning();
+    this.getJanitor();
   }
 
   /**
    * Gets all janitors.
    */
-  getJanitors() {
-    this.janitors = [];
-    this.janitorService.getJanitors().subscribe(janitors => {
-      for (const janitor of janitors) {
-        this.janitors.push(janitor);
+  getJanitor() {
+    this.janitorService.getJanitor().subscribe(janitor => {
+      if (janitor !== 'Janitor is not running') {
+        this.janitor = janitor;
       }
+      console.log(`janitor: ${janitor}`);
       this.loading = false;
     });
   }
@@ -49,8 +49,8 @@ export class JanitorComponent implements OnInit {
     });
 
     janitorDialog.afterClosed().subscribe(result => {
-      this.getJanitors();
       this.isJanitorRunning();
+      this.getJanitor();
     });
   }
 
@@ -58,13 +58,12 @@ export class JanitorComponent implements OnInit {
    * Destroys janitor instance by id.
    * @param {string} id - The janitor id.
    */
-  destroyJanitor(id) {
-    this.janitorService.destroyJanitor(id).subscribe(data => {
-      this.getJanitors();
+  destroyJanitor() {
+    this.janitorService.destroyJanitor().subscribe(data => {
       this.isJanitorRunning();
+      this.getJanitor();
       alert(data);
     });
-
   }
 
   /**

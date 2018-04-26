@@ -26,7 +26,7 @@ ROUTER.get('/auth/email/:id', AUTH_CONTROLLER.validateEmail);
 
 /* Janitor Controller */
 ROUTER.post('/janitor/run', JANITOR_CONTROLLER.run);
-ROUTER.get('/janitor/destroy/:id', JANITOR_CONTROLLER.destroyById);
+ROUTER.get('/janitor/destroy', JANITOR_CONTROLLER.destroy);
 ROUTER.get('/janitor/running', JANITOR_CONTROLLER.isJanitorRunningRoute);
 ROUTER.get('/janitors', JANITOR_CONTROLLER.getJanitors);
 

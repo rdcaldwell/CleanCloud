@@ -31,6 +31,12 @@
       <option *ngFor="let frequencyUnit of frequencyUnits" [ngValue]="frequencyUnit">{{ frequencyUnit }}</option>
     </select>
   </div>
+  <div class="form-group row">
+    <label class="col-sm-3 col-form-label" for="region">Region</label>
+    <select class="col-sm-9 form-control" name="region" [(ngModel)]="janitorConfig.region">
+      <option *ngFor="let region of regions" [ngValue]="region">{{ region }}</option>
+    </select>
+  </div>
   <div class="form-group form-check row">
     <input class="col-sm-3 form-check-input" type="checkbox" name="isMonkeyTime" id="isMonkeyTime" [checked]="janitorConfig.isMonkeyTime"
       [(ngModel)]="janitorConfig.isMonkeyTime">

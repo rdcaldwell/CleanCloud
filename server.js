@@ -1,6 +1,7 @@
 require('dotenv').config();
 require('./src/api/models/db');
 require('./src/api/config/passport');
+const PACKAGE = require('./package.json');
 const EXPRESS = require('express');
 const HTTP = require('http');
 const PATH = require('path');
@@ -53,5 +54,5 @@ APP.get('*', (req, res) => {
   res.status(404).redirect('/');
 });
 
-HTTP.createServer(APP).listen(PORT, () => LOGGER.info(`API running on localhost:${PORT}`));
+HTTP.createServer(APP).listen(PORT, () => LOGGER.info(`CleanCloud v${PACKAGE.version} running in ${process.env.ENVIRONMENT} mode on Port ${PORT}`));
 

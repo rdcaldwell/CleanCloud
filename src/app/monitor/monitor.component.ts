@@ -13,8 +13,10 @@ import { JanitorService } from '../services/janitor.service';
 export class MonitorComponent implements OnInit {
 
   public clusters = [];
-  public janitorRunning: boolean;
   public loading = true;
+  public janitor = {
+    region: ''
+  };
 
   constructor(private clusterService: ClusterService,
     private simianArmyService: SimianArmyService,
@@ -32,7 +34,7 @@ export class MonitorComponent implements OnInit {
       }
       this.loading = false;
     });
-    this.isJanitorRunning();
+    this.getJanitor();
   }
 
   /**
@@ -93,9 +95,14 @@ export class MonitorComponent implements OnInit {
     return false;
   }
 
-  isJanitorRunning() {
-    this.janitorService.isJanitorRunning().subscribe((running) => {
-      this.janitorRunning = running;
+  /**
+   * Gets all janitors.
+   */
+  getJanitor() {
+    this.janitorService.getJanitor().subscribe(janitor => {
+      if (janitor !== 'Janitor is not running') {
+        this.janitor = janitor;
+      }
     });
   }
 

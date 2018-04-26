@@ -10,10 +10,9 @@ export class JanitorService {
 
   /**
    * API call for destroying janitor instance.
-   * @param {string} id - The janitor id.
    */
-  destroyJanitor(id: string) {
-    return this.http.get(`/api/janitor/destroy/${id}`).map(res => res.json());
+  destroyJanitor() {
+    return this.http.get(`/api/janitor/destroy`).map(res => res.json());
   }
 
   /**
@@ -27,7 +26,7 @@ export class JanitorService {
   /**
    * API call for getting all janitors.
    */
-  getJanitors() {
+  getJanitor() {
     return this.http.get(`/api/janitors`).map(res => res.json());
   }
 

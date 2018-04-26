@@ -11,6 +11,7 @@ import { JanitorService } from '../../services/janitor.service';
 export class JanitorDialogComponent {
 
   public frequencyUnits = ['MINUTES', 'HOURS'];
+  public regions = ['us-east-1', 'ap-southeast-2'];
   public janitorConfig: JanitorProperties = {
     defaultEmail: '',
     summaryEmail: '',
@@ -18,7 +19,8 @@ export class JanitorDialogComponent {
     isMonkeyTime: true,
     threshold: null,
     frequency: null,
-    frequencyUnit: ''
+    frequencyUnit: '',
+    region: '',
   };
 
   constructor(public dialogRef: MatDialogRef<JanitorDialogComponent>,
@@ -49,4 +51,5 @@ export interface JanitorProperties {
   threshold: number;
   frequency: number;
   frequencyUnit: string;
+  region: string;
 }

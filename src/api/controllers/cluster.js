@@ -256,7 +256,8 @@ const formulateCluster = (cluster, callback) => {
   };
 
   if (JANITOR_CONTROLLER.isJanitorRunning()) {
-    JANITOR_CONTROLLER.addJanitorToClusters();
+    contextData.monitored = true;
+    contextData.monkeyPort = 8080;
   }
 
   getResourceIds(cluster.name, cluster.region, (resourceIds) => {
