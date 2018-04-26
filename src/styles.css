@@ -58,7 +58,7 @@ tbody>tr {
 tr.active,
 tbody>tr:hover {
   color: #fff;
-  background-color: #6993cc;
+  background-color: #36669b;
 }
 
 #graph {
@@ -119,4 +119,8 @@ section {
 .cdk-overlay-pane {
   max-width: 100vw;
   width: fit-content;
+}
+
+.fa-spinner {
+  color: #36669b;
 }

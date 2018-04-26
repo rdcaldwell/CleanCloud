@@ -55,4 +55,3 @@ APP.get('*', (req, res) => {
 });
 
 HTTP.createServer(APP).listen(PORT, () => LOGGER.info(`CleanCloud v${PACKAGE.version} running in ${process.env.ENVIRONMENT} mode on Port ${PORT}`));
-

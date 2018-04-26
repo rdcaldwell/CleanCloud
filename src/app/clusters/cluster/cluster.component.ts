@@ -123,7 +123,7 @@ export class ClusterComponent implements OnInit {
               rdsHours += moment.duration(moment().diff(instance.InstanceCreateTime)).asHours();
               this.clusterInstances.push(instanceData);
               this.amazonWebService.getPrice('rds', {
-                region: instance.AvailabilityZone,
+                region: (instance.DBInstanceStatus !== 'creating') ? instance.AvailabilityZone : '',
                 type: instance.DBInstanceClass,
                 DB: instance.Engine
               }).subscribe(price => {

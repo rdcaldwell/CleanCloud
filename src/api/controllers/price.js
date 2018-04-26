@@ -28,6 +28,7 @@ const getRegion = (region) => {
  */
 module.exports.getEc2Price = (req, res) => {
   const region = getRegion(req.body.region);
+
   Ec2Price.Model.findOne({
     Region: region,
     Type: req.body.type,
