@@ -1,3 +1,4 @@
+/** @module ClusterController */
 /* eslint no-param-reassign:0, no-unused-vars: 0, consistent-return:0 */
 const ASYNC = require('async');
 const AWS = require('aws-sdk');
@@ -7,15 +8,14 @@ const EMAIL_CONTROLLER = require('./email');
 const JOB_CONTROLLER = require('./job');
 const JANITOR_CONTROLLER = require('./janitor');
 const Cluster = require('../models/cluster');
-
-const EC2 = new AWS.EC2({
-  apiVersion: '2016-11-15',
-  region: 'us-east-1',
-});
+const UTILS = require('../config/utils');
 
 LOGGER.level = 'info';
 
-/* Marks cluster as it is to be destroyed */
+/**
+ * Marks cluster for destruction, schedules destruction, and notifies owner via email.
+ * @param {object} cluster - The cluster to be marked.
+ */
 const markCluster = (cluster) => {
   cluster.marked = true;
   LOGGER.info(`${cluster.context} marked`);
@@ -25,7 +25,9 @@ const markCluster = (cluster) => {
   cluster.save();
 };
 
-/*
+/**
+ * Finds and marks clusters that are running past the age threshold
+ * @param {array} ids - Ids parsed from email.
 module.exports.markClusters = () => {
   LOGGER.info('Janitor running');
   CLUSTER.find({
@@ -42,7 +44,10 @@ module.exports.markClusters = () => {
 };
 */
 
-/* Finds clusters from ids parsed from email */
+/**
+ * Finds and marks cluster from ids parsed from email.
+ * @param {array} ids - Ids parsed from email.
+ */
 module.exports.markClustersFromEmail = (ids) => {
   Cluster.Model.find({
     marked: false,
@@ -57,7 +62,12 @@ module.exports.markClustersFromEmail = (ids) => {
   });
 };
 
-/* Returns all clusters */
+/**
+ * Route for getting all clusters.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - All clusters.
+ */
 module.exports.getClusters = (req, res) => {
   Cluster.Model.find({}, (err, clusters) => {
     if (err) res.json(err);
@@ -65,9 +75,13 @@ module.exports.getClusters = (req, res) => {
   });
 };
 
-/* Removes monitor tag from cluster after it has been opted out */
+/**
+ * Route for removing monitor tag from cluster after it has been opted out.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - Message that monitor has been removed.
+ */
 module.exports.removeClusterMonitor = (req, res) => {
-  LOGGER.debug(req.params.id);
   Cluster.Model.findOne({
     _id: req.params.id,
   }, (err, cluster) => {
@@ -75,12 +89,17 @@ module.exports.removeClusterMonitor = (req, res) => {
     else {
       cluster.monitored = false;
       cluster.save();
-      res.json(`${cluster._id} monitor removed`);
+      res.json('Monitor removed');
     }
   });
 };
 
-/* Adds monitor tag from cluster after it has been opted in */
+/**
+ * Adds monitor tag from cluster after it has been opted in.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - Message that monitor has been added.
+ */
 module.exports.addClusterMonitor = (req, res) => {
   Cluster.Model.findOne({
     _id: req.params.id,
@@ -89,12 +108,14 @@ module.exports.addClusterMonitor = (req, res) => {
     else {
       cluster.monitored = true;
       cluster.save();
-      res.json(`${cluster._id} monitor added`);
+      res.json('Monitor added');
     }
   });
 };
 
-/* Removes clusters no longer in AWS from DB */
+/**
+ * Removes clusters no longer in AWS from DB.
+ */
 module.exports.cleanClusterDB = () => {
   LOGGER.info('Cleaning up cluster DB');
   Cluster.Model.find({}, (err, clusters) => {
@@ -102,8 +123,13 @@ module.exports.cleanClusterDB = () => {
     else {
       ASYNC.forEachOf(clusters, (cluster) => {
         let isFound = false;
+        const EC2 = new AWS.EC2({
+          apiVersion: '2016-11-15',
+          region: cluster.region,
+        });
+
         EC2.describeTags({}, (tagerr, data) => {
-          if (tagerr) LOGGER.info(tagerr);
+          if (tagerr) LOGGER.error(tagerr);
           else {
             ASYNC.forEachOf(data.Tags, (tag, i, callback) => {
               if (tag.Value === cluster.context) isFound = true;
@@ -125,15 +151,22 @@ module.exports.cleanClusterDB = () => {
   });
 };
 
-/* Adds clusters in AWS that are not in the DB */
-module.exports.setClusterDB = () => {
-  LOGGER.info('Setting up cluster DB');
-  const namesPromise = new Promise((resolve, reject) => {
-    const cluster = [];
+/**
+ * Gets all cluster names.
+ * @param {function} callback - Callback function with cluster names.
+ */
+const getClusterNames = (callback) => {
+  const cluster = [];
+  ASYNC.forEachOf(UTILS.regions, (awsRegion, i, regionCallback) => {
+    const EC2 = new AWS.EC2({
+      apiVersion: '2016-11-15',
+      region: awsRegion,
+    });
+
     EC2.describeInstances((describeErr, data) => {
       if (describeErr) LOGGER.error(describeErr);
       else if (data.Reservations.length !== 0) {
-        ASYNC.forEachOf(data.Reservations, (reservation, index, callback) => {
+        ASYNC.forEachOf(data.Reservations, (reservation, index) => {
           ASYNC.forEachOf(reservation.Instances, (describedInstance) => {
             if (describedInstance.Tags.length) {
               const temp = {
@@ -159,86 +192,108 @@ module.exports.setClusterDB = () => {
               });
             }
           });
-          callback();
-        }, (loopErr) => {
-          resolve(cluster);
         });
       }
+      regionCallback();
     });
+  }, () => {
+    callback(cluster);
+  });
+};
+
+/**
+ * Gets all the EC2 instance ids associated with a cluster.
+ * @param {string} name - The name of the cluster.
+ * @param {string} region - The region of the cluster.
+ * @param {function} callback - Callback function with resource ids.
+ */
+const getResourceIds = (name, region, callback) => {
+  const resourceIds = [];
+  const params = {
+    Filters: [{
+      Name: 'tag-value',
+      Values: [name],
+    }],
+  };
+  const EC2 = new AWS.EC2({
+    apiVersion: '2016-11-15',
+    region: region,
   });
 
-  namesPromise.then((clusterData) => {
+  EC2.describeInstances(params, (ec2err, ec2data) => {
+    if (ec2err) LOGGER.error(ec2err);
+    else if (ec2data.Reservations.length) {
+      ASYNC.forEachOf(ec2data.Reservations, (reservation, i, ec2callback) => {
+        ASYNC.forEachOf(reservation.Instances, (instance) => {
+          resourceIds.push(instance.InstanceId);
+        });
+        ec2callback();
+      }, () => {
+        callback(resourceIds);
+      });
+    }
+  });
+};
+
+/**
+ * Formulates cluster with all necessary data.
+ * @param {object} cluster - The data of the cluster.
+ * @param {function} callback - Callback function with formulated cluster.
+ */
+const formulateCluster = (cluster, callback) => {
+  const contextData = {
+    monkeyPort: null,
+    monitored: false,
+    marked: false,
+    destroyed: false,
+    destructionDate: null,
+    jobIndex: null,
+    resourceIds: [],
+    context: cluster.name,
+    startedBy: cluster.startedBy,
+    region: cluster.region,
+    launchTime: cluster.launchTime,
+  };
+
+  if (JANITOR_CONTROLLER.isJanitorRunning()) {
+    contextData.monitored = true;
+    contextData.monkeyPort = 8080;
+  }
+
+  getResourceIds(cluster.name, cluster.region, (resourceIds) => {
+    contextData.resourceIds = resourceIds;
+    callback(contextData);
+  });
+};
+
+/**
+ * Adds clusters in AWS that are not in the DB.
+ */
+module.exports.setClusterDB = () => {
+  LOGGER.info('Setting up cluster DB');
+  getClusterNames((clusterData) => {
     ASYNC.forEachOf(clusterData, (clusterDatum) => {
       Cluster.Model.findOne({
         context: clusterDatum.name,
       }, (err, cluster) => {
-        const contextDataPromise = new Promise((resolve, reject) => {
-          if (cluster === null) {
-            const contextData = {
-              monkeyPort: null,
-              monitored: false,
-              marked: false,
-              destroyed: false,
-              destructionDate: null,
-              jobIndex: null,
-              resourceIds: [],
-              name: clusterDatum.name,
-              startedBy: clusterDatum.startedBy,
-              region: clusterDatum.region,
-              launchTime: clusterDatum.launchTime,
-            };
-
-            if (JANITOR_CONTROLLER.isJanitorRunning()) {
-              Cluster.Model.update({}, {
-                monkeyPort: 8080,
-                monitored: true,
-              }, {
-                multi: true,
-              }, (clustererr) => {
-                if (err) LOGGER.err(err);
-                else LOGGER.info('updated cluster');
-              });
-            }
-
-            const params = {
-              Filters: [{
-                Name: 'tag-value',
-                Values: [clusterDatum.name],
-              }],
-            };
-
-            EC2.describeInstances(params, (ec2err, ec2data) => {
-              if (ec2err) LOGGER.error(ec2err);
-              else if (ec2data.Reservations.length) {
-                ec2data.Reservations.forEach((reservation) => {
-                  reservation.Instances.forEach((instance) => {
-                    contextData.resourceIds.push(instance.InstanceId);
-                  });
-                });
-                resolve(contextData);
-              }
-            });
-          } else {
-            reject(Error('Cluster exists'));
-          }
-        });
-
-        contextDataPromise.then((contextData) => {
-          const newCluster = new Cluster.Model();
-          newCluster.context = contextData.name;
-          newCluster.startedBy = contextData.startedBy;
-          newCluster.monitored = contextData.monitored;
-          newCluster.marked = contextData.marked;
-          newCluster.destroyed = contextData.destroyed;
-          newCluster.destructionDate = contextData.destructionDate;
-          newCluster.jobIndex = contextData.jobIndex;
-          newCluster.resourceIds = contextData.resourceIds;
-          newCluster.monkeyPort = contextData.monkeyPort;
-          newCluster.region = contextData.region;
-          newCluster.launchTime = contextData.launchTime;
-          newCluster.save();
-          LOGGER.info(`${contextData.name} cluster added to db`);
-        }).catch(() => {});
+        if (!cluster) {
+          formulateCluster(clusterDatum, (contextData) => {
+            const newCluster = new Cluster.Model();
+            newCluster.context = contextData.context;
+            newCluster.startedBy = contextData.startedBy;
+            newCluster.monitored = contextData.monitored;
+            newCluster.marked = contextData.marked;
+            newCluster.destroyed = contextData.destroyed;
+            newCluster.destructionDate = contextData.destructionDate;
+            newCluster.jobIndex = contextData.jobIndex;
+            newCluster.resourceIds = contextData.resourceIds;
+            newCluster.monkeyPort = contextData.monkeyPort;
+            newCluster.region = contextData.region;
+            newCluster.launchTime = contextData.launchTime;
+            newCluster.save();
+            LOGGER.info(`${contextData.context} cluster added to db`);
+          });
+        }
       });
     });
   });

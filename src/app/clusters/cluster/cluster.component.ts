@@ -1,6 +1,10 @@
+/** @module ClusterComponent */
 import { Component, OnInit, Input } from '@angular/core';
 import { AmazonWebService } from '../../services/amazonweb.service';
 import * as moment from 'moment';
+import { ClusterService } from '../../services/cluster.service';
+import { JenkinsService } from '../../services/jenkins.service';
+
 @Component({
   selector: 'app-cluster',
   templateUrl: './cluster.component.html',
@@ -8,37 +12,55 @@ import * as moment from 'moment';
 })
 export class ClusterComponent implements OnInit {
 
-  @Input() title: any;
+  @Input() public cluster: any;
   public startedBy: string;
   public context: any = [];
   public clusterInstances: Array<ClusterInstance> = [];
   public totalCost = 0;
   public responseFromAWS: any;
+  public loading = true;
 
-  constructor(private amazonWebService: AmazonWebService) { }
+  constructor(private amazonWebService: AmazonWebService,
+    private clusterService: ClusterService,
+    private jenkinsService: JenkinsService) { }
 
+  /**
+   * Sets up instances on component initialization.
+   */
   ngOnInit() {
+    this.setupInstances();
+  }
+
+  /**
+   * Formulates clusters of all resources.
+   */
+  setupInstances() {
+    this.clusterInstances = [];
+    this.totalCost = 0;
     this.getEFSContext();
     this.getEC2Context();
     this.getRDSContext();
   }
 
+  /**
+   * Finds all EC2 instances matching the cluster name.
+   */
   getEC2Context() {
     let ec2Hours = 0;
-    this.amazonWebService.context('ec2', this.title).subscribe(reservations => {
+    this.clusterService.context(this.cluster.name, this.cluster.region).subscribe(reservations => {
       if (reservations !== 'No ec2 data') {
         for (const reservation of reservations) {
           for (const instance of reservation.Instances) {
             const instanceData = {
               serviceType: 'ec2',
               id: instance.InstanceId,
-              name: this.getTag(instance.Tags, 'Name'),
+              name: this.amazonWebService.getTag(instance.Tags, 'Name'),
               status: instance.State.Name
             };
 
             ec2Hours += moment.duration(moment().diff(instance.LaunchTime)).asHours();
 
-            this.startedBy = this.getTag(instance.Tags, 'startedBy');
+            this.startedBy = this.amazonWebService.getTag(instance.Tags, 'startedBy');
 
             this.clusterInstances.push(instanceData);
 
@@ -53,26 +75,28 @@ export class ClusterComponent implements OnInit {
       } else {
         this.responseFromAWS = reservations;
       }
+      this.loading = false;
     });
   }
 
+  /**
+   * Finds all EFS file systems matching the cluster name.
+   */
   getEFSContext() {
     this.amazonWebService.describe('efs').subscribe(instances => {
       if (instances !== 'No efs data') {
         for (const instance of instances) {
-          this.amazonWebService.describeTags('efs', instance.FileSystemId).subscribe(tags => {
-            for (const tag of tags) {
-              if (tag.Value === this.title) {
-                const instanceData = {
-                  serviceType: 'efs',
-                  id: instance.FileSystemId,
-                  name: instance.Name,
-                  status: instance.LifeCycleState
-                };
-                this.clusterInstances.push(instanceData);
-              }
+          for (const tag of instance.Tags) {
+            if (tag.Key === 'Context' && tag.Value === this.cluster.name) {
+              const instanceData = {
+                serviceType: 'efs',
+                id: instance.FileSystemId,
+                name: instance.Name,
+                status: instance.LifeCycleState
+              };
+              this.clusterInstances.push(instanceData);
             }
-          });
+          }
         }
       } else {
         this.responseFromAWS = instances;
@@ -80,32 +104,33 @@ export class ClusterComponent implements OnInit {
     });
   }
 
+  /**
+   * Finds all RDS databases matching the cluster name.
+   */
   getRDSContext() {
     let rdsHours = 0;
     this.amazonWebService.describe('rds').subscribe(instances => {
       if (instances !== 'No rds data') {
         for (const instance of instances) {
-          this.amazonWebService.describeTags('rds', instance.DBInstanceArn).subscribe(tags => {
-            for (const tag of tags) {
-              if (tag.Value === this.title) {
-                const instanceData = {
-                  serviceType: 'rds',
-                  id: instance.DBInstanceIdentifier,
-                  name: instance.DBName,
-                  status: instance.DBInstanceStatus
-                };
-                rdsHours += moment.duration(moment().diff(instance.InstanceCreateTime)).asHours();
-                this.clusterInstances.push(instanceData);
-                this.amazonWebService.getPrice('rds', {
-                  region: instance.AvailabilityZone,
-                  type: instance.DBInstanceClass,
-                  DB: instance.Engine
-                }).subscribe(price => {
-                  this.totalCost += rdsHours * price;
-                });
-              }
+          for (const tag of instance.Tags) {
+            if (tag.Key === 'Context' && tag.Value === this.cluster.name) {
+              const instanceData = {
+                serviceType: 'rds',
+                id: instance.DBInstanceIdentifier,
+                name: instance.DBName,
+                status: instance.DBInstanceStatus
+              };
+              rdsHours += moment.duration(moment().diff(instance.InstanceCreateTime)).asHours();
+              this.clusterInstances.push(instanceData);
+              this.amazonWebService.getPrice('rds', {
+                region: (instance.DBInstanceStatus !== 'creating') ? instance.AvailabilityZone : '',
+                type: instance.DBInstanceClass,
+                DB: instance.Engine
+              }).subscribe(price => {
+                this.totalCost += rdsHours * price;
+              });
             }
-          });
+          }
         }
       } else {
         this.responseFromAWS = instances;
@@ -113,26 +138,32 @@ export class ClusterComponent implements OnInit {
     });
   }
 
+  /**
+   * Terminates all instances of cluster using AWS.
+   */
   terminateClusterAWS() {
+    this.loading = true;
     for (const instance of this.clusterInstances) {
-      this.amazonWebService.terminateAWS(instance.serviceType, instance.id).subscribe(data => {
+      this.amazonWebService.destroy(instance.serviceType, instance.id, this.cluster.region).subscribe(data => {
         this.responseFromAWS = data;
       });
     }
+    setTimeout(() => {
+      this.setupInstances();
+    }, 5000);
   }
 
+  /**
+   * Terminates all instances of cluster using Jenkins pipeline.
+   */
   terminateClusterJenkins() {
-    this.amazonWebService.destroyCluster(this.title).subscribe(data => {
+    this.loading = true;
+    this.jenkinsService.destroy(this.cluster.name).subscribe(data => {
       this.responseFromAWS = data;
     });
-  }
-
-  getTag(tags, key) {
-    for (const tag of tags) {
-      if (tag.Key === key) {
-        return tag.Value;
-      }
-    }
+    setTimeout(() => {
+      this.setupInstances();
+    }, 10000);
   }
 }
 

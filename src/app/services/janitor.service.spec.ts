@@ -1,38 +1,28 @@
-import { TestBed, ComponentFixture, async, inject, tick, fakeAsync } from '@angular/core/testing';
-import { ClustersComponent } from './clusters.component';
-import { ClusterComponent } from './cluster/cluster.component';
-import { HttpModule, Response, ResponseOptions, XHRBackend } from '@angular/http';
+import { FormsModule } from '@angular/forms';
+import { TestBed, async, inject, tick } from '@angular/core/testing';
+import { HttpModule, Http, Response, ResponseOptions, XHRBackend } from '@angular/http';
 import { MockBackend } from '@angular/http/testing';
+import { JanitorService } from './janitor.service';
 
-describe('ClustersComponent', () => {
-  let component: ClustersComponent;
-  let fixture: ComponentFixture<ClustersComponent>;
-
-  beforeEach(async(() => {
+describe('JanitorService', () => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [
-        ClustersComponent,
-        ClusterComponent
+      imports: [
+        FormsModule,
+        HttpModule
       ],
       providers: [
-        MockBackend,
+        JanitorService,
         { provide: XHRBackend, useClass: MockBackend }
-      ]
-    })
-      .compileComponents();
+      ],
+    });
+  });
+
+  it('should be created', inject([JanitorService], (service: JanitorService) => {
+    expect(service).toBeTruthy();
   }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(ClustersComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
-  it('should get context names', fakeAsync(inject([XHRBackend], (mockBackend: MockBackend) => {
+  it('should get all janitors', inject([JanitorService, XHRBackend], (janitorService: JanitorService, mockBackend: MockBackend) => {
     const mockResponse = [
       {
         '_id': '5aa59136ae0df1dbc214c7bd',
@@ -62,8 +52,13 @@ describe('ClustersComponent', () => {
       })));
     });
 
-    component.ngOnInit();
+    janitorService.getJanitors().subscribe(janitors => {
+      expect(janitors.length).toBe(2);
+      expect(janitors[0].region).toEqual('us-west-2');
+      expect(janitors[0].port).toBe(3333);
+      expect(janitors[1].region).toEqual('us-east-1');
+      expect(janitors[1].port).toBe(4444);
+    });
+  }));
 
-    expect(component.context).toEqual(mockResponse);
-  })));
 });

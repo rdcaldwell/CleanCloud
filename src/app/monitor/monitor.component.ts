@@ -1,5 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { AmazonWebService } from '../services/amazonweb.service';
+import { ClusterService } from '../services/cluster.service';
+import { SimianArmyService } from '../services/simianarmy.service';
+import { JobService } from '../services/job.service';
+import { JenkinsService } from '../services/jenkins.service';
+import { JanitorService } from '../services/janitor.service';
 
 @Component({
   selector: 'app-monitor',
@@ -9,45 +13,79 @@ import { AmazonWebService } from '../services/amazonweb.service';
 export class MonitorComponent implements OnInit {
 
   public clusters = [];
-  public janitorRunning: boolean;
+  public loading = true;
+  public janitor = {
+    region: ''
+  };
 
-  constructor(private amazonWebService: AmazonWebService) { }
+  constructor(private clusterService: ClusterService,
+    private simianArmyService: SimianArmyService,
+    private jobService: JobService,
+    private jenkinsService: JenkinsService,
+    private janitorService: JanitorService) { }
 
+  /**
+   * Gets all clusters and checks if janitor is running on component initialization.
+   */
   ngOnInit() {
-    this.amazonWebService.getClusters().subscribe(data => {
+    this.clusterService.getClusters().subscribe(data => {
       for (const cluster of data) {
         this.clusters.push(cluster);
       }
+      this.loading = false;
     });
-    this.isJanitorRunning();
+    this.getJanitor();
   }
 
+  /**
+   * Opt instance out of Simian Army monitoring.
+   * @param {object} cluster - The cluster to be opted out.
+   */
   optOut(cluster) {
     for (const resource of cluster.resourceIds) {
-      this.amazonWebService.optOut(resource).subscribe();
-      this.amazonWebService.removeMonitor(cluster._id).subscribe();
+      this.simianArmyService.optOut(resource).subscribe();
+      this.clusterService.removeMonitor(cluster._id).subscribe();
     }
     cluster.monitored = false;
   }
 
+  /**
+   * Opt instance into Simian Army monitoring.
+   * @param {object} cluster - The cluster to be opted in.
+   */
   optIn(cluster) {
     for (const resource of cluster.resourceIds) {
-      this.amazonWebService.optIn(resource).subscribe();
-      this.amazonWebService.addMonitor(cluster._id).subscribe();
+      this.simianArmyService.optIn(resource).subscribe();
+      this.clusterService.addMonitor(cluster._id).subscribe();
     }
     cluster.monitored = true;
   }
 
-  unmark(cluster) {
-    this.amazonWebService.unmarkCluster(cluster.context).subscribe();
-    cluster.marked = false;
+  /**
+   * Cancel job to destroy cluster.
+   * @param {object} cluster - The cluster of the job to canceled.
+   */
+  cancelJob(cluster) {
+    this.jobService.cancelJob(cluster.context).subscribe(data => {
+      cluster.marked = false;
+      alert(data);
+    });
   }
 
+  /**
+   * Destroy cluster using jenkins.
+   * @param {object} cluster - The cluster to be destroyed.
+   */
   destroy(cluster) {
-    this.amazonWebService.destroyCluster(cluster.context).subscribe();
-    cluster.destroyed = true;
+    this.jenkinsService.destroy(cluster.context).subscribe(data => {
+      alert(data);
+      cluster.destroyed = true;
+    });
   }
 
+  /**
+   * Checks if any cluster is marked.
+   */
   isAnyClusterMarked() {
     for (const cluster of this.clusters) {
       if (cluster.marked) {
@@ -57,9 +95,15 @@ export class MonitorComponent implements OnInit {
     return false;
   }
 
-  isJanitorRunning() {
-    this.amazonWebService.isJanitorRunning().subscribe((running) => {
-      this.janitorRunning = running;
+  /**
+   * Gets all janitors.
+   */
+  getJanitor() {
+    this.janitorService.getJanitor().subscribe(janitor => {
+      if (janitor !== 'Janitor is not running') {
+        this.janitor = janitor;
+      }
     });
   }
+
 }

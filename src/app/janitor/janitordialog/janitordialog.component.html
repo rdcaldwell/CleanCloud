@@ -21,6 +21,22 @@
     <label class="col-sm-3 col-form-label" for="sourceEmail">Source Email</label>
     <input type="text" class="col-sm-9 form-control" name="sourceEmail" placeholder="Source Email Address" [(ngModel)]="janitorConfig.sourceEmail">
   </div>
+  <div class="form-group row">
+    <label class="col-sm-3 col-form-label" for="frequency">Frequency</label>
+    <input type="text" class="col-sm-9 form-control" name="frequency" placeholder="Frequency" [(ngModel)]="janitorConfig.frequency">
+  </div>
+  <div class="form-group row">
+    <label class="col-sm-3 col-form-label" for="frequencyUnit">Frequency Unit</label>
+    <select class="col-sm-9 form-control" name="frequencyUnit" [(ngModel)]="janitorConfig.frequencyUnit">
+      <option *ngFor="let frequencyUnit of frequencyUnits" [ngValue]="frequencyUnit">{{ frequencyUnit }}</option>
+    </select>
+  </div>
+  <div class="form-group row">
+    <label class="col-sm-3 col-form-label" for="region">Region</label>
+    <select class="col-sm-9 form-control" name="region" [(ngModel)]="janitorConfig.region">
+      <option *ngFor="let region of regions" [ngValue]="region">{{ region }}</option>
+    </select>
+  </div>
   <div class="form-group form-check row">
     <input class="col-sm-3 form-check-input" type="checkbox" name="isMonkeyTime" id="isMonkeyTime" [checked]="janitorConfig.isMonkeyTime"
       [(ngModel)]="janitorConfig.isMonkeyTime">

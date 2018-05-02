@@ -1,95 +1,70 @@
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import * as moment from 'moment';
 import 'rxjs/add/operator/map';
 
 @Injectable()
 export class AmazonWebService {
 
-  constructor(private http: Http) {}
+  constructor(private http: Http) { }
 
-  optOut(resourceId) {
-    return this.http.post(`http://localhost:8080/simianarmy/api/v1/janitor`, {
-      'eventType': 'OPTOUT',
-      'resourceId': resourceId
-    }).map(res => res.json());
-  }
-
-  optIn(resourceId) {
-    return this.http.post(`http://localhost:8080/simianarmy/api/v1/janitor`, {
-      'eventType': 'OPTIN',
-      'resourceId': resourceId
-    }).map(res => res.json());
-  }
-
-  isJanitorRunning() {
-    return this.http.get(`/api/janitor/running`).map(res => res.json());
-  }
-
-  addMonitor(id) {
-    return this.http.get(`/api/cluster/monitor/add/${id}`).map(res => res.json());
-  }
-
-  removeMonitor(id) {
-    return this.http.get(`/api/cluster/monitor/remove/${id}`).map(res => res.json());
-  }
-
-  unmarkCluster(name) {
-    return this.http.get(`/api/job/cancel/${name}`).map(res => res.json());
-  }
-
-  getClusters() {
-    return this.http.get(`/api/clusters`).map(res => res.json());
-  }
-
-  destroyCluster(name) {
-    return this.http.get(`/api/jenkins/destroy/${name}`).map(res => res.json());
-  }
-
-  destroyJanitor(id) {
-    return this.http.get(`/api/janitor/destroy/${id}`).map(res => res.json());
-  }
-
-  runJanitor(janitorConfig) {
-    return this.http.post(`/api/janitor/run`, janitorConfig).map(res => res.json());
-  }
-
-  getJanitors() {
-    return this.http.get(`/api/janitors`).map(res => res.json());
-  }
-
+  /**
+   * API call for all resource data of the service.
+   * @param {string} service - The AWS resource service.
+   */
   describe(service: string) {
     return this.http.get(`/api/${service}/describe`).map(res => res.json());
   }
 
-  describeTags(service: string, context: string) {
-    return this.http.get(`/api/${service}/describe/tags/${context}`).map(res => res.json());
+  /**
+   * API call for destroying resource in AWS.
+   * @param {string} service - The AWS resource service.
+   * @param {string} instanceId - The instance id.
+   * @param {string} region - The region of the instance.
+   */
+  destroy(service: string, instanceId: string, region: string) {
+    return this.http.get(`/api/${service}/terminate?id=${instanceId}&region=${region}`).map(res => res.json());
   }
 
-  create(service: string) {
-    return this.http.get(`/api/${service}/create`).map(res => res.json());
+  /**
+   * API call for getting EC2 instance CloudWatch CPU Utilization metrics.
+   * @param {object} instance - Instance data.
+   */
+  analyze(instance: any) {
+    return this.http.get(`/api/analyze?id=${instance.id}&region=${instance.zone}`).map(res => res.json());
   }
 
-  terminateAWS(service: string, instanceId: string) {
-    return this.http.get(`/api/${service}/terminate/${instanceId}`).map(res => res.json());
-  }
-
-  context(service: string, title: string) {
-    return this.http.get(`/api/context/${title}`).map(res => res.json());
-  }
-
-  contextNames() {
-    return this.http.get(`/api/context`).map(res => res.json());
-  }
-
-  analyze(instance) {
-    return this.http.post(`/api/analyze/`, {
-      launchTime: instance.creationDate,
-      id: instance.id
-    }).map(res => res.json());
-  }
-
-  getPrice(service, data) {
+  /**
+   * API call for getting price of AWS resource.
+   * @param {string} service - The AWS resource service.
+   * @param {string} data - The instance data.
+   */
+  getPrice(service: string, data: any) {
     return this.http.post(`/api/price/${service}`, data).map(res => res.json());
+  }
+
+  /**
+   * Gets the value of the a tag key.
+   * @param {array} tags - The tags of the instance.
+   * @param {string} key - The tag being searched.
+   * @returns {string} - Value of the tag key.
+   */
+  getTag(tags: any, key: string): string {
+    for (const tag of tags) {
+      if (tag.Key === key) {
+        return tag.Value;
+      }
+    }
+  }
+
+  /**
+   * Gets the total hours the instance has been running.
+   * @param {string} startTime - The start time of the instance.
+   * @returns {string} - Amount of hours the instance has been running.
+   */
+  getRunningHours(startTime): number {
+    const hours = moment.duration(moment().diff(startTime)).asHours();
+    return Math.round(hours * 100) / 100;
   }
 }

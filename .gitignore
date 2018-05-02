@@ -4,6 +4,7 @@ dbchanges.js
 imap.js
 docker.js
 /.nyc_output
+conf.json
 
 # env
 .env

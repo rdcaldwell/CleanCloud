@@ -7,21 +7,22 @@ import { Router } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements OnInit {
-  response: any;
-  credentials: TokenPayload = {
+export class LoginComponent {
+
+  public incorrectPassword = false;
+  public userNotFound = false;
+  public response: any;
+  public credentials: TokenPayload = {
     username: '',
     password: ''
   };
 
-  incorrectPassword = false;
-  userNotFound = false;
-
   constructor(private authenticationService: AuthenticationService,
-              private router: Router) { }
+    private router: Router) { }
 
-  ngOnInit() { }
-
+  /**
+   * Login in user.
+   */
   login() {
     this.incorrectPassword = false;
     this.userNotFound = false;
@@ -29,7 +30,6 @@ export class LoginComponent implements OnInit {
       this.response = data;
       this.router.navigateByUrl('/profile');
     }, (err) => {
-      // Login validations
       if (err.error.message === 'User not found') {
         this.userNotFound = true;
       } else if (err.error.message === 'Password is wrong') {

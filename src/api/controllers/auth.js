@@ -1,6 +1,14 @@
+/** @module AuthenticationController */
 const passport = require('passport');
 const User = require('../models/users');
 
+/**
+ * Route for registering new user.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @param {req.body} user - The information of the new user.
+ * @returns {object} - Message that new user is created.
+ */
 module.exports.register = (req, res) => {
   const user = new User.Model();
   user.username = req.body.username;
@@ -15,6 +23,12 @@ module.exports.register = (req, res) => {
   });
 };
 
+/**
+ * Route for logging in user using Passport.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @returns {object} - JWT token.
+ */
 module.exports.login = (req, res) => {
   passport.authenticate('local', (err, user, info) => {
     if (err) {
@@ -35,6 +49,13 @@ module.exports.login = (req, res) => {
   })(req, res);
 };
 
+/**
+ * Route for authorizing profile viewing.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @param {req.payload} _id - The id of the user.
+ * @returns {object} - Information of the user.
+ */
 module.exports.profileRead = (req, res) => {
   if (!req.payload._id) {
     res.status(401).json({
@@ -48,13 +69,17 @@ module.exports.profileRead = (req, res) => {
   }
 };
 
-/* Checks if username is taken */
+/**
+ * Route for checking if username is taken.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @param {req.params} id - The username attempting to be registerd.
+ * @returns {boolean} - Whether username is found or not.
+ */
 module.exports.validateUsername = (req, res) => {
-  // Retrun data if username is found
   const jsonData = {
     found: false,
   };
-  // Customer database query on passed id
   User.Model.findOne({
     username: req.params.id,
   }, (err, customer) => {
@@ -64,7 +89,13 @@ module.exports.validateUsername = (req, res) => {
   });
 };
 
-/* Checks if email is taken */
+/**
+ * Route for checking if email is taken.
+ * @param {object} req - The request.
+ * @param {object} res - The response.
+ * @param {req.params} id - The email attempting to be registerd.
+ * @returns {boolean} - Whether email is found or not.
+ */
 module.exports.validateEmail = (req, res) => {
   // Retrun data if email is found
   const jsonData = {

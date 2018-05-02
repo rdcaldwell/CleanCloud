@@ -1,3 +1,4 @@
+/** @module EmailController */
 /* eslint no-unused-vars: 0 */
 const htmlToText = require('html-to-text');
 const AWS = require('aws-sdk');
@@ -29,14 +30,27 @@ const SES = new AWS.SES({
 
 LOGGER.level = 'info';
 
+/**
+ * Opens email inbox.
+ * @param {function} callback - The callback after inbox is opened.
+ */
 function openInbox(callback) {
   mailListener.imap.openBox('INBOX', true, callback);
 }
 
+/**
+ * Starts email listener.
+ */
 module.exports.startMonitor = () => {
   mailListener.start();
 };
 
+/**
+ * Sends email to resource owner.
+ * @param {string} clusterName - The name of the cluster.
+ * @param {string} startedBy - The initials of the resource owner.
+ * @param {string} message - The message for the resource owner.
+ */
 module.exports.emailStartedBy = (clusterName, startedBy, message) => {
   LOGGER.info(`Building email for ${startedBy}`);
   const params = {
@@ -65,7 +79,7 @@ module.exports.emailStartedBy = (clusterName, startedBy, message) => {
         Charset: 'UTF-8',
       },
     },
-    Source: 'cloudianapp@gmail.com',
+    Source: 'cleancloudapp@gmail.com',
   };
   SES.sendEmail(params, (err, data) => {
     if (err) LOGGER.error(err);
@@ -73,6 +87,10 @@ module.exports.emailStartedBy = (clusterName, startedBy, message) => {
   });
 };
 
+/**
+ * Event when new email is received.
+ * Parses email for EC2 instance ids from Simian Army.
+ */
 mailListener.on('mail', () => {
   LOGGER.info('Parsing new email');
   openInbox((err, box) => {
@@ -95,14 +113,23 @@ mailListener.on('mail', () => {
   });
 });
 
+/**
+ * Event when email listener is connected.
+ */
 mailListener.on('server:connected', () => {
   LOGGER.info('Monitor listening');
 });
 
+/**
+ * Event when email listener is disconnected.
+ */
 mailListener.on('server:disconnected', () => {
   LOGGER.info('Monitor disconnected');
 });
 
+/**
+ * Event when there is an error with the email listener.
+ */
 mailListener.on('error', (err) => {
   LOGGER.error(err);
 });

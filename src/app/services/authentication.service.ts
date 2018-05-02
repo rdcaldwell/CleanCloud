@@ -10,6 +10,8 @@ export interface User {
   _id: string;
   email: string;
   username: string;
+  firstName: string;
+  lastName: string;
   exp: number;
   iat: number;
 }
@@ -28,10 +30,14 @@ export interface TokenPayload {
 
 @Injectable()
 export class AuthenticationService {
+
   private token: string;
 
   constructor(private httpClient: HttpClient, private http: Http, private router: Router) { }
 
+  /**
+   * Activates route if user is logged in.
+   */
   canActivate() {
     if (!this.isLoggedIn()) {
       this.router.navigateByUrl('/login');
@@ -40,16 +46,28 @@ export class AuthenticationService {
     return true;
   }
 
-  // Validate form fields
-  validate(field, type) {
+  /**
+   * API call for validating username or email availability.
+   * @param {string} field - The input being validated.
+   * @param {string} type - THe type to check input on.
+   */
+  validate(field: string, type: string) {
     return this.http.get(`/api/auth/${type}/${field}`).map(res => res.json());
   }
 
+  /**
+   * Saves authentication token to local storage.
+   * @param {string} token - The authentication token.
+   */
   private saveToken(token: string): void {
     localStorage.setItem('janitor-token', token);
     this.token = token;
   }
 
+  /**
+   * Gets authentication token.
+   * @returns {string} - The authentication token.
+   */
   private getToken(): string {
     if (!this.token) {
       this.token = localStorage.getItem('janitor-token');
@@ -57,6 +75,10 @@ export class AuthenticationService {
     return this.token;
   }
 
+  /**
+   * Gets the current user.
+   * @returns {User} - Data of current user.
+   */
   public getUser(): User {
     const token = this.getToken();
     let payload;
@@ -69,6 +91,10 @@ export class AuthenticationService {
     }
   }
 
+  /**
+   * Checks if user is logged in.
+   * @returns {boolean} - Logged in state.
+   */
   public isLoggedIn(): boolean {
     const user = this.getUser();
     if (user) {
@@ -78,18 +104,30 @@ export class AuthenticationService {
     }
   }
 
+  /**
+   * Sends GET request to API.
+   */
   private getRequest() {
     const base = this.httpClient.get(`/api/auth/profile`, { headers: { Authorization: `Bearer ${this.getToken()}` } });
 
     return this.request(base);
   }
 
+  /**
+   * Sends POST request to API.
+   * @param type - Registration or login function.
+   * @param user - The users data.
+   */
   private postRequest(type, user?: TokenPayload): Observable<any> {
     const base = this.httpClient.post(`/api/auth/${type}`, user);
 
     return this.request(base);
   }
 
+  /**
+   * Makes rewust to API.
+   * @param base - URL path.
+   */
   private request(base) {
     const request = base.pipe(
       map((data: TokenResponse) => {
@@ -103,18 +141,32 @@ export class AuthenticationService {
     return request;
   }
 
+  /**
+   * API call for registering new user.
+   * @param user - User registration data.
+   */
   public register(user: TokenPayload): Observable<any> {
     return this.postRequest('register', user);
   }
 
+  /**
+   * API call for loggin in user.
+   * @param user - User login info.
+   */
   public login(user: TokenPayload): Observable<any> {
     return this.postRequest('login', user);
   }
 
+  /**
+   * API call for reading profile.
+   */
   public profile(): Observable<any> {
     return this.getRequest();
   }
 
+  /**
+   * Logs user out and destroys authentication token.
+   */
   public logout(): void {
     this.token = '';
     window.localStorage.removeItem('janitor-token');

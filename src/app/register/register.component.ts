@@ -8,7 +8,11 @@ import { Router } from '@angular/router';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
-  credentials: TokenPayload = {
+
+  public usernameFound: boolean;
+  public emailFound: boolean;
+  public passwordCheck: boolean;
+  public credentials: TokenPayload = {
     email: '',
     username: '',
     password: '',
@@ -16,34 +20,32 @@ export class RegisterComponent {
     lastName: '',
   };
 
-  usernameFound: boolean;
-  emailFound: boolean;
-  passwordCheck: boolean;
-
   constructor(private authenticationService: AuthenticationService, private router: Router) { }
 
-  // Validate username
+  /**
+   * Validates if username is already taken.
+   */
   validateUsername() {
-    // If entered username is not blank
     if (this.credentials.username) {
-      // Validate if username is taken in api
       this.authenticationService.validate(this.credentials.username, 'username').subscribe(data => {
         this.usernameFound = data.found;
       });
     }
   }
 
-  // Validate email
+  /**
+   * Validates if email is already taken.
+   */
   validateEmail() {
-    // If entered email is not blank
     if (this.credentials.email) {
-      // Validate if email is taken in api
       this.authenticationService.validate(this.credentials.email, 'email').subscribe(data => {
         this.emailFound = data.found;
       });
     }
   }
-
+  /**
+   * Registers new user.
+   */
   register() {
     this.authenticationService.register(this.credentials).subscribe((data) => {
       alert(data);

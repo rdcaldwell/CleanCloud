@@ -12,86 +12,66 @@ export class RdsComponent implements OnInit {
   public responseFromAWS: any;
   public rdsInstances: Array<RDSInstance> = [];
   public totalCost = 0;
+  public loading: boolean;
 
   constructor(private amazonWebService: AmazonWebService) { }
 
+  /**
+   * Sets up instances on component initialization.
+   */
   ngOnInit() {
+    this.setupInstances();
+  }
+
+  /**
+   * Gets all RDS instance data and creates instance array.
+   */
+  setupInstances() {
+    this.loading = true;
+    this.rdsInstances = [];
     this.amazonWebService.describe('rds').subscribe(data => {
       if (data !== 'No rds data') {
         for (const instance of data) {
-          const getRunningHours = new Promise((resolve, reject) => {
-            resolve(this.getRunningHours(instance.InstanceCreateTime));
-          });
-          getRunningHours.then((hours: number) => {
-            const getTotalCost = new Promise((resolve, reject) => {
-              if (instance.AvailabilityZone) {
-                this.amazonWebService.getPrice('rds', {
-                  region: instance.AvailabilityZone,
-                  type: instance.DBInstanceClass,
-                  DB: instance.Engine
-                }).subscribe(price => {
-                  resolve(hours * price);
-                });
-              } else {
-                resolve(0);
-              }
-            });
-            getTotalCost.then((price: number) => {
-              this.rdsInstances.push({
-                id: instance.DBInstanceIdentifier,
-                name: instance.DBName,
-                type: instance.DBInstanceClass,
-                engine: instance.Engine,
-                zone: instance.AvailabilityZone,
-                status: instance.DBInstanceStatus,
-                creationDate: instance.InstanceCreateTime,
-                runningHours: hours,
-                cost: price,
-                checked: false
-              });
+          const hours = this.amazonWebService.getRunningHours(instance.InstanceCreateTime);
+          this.amazonWebService.getPrice('rds', {
+            region: (instance.DBInstanceStatus !== 'creating') ? instance.AvailabilityZone : '',
+            type: instance.DBInstanceClass,
+            DB: instance.Engine
+          }).subscribe(price => {
+            this.rdsInstances.push({
+              id: instance.DBInstanceIdentifier,
+              name: instance.DBName,
+              type: instance.DBInstanceClass,
+              engine: instance.Engine,
+              zone: (instance.AvailabilityZone) ? instance.AvailabilityZone.slice(0, -1) : '',
+              status: instance.DBInstanceStatus,
+              creationDate: instance.InstanceCreateTime,
+              runningHours: hours,
+              cost: hours * price,
+              checked: false
             });
           });
         }
-        setInterval(() => {
-          this.updateStatus();
-        }, 30000);
-      } else {
-        this.responseFromAWS = data;
       }
+      this.loading = false;
     });
   }
 
-  updateStatus() {
-    this.amazonWebService.describe('rds').subscribe(data => {
-      if (data !== 'No rds data') {
-        for (const instance of data) {
-          for (const rdsInstance of this.rdsInstances) {
-            if (rdsInstance.id === instance.DBInstanceIdentifier) {
-              rdsInstance.status = instance.DBInstanceStatus;
-            }
-          }
-        }
-      } else {
-        this.responseFromAWS = data;
-      }
-    });
-  }
-
+  /**
+   * Terminates all checked RDS instances.
+   */
   terminateInstances() {
+    this.loading = true;
     for (const instance of this.rdsInstances) {
       if (instance.checked) {
-        this.amazonWebService.terminateAWS('rds', instance.id).subscribe(data => {
+        this.amazonWebService.destroy('rds', instance.id, instance.zone).subscribe(data => {
           this.responseFromAWS = data;
         });
-      } else {
-        this.responseFromAWS = 'No instances checked for termination';
       }
     }
-  }
-
-  getRunningHours(startTime): number {
-    const hours = moment.duration(moment().diff(startTime)).asHours();
-    return Math.round(hours * 100) / 100;
+    setTimeout(() => {
+      this.setupInstances();
+    }, 3000);
   }
 }
 

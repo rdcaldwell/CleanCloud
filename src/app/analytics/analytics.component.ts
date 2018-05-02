@@ -16,10 +16,16 @@ export class AnalyticsComponent implements OnInit {
     private amazonWebService: AmazonWebService,
     @Inject(MAT_DIALOG_DATA) public data: any) { }
 
+  /**
+   * Closes modal window.
+   */
   close() {
     this.dialogRef.close();
   }
 
+  /**
+   * Create d3.js bar graph of CPU Utilizaiton on component initialization.
+   */
   ngOnInit() {
     let data = this.data.response;
     // set the dimensions of the canvas

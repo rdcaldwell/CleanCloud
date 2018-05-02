@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AmazonWebService } from '../services/amazonweb.service';
+import { ClusterService } from '../services/cluster.service';
 
 @Component({
   selector: 'app-clusters',
@@ -8,19 +9,19 @@ import { AmazonWebService } from '../services/amazonweb.service';
 })
 export class ClustersComponent implements OnInit {
 
-  public context: any = {
-    names: []
-  };
+  public loading = true;
+  public context = [];
 
-  constructor(private amazonWebService: AmazonWebService) { }
+  constructor(private clusterService: ClusterService) { }
 
+  /**
+   * Get all cluster names on component initialization.
+   */
   ngOnInit() {
-    this.getContextNames();
-  }
-
-  getContextNames() {
-    this.amazonWebService.contextNames().subscribe(data => {
+    this.clusterService.contextNames().subscribe(data => {
       this.context = data;
+      this.loading = false;
     });
   }
+
 }
