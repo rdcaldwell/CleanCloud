@@ -25,7 +25,7 @@ log.level = 'info';
  */
 module.exports.emailStartedBy = (clusterName, startedBy, message) => {
   log.info(`Building email for ${startedBy}`);
-  // setup email data with unicode symbols
+
   const mailOptions = {
     from: `"CleanCloud" <${process.env.EMAIL_ADDRESS}>`,
     to: `${startedBy}@fischerinternational.com`,
@@ -36,7 +36,6 @@ module.exports.emailStartedBy = (clusterName, startedBy, message) => {
      CleanCloud`,
   };
 
-  // send mail with defined transport object
   transporter.sendMail(mailOptions, (err, info) => {
     if (err) log.error(err);
     log.info(`Email sent to ${startedBy}`);
