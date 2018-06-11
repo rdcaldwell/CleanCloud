@@ -9,9 +9,7 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent {
 
-  public incorrectPassword = false;
-  public userNotFound = false;
-  public response: any;
+  public invalidCredentials = false;
   public credentials: TokenPayload = {
     username: '',
     password: ''
@@ -24,17 +22,10 @@ export class LoginComponent {
    * Login in user.
    */
   login() {
-    this.incorrectPassword = false;
-    this.userNotFound = false;
     this.authenticationService.login(this.credentials).subscribe(data => {
-      this.response = data;
-      this.router.navigateByUrl('/profile');
+      this.router.navigateByUrl('/instances');
     }, (err) => {
-      if (err.error.message === 'User not found') {
-        this.userNotFound = true;
-      } else if (err.error.message === 'Password is wrong') {
-        this.incorrectPassword = true;
-      }
+      this.invalidCredentials = true;
     });
   }
 }

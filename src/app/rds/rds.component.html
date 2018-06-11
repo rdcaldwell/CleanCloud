@@ -17,7 +17,7 @@
   <div class="text-center" *ngIf="loading">
     <i class="fas fa-spinner fa-pulse fa-2x"></i>
   </div>
-  <ng-container *ngIf="!loading">
+  <div *ngIf="!loading" class="table-responsive">
     <table id="RDSTable" class="table">
       <thead>
         <tr>
@@ -53,5 +53,5 @@
       </tbody>
     </table>
     <span *ngIf="!rdsInstances[0]">There are no RDS instances running.</span>
-  </ng-container>
+  </div>
 </section>

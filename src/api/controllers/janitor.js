@@ -1,118 +1,80 @@
 /** @module JanitorController */
 /* eslint no-param-reassign:0 */
-const run = require('docker-run');
-const LOGGER = require('log4js').getLogger('janitor');
-const CLUSTER_CONTROLLER = require('./cluster');
+const async = require('async');
 const Cluster = require('../models/cluster');
+const config = require('../config/config');
+const EmailController = require('./email');
+const JobController = require('./job');
+const log = require('log4js').getLogger('janitor');
+const moment = require('moment');
 
-let dockerJanitor;
-let janitorConfiguration = {};
-
-LOGGER.level = 'info';
+log.level = 'info';
 
 /**
- * Adds running janitor to formulated clusters.
+ * Marks cluster for destruction, schedules destruction, and notifies owner via email.
+ * @param {object} cluster - The cluster to be marked.
  */
-const addJanitorToClusters = (region) => {
-  Cluster.Model.update({
-    region: region,
-  }, {
-    monkeyPort: 8080,
-    monitored: true,
-  }, {
-    multi: true,
-  }, (clustererr) => {
-    if (clustererr) LOGGER.err(clustererr);
-    else LOGGER.info('updated cluster');
-  });
+const markCluster = (cluster) => {
+  cluster.marked = true;
+  log.info(`${cluster.context} marked`);
+  JobController.scheduleJob(cluster.context, cluster.startedBy);
+  EmailController.emailStartedBy(cluster.context, cluster.startedBy, 'marked for destruction');
+  cluster.jobIndex = JobController.jobs.length - 1;
+  cluster.save();
 };
 
 /**
- * Route for running the Simian Army Janitor Monkey Docker image.
- * @param {object} req - The request.
- * @param {object} res - The response.
- * @param {req.body} janitorConfig - The Janitor configuration settings.
- * @returns {object} - Message that Janitor is created.
+ * Finds and marks clusters that are running past the age threshold
+ * @param {array} ids - Ids parsed from email.
  */
-module.exports.run = (req, res) => {
-  CLUSTER_CONTROLLER.setClusterDB();
-  janitorConfiguration = req.body;
-
-  const janitorConfig = {
-    ports: {
-      8080: 8080,
-    },
-    env: {
-      SIMIANARMY_CLIENT_AWS_ACCOUNTKEY: `${process.env.AWS_ACCESS_KEY_ID}`,
-      SIMIANARMY_CLIENT_AWS_SECRETKEY: `${process.env.AWS_SECRET_ACCESS_KEY}`,
-      SIMIANARMY_CALENDAR_ISMONKEYTIME: req.body.isMonkeyTime,
-      SIMIANARMY_JANITOR_NOTIFICATION_DEFAULTEMAIL: req.body.defaultEmail,
-      SIMIANARMY_JANITOR_SUMMARYEMAIL_TO: req.body.summaryEmail,
-      SIMIANARMY_JANITOR_NOTIFICATION_SOURCEEMAIL: req.body.sourceEmail,
-      SIMIANARMY_JANITOR_RULE_ORPHANEDINSTANCERULE_INSTANCEAGETHRESHOLD: req.body.threshold,
-      SIMIANARMY_SCHEDULER_FREQUENCY: req.body.frequency,
-      SIMIANARMY_SCHEDULER_FREQUENCYUNIT: req.body.frequencyUnit,
-      SIMIANARMY_CLIENT_AWS_REGION: req.body.region,
-    },
-  };
-
-  addJanitorToClusters(req.body.region);
-  dockerJanitor = run('rdcaldwell/janitor:latest', janitorConfig);
-  process.stdin.pipe(dockerJanitor.stdin);
-  dockerJanitor.stdout.pipe(process.stdout);
-  dockerJanitor.stderr.pipe(process.stderr);
-  LOGGER.info('Janitor created');
-  res.json('Janitor created');
-};
-
-/**
- * Route for destroying Janitor by id.
- * @param {object} req - The request.
- * @param {object} res - The response.
- * @param {req.params} id - The id of Janitor.
- * @returns {object} - Message that Janitor is destroyed.
- */
-module.exports.destroy = (req, res) => {
-  dockerJanitor.destroy();
-  dockerJanitor = undefined;
-
-  Cluster.Model.update({}, {
-    monkeyPort: null,
-    monitored: false,
+module.exports.markClusters = () => {
+  log.info('Janitor running');
+  Cluster.Model.find({
     marked: false,
-  }, {
-    multi: true,
-  }, (err) => {
-    if (err) LOGGER.err(err);
-    else LOGGER.info('Updated cluster');
+    monitored: true,
+  }, (err, clusters) => {
+    async.forEachOf(clusters, (cluster) => {
+      const threshold = new Date(moment(cluster.launchTime)
+        .add(config.threshold, config.thresholdUnit));
+      if (new Date() > threshold) markCluster(cluster);
+    });
   });
-
-  res.json('Janitor removed');
 };
 
 /**
- * Route for getting all Janitors.
+ * Route for removing monitor tag from cluster after it has been opted out.
  * @param {object} req - The request.
  * @param {object} res - The response.
- * @returns {object} - All Janitors.
+ * @returns {object} - Message that monitor has been removed.
  */
-module.exports.getJanitors = (req, res) => {
-  if (dockerJanitor !== undefined) res.json(janitorConfiguration);
-  else res.json('Janitor not running');
+module.exports.removeClusterMonitor = (req, res) => {
+  Cluster.Model.findOne({
+    _id: req.params.id,
+  }, (err, cluster) => {
+    if (err) res.json(err);
+    else {
+      cluster.monitored = false;
+      cluster.save();
+      res.json('Monitor removed');
+    }
+  });
 };
 
 /**
- * Gets state of the Janitor.
- * @returns {boolean} - Janitor running state.
- */
-module.exports.isJanitorRunning = () => dockerJanitor !== undefined;
-
-/**
- * Route for getting state of the Janitor.
+ * Adds monitor tag from cluster after it has been opted in.
  * @param {object} req - The request.
  * @param {object} res - The response.
- * @returns {boolean} - Janitor running state.
+ * @returns {object} - Message that monitor has been added.
  */
-module.exports.isJanitorRunningRoute = (req, res) => {
-  res.json(dockerJanitor !== undefined);
+module.exports.addClusterMonitor = (req, res) => {
+  Cluster.Model.findOne({
+    _id: req.params.id,
+  }, (err, cluster) => {
+    if (err) res.json(err);
+    else {
+      cluster.monitored = true;
+      cluster.save();
+      res.json('Monitor added');
+    }
+  });
 };

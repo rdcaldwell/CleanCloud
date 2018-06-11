@@ -1,16 +1,17 @@
 /** @module JobsController */
 /* eslint no-param-reassign:0, no-unused-vars: 0, consistent-return:0 */
-const schedule = require('node-schedule');
-const LOGGER = require('log4js').getLogger('job');
-const moment = require('moment');
-const ASYNC = require('async');
-const JENKINS_CONTROLLER = require('./jenkins');
-const EMAIL_CONTROLLER = require('./email');
+const async = require('async');
 const Cluster = require('../models/cluster');
+const config = require('../config/config');
+const EmailController = require('./email');
+const JenkinsController = require('./jenkins');
+const log = require('log4js').getLogger('job');
+const moment = require('moment');
+const schedule = require('node-schedule');
 
 const jobs = [];
 
-LOGGER.level = 'info';
+log.level = 'info';
 
 /**
  * Route for canceling scheduled job.
@@ -28,7 +29,7 @@ module.exports.cancelJob = (req, res) => {
     cluster.jobIndex = null;
     cluster.destructionDate = null;
     cluster.save();
-    LOGGER.info(`${cluster.context} job canceled`);
+    log.info(`${cluster.context} job canceled`);
     res.json(`${cluster.context} job canceled`);
   });
 };
@@ -40,7 +41,7 @@ module.exports.cancelJob = (req, res) => {
  */
 module.exports.scheduleJob = (name, startedBy) => {
   const today = new Date();
-  const destructionTime = new Date(moment().add(2, 'minutes'));
+  const destructionTime = new Date(moment().add(config.destroyAfter, config.destroyAfterUnit));
 
   Cluster.Model.findOne({
     context: name,
@@ -50,31 +51,33 @@ module.exports.scheduleJob = (name, startedBy) => {
   });
 
   jobs.push(schedule.scheduleJob(destructionTime, () => {
-    JENKINS_CONTROLLER.destroyByName(name);
-    EMAIL_CONTROLLER.emailStartedBy(name, startedBy, 'destroyed');
+    if (!config.leashed) {
+      JenkinsController.destroyByName(name);
+      EmailController.emailStartedBy(name, startedBy, 'destroyed');
+    }
   }));
 
-  LOGGER.info(`Job scheduled for ${destructionTime}`);
+  log.info(`Job scheduled for ${destructionTime}`);
 };
 
 /**
  * Reschedules jobs in the event the server goes down.
  */
 module.exports.setJobs = () => {
-  LOGGER.info('Setting up scheduled jobs');
+  log.info('Setting up scheduled jobs');
 
   Cluster.Model.find({
     destructionDate: {
       $gte: new Date(),
     },
   }, (err, clusters) => {
-    ASYNC.forEachOf(clusters, (cluster) => {
+    async.forEachOf(clusters, (cluster) => {
       jobs.push(schedule.scheduleJob(cluster.destructionDate, () => {
-        JENKINS_CONTROLLER.destroyByName(cluster.context);
-        EMAIL_CONTROLLER.emailStartedBy(cluster.context, cluster.startedBy, 'destroyed');
+        JenkinsController.destroyByName(cluster.context);
+        EmailController.emailStartedBy(cluster.context, cluster.startedBy, 'destroyed');
       }));
 
-      LOGGER.info(`Job rescheduled for ${cluster.destructionDate}`);
+      log.info(`Job rescheduled for ${cluster.destructionDate}`);
     });
   });
 };

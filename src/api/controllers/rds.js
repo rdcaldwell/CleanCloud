@@ -1,11 +1,11 @@
 /** @module RDSController */
 /* eslint no-param-reassign:0 */
+const async = require('async');
 const AWS = require('aws-sdk');
-const LOGGER = require('log4js').getLogger('RDS');
-const ASYNC = require('async');
-const UTILS = require('../config/utils');
+const config = require('../config/config');
+const log = require('log4js').getLogger('RDS');
 
-LOGGER.level = 'info';
+log.level = 'info';
 
 /**
  * Route for describing RDS databases.
@@ -15,7 +15,7 @@ LOGGER.level = 'info';
  */
 module.exports.describe = (req, res) => {
   const rdsData = [];
-  ASYNC.forEachOf(UTILS.regions, (awsRegion, i, callback) => {
+  async.forEachOf(config.regions, (awsRegion, i, callback) => {
     const RDS = new AWS.RDS({
       apiVersion: '2014-10-31',
       region: awsRegion,
@@ -24,7 +24,7 @@ module.exports.describe = (req, res) => {
     RDS.describeDBInstances({}, (err, data) => {
       if (err) res.json(err);
       else if (data.DBInstances.length) {
-        ASYNC.forEachOf(data.DBInstances, (dbInstance, j, tagCallback) => {
+        async.forEachOf(data.DBInstances, (dbInstance, j, tagCallback) => {
           RDS.listTagsForResource({
             ResourceName: dbInstance.DBInstanceArn,
           }, (tagerr, tagdata) => {
@@ -66,7 +66,7 @@ module.exports.terminateById = (req, res) => {
   }, (err, data) => {
     if (err) res.json(err);
     else {
-      LOGGER.info(`${data.DBInstance.DBInstanceIdentifier} terminated`);
+      log.info(`${data.DBInstance.DBInstanceIdentifier} terminated`);
       res.json(`${data.DBInstance.DBInstanceIdentifier} terminated`);
     }
   });

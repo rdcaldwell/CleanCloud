@@ -1,25 +1,24 @@
+const log = require('log4js').getLogger('db');
 const mongoose = require('mongoose');
-const LOGGER = require('log4js').getLogger('db');
 
-const db = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@ds121543.mlab.com:21543/fischerjanitor`;
+const db = 'mongodb://localhost:27017/cleancloud';
 
-LOGGER.level = 'info';
+log.level = 'info';
 
 mongoose.connect(db);
 
 mongoose.connection.on('connected', () => {
-  LOGGER.info('MongoDB connected');
+  log.info('MongoDB connected');
 });
 
 mongoose.connection.on('error', (err) => {
-  LOGGER.error(`MongoDB connection error: ${err}`);
+  log.error(`MongoDB connection error: ${err}`);
 });
 
 mongoose.connection.on('disconnected', () => {
-  LOGGER.info('MongoDB disconnected');
+  log.info('MongoDB disconnected');
 });
 
-require('./users');
 require('./cluster');
 require('./ec2_prices');
 require('./rds_prices');

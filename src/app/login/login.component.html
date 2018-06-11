@@ -1,24 +1,18 @@
 <section>
   <div class="row">
-    <div class="col-md-4">
+    <div class="mx-auto col-lg-5 col-md-12">
       <h2>LOGIN</h2>
       <form (submit)="login()">
         <div class="form-group">
-          <input type="text" class="form-control" name="username" placeholder="Username" 
-            [ngClass]="{'is-invalid': userNotFound}" [(ngModel)]="credentials.username">
-          <div *ngIf="userNotFound" class="invalid-feedback">
-            User not found.
-          </div>                          
+          <input type="text" class="form-control" name="username" placeholder="Username" [(ngModel)]="credentials.username">
         </div>
         <div class="form-group">
-          <input type="password" class="form-control" name="password" placeholder="Password" 
-            [ngClass]="{'is-invalid': incorrectPassword}" [(ngModel)]="credentials.password">
-          <div *ngIf="incorrectPassword" class="invalid-feedback">
-            The password you entered was incorrect.
-          </div>
+          <input type="password" class="form-control" name="password" placeholder="Password" [(ngModel)]="credentials.password">
         </div>
-        <button type="submit" class="cldn-btn" 
-          [disabled]="!credentials.username || !credentials.password">Login</button>
+        <div *ngIf="invalidCredentials" class="invalid mb-3">
+          The username or password you entered isn't correct. Try again.
+        </div>
+        <button type="submit" class="cldn-btn" [disabled]="!credentials.username || !credentials.password">Login</button>
       </form>
     </div>
   </div>

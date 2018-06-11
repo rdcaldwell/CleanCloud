@@ -1,65 +1,56 @@
 /* eslint no-restricted-syntax:0 */
-const ROUTER = require('express').Router();
-const AUTH_CONTROLLER = require('../controllers/auth');
-const JANITOR_CONTROLLER = require('../controllers/janitor');
-const JENKINS_CONTROLLER = require('../controllers/jenkins');
-const EC2_CONTROLLER = require('../controllers/ec2');
-const EFS_CONTROLLER = require('../controllers/efs');
-const RDS_CONTROLLER = require('../controllers/rds');
-const PRICE_CONTROLLER = require('../controllers/price');
-const CLUSTER_CONTROLLER = require('../controllers/cluster');
-const ANALYTICS_CONTROLLER = require('../controllers/analytics');
-const JOB_CONTROLLER = require('../controllers/job');
-const AUTH = require('express-jwt')({
+const AnalyticsController = require('../controllers/analytics');
+const auth = require('express-jwt')({
   secret: process.env.JWT_SECRET,
   userProperty: 'payload',
 });
+const AuthController = require('../controllers/auth');
+const ClusterController = require('../controllers/cluster');
+const Ec2Controller = require('../controllers/ec2');
+const EfsController = require('../controllers/efs');
+const JanitorController = require('../controllers/janitor');
+const JenkinsController = require('../controllers/jenkins');
+const JobController = require('../controllers/job');
+const PriceController = require('../controllers/price');
+const RdsController = require('../controllers/rds');
+const router = require('express').Router();
 
 /* Authentication Controller */
-ROUTER.post('/auth/register', AUTH_CONTROLLER.register);
-ROUTER.post('/auth/login', AUTH_CONTROLLER.login);
-ROUTER.get('/auth/profile', AUTH, AUTH_CONTROLLER.profileRead);
-
-/* Validation Controller */
-ROUTER.get('/auth/username/:id', AUTH_CONTROLLER.validateUsername);
-ROUTER.get('/auth/email/:id', AUTH_CONTROLLER.validateEmail);
+router.post('/auth/login', AuthController.login);
+router.get('/auth/profile', auth, AuthController.profileRead);
 
 /* Janitor Controller */
-ROUTER.post('/janitor/run', JANITOR_CONTROLLER.run);
-ROUTER.get('/janitor/destroy', JANITOR_CONTROLLER.destroy);
-ROUTER.get('/janitor/running', JANITOR_CONTROLLER.isJanitorRunningRoute);
-ROUTER.get('/janitors', JANITOR_CONTROLLER.getJanitors);
+router.get('/janitor/monitor/remove/:id', JanitorController.removeClusterMonitor);
+router.get('/janitor/monitor/add/:id', JanitorController.addClusterMonitor);
 
 /* Job Controller */
-ROUTER.get('/job/cancel/:id', JOB_CONTROLLER.cancelJob);
+router.get('/job/cancel/:id', JobController.cancelJob);
 
 /* Cluster Controller */
-ROUTER.get('/clusters', CLUSTER_CONTROLLER.getClusters);
-ROUTER.get('/cluster/monitor/remove/:id', CLUSTER_CONTROLLER.removeClusterMonitor);
-ROUTER.get('/cluster/monitor/add/:id', CLUSTER_CONTROLLER.addClusterMonitor);
-ROUTER.get('/cluster', EC2_CONTROLLER.getContextById);
-ROUTER.get('/cluster/names', EC2_CONTROLLER.getClusterNames);
+router.get('/clusters', ClusterController.getClusters);
+router.get('/cluster', Ec2Controller.getContextById);
+router.get('/cluster/names', Ec2Controller.getClusterNames);
 
 /* EC2 Controller */
-ROUTER.get('/ec2/describe', EC2_CONTROLLER.describe);
-ROUTER.get('/ec2/terminate', EC2_CONTROLLER.terminateById);
+router.get('/ec2/describe', Ec2Controller.describe);
+router.get('/ec2/terminate', Ec2Controller.terminateById);
 
 /* EFS Controller */
-ROUTER.get('/efs/describe', EFS_CONTROLLER.describe);
-ROUTER.get('/efs/terminate', EFS_CONTROLLER.terminateById);
+router.get('/efs/describe', EfsController.describe);
+router.get('/efs/terminate', EfsController.terminateById);
 
 /* RDS Controller */
-ROUTER.get('/rds/describe', RDS_CONTROLLER.describe);
-ROUTER.get('/rds/terminate', RDS_CONTROLLER.terminateById);
+router.get('/rds/describe', RdsController.describe);
+router.get('/rds/terminate', RdsController.terminateById);
 
 /* Jenkins Controller */
-ROUTER.get('/jenkins/destroy/:id', JENKINS_CONTROLLER.destroy);
+router.get('/jenkins/destroy/:id', JenkinsController.destroy);
 
 /* Analytics Controller */
-ROUTER.get('/analyze', ANALYTICS_CONTROLLER.analyzeById);
+router.get('/analyze', AnalyticsController.analyzeById);
 
 /* Price Controller */
-ROUTER.post('/price/ec2', PRICE_CONTROLLER.getEc2Price);
-ROUTER.post('/price/rds', PRICE_CONTROLLER.getRdsPrice);
+router.post('/price/ec2', PriceController.getEc2Price);
+router.post('/price/rds', PriceController.getRdsPrice);
 
-module.exports = ROUTER;
+module.exports = router;

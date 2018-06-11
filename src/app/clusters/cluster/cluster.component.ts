@@ -60,7 +60,7 @@ export class ClusterComponent implements OnInit {
 
             ec2Hours += moment.duration(moment().diff(instance.LaunchTime)).asHours();
 
-            this.startedBy = this.amazonWebService.getTag(instance.Tags, 'startedBy');
+            this.startedBy = this.amazonWebService.getTag(instance.Tags, 'StartedBy');
 
             this.clusterInstances.push(instanceData);
 

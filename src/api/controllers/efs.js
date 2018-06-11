@@ -1,11 +1,11 @@
 /** @module EFSController */
 /* eslint no-param-reassign:0 */
-const ASYNC = require('async');
+const async = require('async');
 const AWS = require('aws-sdk');
-const LOGGER = require('log4js').getLogger('EFS');
-const UTILS = require('../config/utils');
+const config = require('../config/config');
+const log = require('log4js').getLogger('EFS');
 
-LOGGER.level = 'info';
+log.level = 'info';
 
 /**
  * Route for describing EFS file systems.
@@ -15,20 +15,20 @@ LOGGER.level = 'info';
  */
 module.exports.describe = (req, res) => {
   const efsData = [];
-  ASYNC.forEachOf(UTILS.regions, (awsRegion, i, callback) => {
+  async.forEachOf(config.regions, (awsRegion, i, callback) => {
     const EFS = new AWS.EFS({
       apiVersion: '2015-02-01',
       region: awsRegion,
     });
 
     EFS.describeFileSystems({}, (err, data) => {
-      if (err) LOGGER.error(err);
+      if (err) log.error(err);
       else if (data.FileSystems.length) {
-        ASYNC.forEachOf(data.FileSystems, (fileSystem, j, tagCallback) => {
+        async.forEachOf(data.FileSystems, (fileSystem, j, tagCallback) => {
           EFS.describeTags({
             FileSystemId: fileSystem.FileSystemId,
           }, (tagerr, tagdata) => {
-            if (err) LOGGER.error(err);
+            if (err) log.error(err);
             else if (tagdata !== null) {
               fileSystem.Tags = tagdata.Tags;
               efsData.push(fileSystem);
@@ -70,7 +70,7 @@ module.exports.terminateById = (req, res) => {
   EFS.deleteFileSystem(params, (err) => {
     if (err) res.json(err);
     else {
-      LOGGER.info(`${req.query.id} terminated`);
+      log.info(`${req.query.id} terminated`);
       res.json(`${req.query.id} terminated`);
     }
   });

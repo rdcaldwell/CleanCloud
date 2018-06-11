@@ -1,9 +1,9 @@
 /** @module AnalyticsController */
 const AWS = require('aws-sdk');
-const LOGGER = require('log4js').getLogger('analytics');
+const log = require('log4js').getLogger('analytics');
 const moment = require('moment');
 
-LOGGER.level = 'info';
+log.level = 'info';
 
 /**
  * Route for analyzing CPU Utilizaton of EC2 instances by id.
@@ -14,7 +14,7 @@ LOGGER.level = 'info';
  * @returns {object} - CPU Utilization CloudWatch metrics of instance.
  */
 module.exports.analyzeById = (req, res) => {
-  const CLOUD_WATCH = new AWS.CloudWatch({
+  const CloudWatch = new AWS.CloudWatch({
     apiVersion: '2010-08-01',
     region: req.query.region,
   });
@@ -36,8 +36,8 @@ module.exports.analyzeById = (req, res) => {
     Unit: 'Percent',
   };
 
-  CLOUD_WATCH.getMetricStatistics(params, (err, data) => {
-    if (err) LOGGER.error(err);
+  CloudWatch.getMetricStatistics(params, (err, data) => {
+    if (err) log.error(err);
     else res.json(data);
   });
 };

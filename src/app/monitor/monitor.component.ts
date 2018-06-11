@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ClusterService } from '../services/cluster.service';
-import { SimianArmyService } from '../services/simianarmy.service';
 import { JobService } from '../services/job.service';
 import { JenkinsService } from '../services/jenkins.service';
-import { JanitorService } from '../services/janitor.service';
 
 @Component({
   selector: 'app-monitor',
@@ -14,18 +12,13 @@ export class MonitorComponent implements OnInit {
 
   public clusters = [];
   public loading = true;
-  public janitor = {
-    region: ''
-  };
 
   constructor(private clusterService: ClusterService,
-    private simianArmyService: SimianArmyService,
     private jobService: JobService,
-    private jenkinsService: JenkinsService,
-    private janitorService: JanitorService) { }
+    private jenkinsService: JenkinsService) { }
 
   /**
-   * Gets all clusters and checks if janitor is running on component initialization.
+   * Gets all clusters on component initialization.
    */
   ngOnInit() {
     this.clusterService.getClusters().subscribe(data => {
@@ -34,30 +27,23 @@ export class MonitorComponent implements OnInit {
       }
       this.loading = false;
     });
-    this.getJanitor();
   }
 
   /**
-   * Opt instance out of Simian Army monitoring.
+   * Opt instance out of monitoring.
    * @param {object} cluster - The cluster to be opted out.
    */
   optOut(cluster) {
-    for (const resource of cluster.resourceIds) {
-      this.simianArmyService.optOut(resource).subscribe();
-      this.clusterService.removeMonitor(cluster._id).subscribe();
-    }
+    this.clusterService.removeMonitor(cluster._id).subscribe();
     cluster.monitored = false;
   }
 
   /**
-   * Opt instance into Simian Army monitoring.
+   * Opt instance into monitoring.
    * @param {object} cluster - The cluster to be opted in.
    */
   optIn(cluster) {
-    for (const resource of cluster.resourceIds) {
-      this.simianArmyService.optIn(resource).subscribe();
-      this.clusterService.addMonitor(cluster._id).subscribe();
-    }
+    this.clusterService.addMonitor(cluster._id).subscribe();
     cluster.monitored = true;
   }
 
@@ -93,17 +79,6 @@ export class MonitorComponent implements OnInit {
       }
     }
     return false;
-  }
-
-  /**
-   * Gets all janitors.
-   */
-  getJanitor() {
-    this.janitorService.getJanitor().subscribe(janitor => {
-      if (janitor !== 'Janitor is not running') {
-        this.janitor = janitor;
-      }
-    });
   }
 
 }

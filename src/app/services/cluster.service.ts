@@ -6,14 +6,14 @@ import 'rxjs/add/operator/map';
 @Injectable()
 export class ClusterService {
 
-  constructor(private http: Http) {}
+  constructor(private http: Http) { }
 
   /**
    * API call for adding monitor to cluster.
    * @param {string} id - The cluster id.
    */
   addMonitor(id: string) {
-    return this.http.get(`/api/cluster/monitor/add/${id}`).map(res => res.json());
+    return this.http.get(`/api/janitor/monitor/add/${id}`).map(res => res.json());
   }
 
   /**
@@ -21,7 +21,7 @@ export class ClusterService {
    * @param {string} id - The cluster id.
    */
   removeMonitor(id: string) {
-    return this.http.get(`/api/cluster/monitor/remove/${id}`).map(res => res.json());
+    return this.http.get(`/api/janitor/monitor/remove/${id}`).map(res => res.json());
   }
 
   /**

@@ -23,7 +23,7 @@ describe('AuthenticationService', () => {
   });
 
   afterEach(() => {
-    localStorage.removeItem('janitor-token');
+    localStorage.removeItem('cc-token');
   });
 
   it('should be created', inject([AuthenticationService], (service: AuthenticationService) => {

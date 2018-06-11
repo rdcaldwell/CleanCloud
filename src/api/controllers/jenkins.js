@@ -1,13 +1,13 @@
 /** @module JenkinsController */
 /* eslint no-unused-vars: 0, no-else-return:0, no-param-reassign:0 */
-const LOGGER = require('log4js').getLogger('jenkins');
 const Cluster = require('../models/cluster');
-const JENKINS = require('jenkins')({
+const jenkins = require('jenkins')({
   baseUrl: `http://${process.env.JENKINS_USERNAME}:${process.env.JENKINS_API_TOKEN}@localhost:8888`,
   crumbIssuer: true,
 });
+const log = require('log4js').getLogger('jenkins');
 
-LOGGER.level = 'info';
+log.level = 'info';
 
 /**
  * Triggers Jenkins Destroy_Cluster job using cluster name.
@@ -15,18 +15,18 @@ LOGGER.level = 'info';
  * @returns {boolean} - Success of cluster destruction.
  */
 const destroyByName = (name) => {
-  LOGGER.info(`destroying ${name}`);
-  JENKINS.job.build({
-    name: 'Destroy_Cluster',
+  log.info(`destroying ${name}`);
+  jenkins.job.build({
+    name: 'Destroy/Destroy_Cluster',
     parameters: {
       cluster: name,
     },
   }, (jenkinserr) => {
     if (jenkinserr) {
-      LOGGER.error(jenkinserr);
+      log.error(jenkinserr);
       return false;
     } else {
-      LOGGER.info(`${name} cluster destroyed using Jenkins`);
+      log.info(`${name} cluster destroyed using Jenkins`);
       Cluster.Model.findOne({
         context: name,
       }, (clustererr, cluster) => {

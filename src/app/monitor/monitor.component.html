@@ -4,7 +4,7 @@
     <div class="text-center" *ngIf="loading">
       <i class="fas fa-spinner fa-pulse fa-2x"></i>
     </div>
-    <ng-container *ngIf="!loading">
+    <div *ngIf="!loading" class="table-responsive">
       <table id="MonitorTable" class="table">
         <thead>
           <tr>
@@ -35,13 +35,10 @@
                 <i class="fas fa-ban fa-lg"></i>
               </span>
             </td>
-            <td *ngIf="!cluster.destroyed && !cluster.marked && janitor.region === cluster.region" colspan="2">
+            <td *ngIf="!cluster.destroyed && !cluster.marked" colspan="2">
               <span>Not yet marked for destruction</span>
             </td>
-            <td *ngIf="!cluster.destroyed && janitor.region !== cluster.region" colspan="3">
-              <span>Janitor not running</span>
-            </td>
-            <td *ngIf="!cluster.destroyed && janitor.region === cluster.region">
+            <td *ngIf="!cluster.destroyed">
               <span matTooltip="Monitor" *ngIf="!cluster.monitored" class="option-button" (click)="optIn(cluster)">
                 <i class="fas fa-eye fa-lg"></i>
               </span>
@@ -49,13 +46,13 @@
                 <i class="fas fa-eye-slash fa-lg"></i>
               </span>
             </td>
-            <td *ngIf="cluster.destroyed" colspan="3">
+            <td *ngIf="cluster.destroyed" colspan="2">
               Cluster has been destroyed
             </td>
           </tr>
         </tbody>
       </table>
       <span *ngIf="!clusters[0]">There are no Clusters running.</span>
-    </ng-container>
+    </div>
   </div>
 </section>

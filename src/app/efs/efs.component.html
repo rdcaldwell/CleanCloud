@@ -17,7 +17,7 @@
   <div class="text-center" *ngIf="loading">
     <i class="fas fa-spinner fa-pulse fa-2x"></i>
   </div>
-  <ng-container *ngIf="!loading">
+  <div *ngIf="!loading" class="table-responsive">
     <table id="EFSTable" class="table">
       <thead>
         <tr>
@@ -49,5 +49,5 @@
       </tbody>
     </table>
     <span *ngIf="!efsInstances[0]">There are no EFS instances running.</span>
-  </ng-container>
+  </div>
 </section>

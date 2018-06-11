@@ -1,11 +1,11 @@
 /** @module EC2Controller */
 /* eslint consistent-return:0 */
+const async = require('async');
 const AWS = require('aws-sdk');
-const LOGGER = require('log4js').getLogger('EC2');
-const ASYNC = require('async');
-const UTILS = require('../config/utils');
+const config = require('../config/config');
+const log = require('log4js').getLogger('EC2');
 
-LOGGER.level = 'info';
+log.level = 'info';
 
 /**
  * Route for describing EC2 instances.
@@ -15,7 +15,7 @@ LOGGER.level = 'info';
  */
 module.exports.describe = (req, res) => {
   const ec2Data = [];
-  ASYNC.forEachOf(UTILS.regions, (awsRegion, i, callback) => {
+  async.forEachOf(config.regions, (awsRegion, i, callback) => {
     const EC2 = new AWS.EC2({
       apiVersion: '2016-11-15',
       region: awsRegion,
@@ -60,7 +60,7 @@ module.exports.terminateById = (req, res) => {
   EC2.terminateInstances(params, (err) => {
     if (err) res.json(err);
     else {
-      LOGGER.info(`${InstanceValue} terminated`);
+      log.info(`${InstanceValue} terminated`);
       res.json(`${InstanceValue} terminated`);
     }
   });
@@ -111,7 +111,7 @@ module.exports.getClusterNames = (req, res) => {
     }],
   };
 
-  ASYNC.forEachOf(UTILS.regions, (awsRegion, i, callback) => {
+  async.forEachOf(config.regions, (awsRegion, i, callback) => {
     const EC2 = new AWS.EC2({
       apiVersion: '2016-11-15',
       region: awsRegion,
@@ -120,7 +120,7 @@ module.exports.getClusterNames = (req, res) => {
     EC2.describeTags(params, (err, data) => {
       if (err) res.json(err);
       else {
-        ASYNC.forEachOf(data.Tags, (tag) => {
+        async.forEachOf(data.Tags, (tag) => {
           if (tag.Key === 'Context' && context.indexOf(tag.Key) < 0) {
             context.push({
               name: tag.Value,
@@ -133,7 +133,7 @@ module.exports.getClusterNames = (req, res) => {
       callback();
     });
   }, (regionErr) => {
-    if (regionErr) LOGGER.error(regionErr);
+    if (regionErr) log.error(regionErr);
     else res.json(context);
   });
 };

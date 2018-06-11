@@ -16,13 +16,8 @@
       </a>
     </div>
     <div *ngIf="authenticationService.isLoggedIn()" class="nav-item">
-      <a class="nav-link" routerLinkActive="active-link" routerLink="/janitor">
-        <i class="fas fa-wrench fa-lg sidebar"></i>Janitor
-      </a>
-    </div>
-    <div *ngIf="authenticationService.isLoggedIn()" class="nav-item">
       <a class="nav-link" routerLinkActive="active-link" routerLink="/profile">
-        <i class="fas fa-user-circle fa-lg sidebar"></i>{{ authenticationService.getUser().user }}
+        <i class="fas fa-user-circle fa-lg sidebar"></i>{{ authenticationService.getUser().username }}
       </a>
     </div>
     <div *ngIf="authenticationService.isLoggedIn()" class="nav-item">

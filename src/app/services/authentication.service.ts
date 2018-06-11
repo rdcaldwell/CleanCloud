@@ -7,13 +7,8 @@ import { Http } from '@angular/http';
 import 'rxjs/add/operator/map';
 
 export interface User {
-  _id: string;
-  email: string;
-  username: string;
-  firstName: string;
-  lastName: string;
+  uid: string;
   exp: number;
-  iat: number;
 }
 
 interface TokenResponse {
@@ -21,11 +16,8 @@ interface TokenResponse {
 }
 
 export interface TokenPayload {
-  email?: string;
   password: string;
   username: string;
-  firstName?: string;
-  lastName?: string;
 }
 
 @Injectable()
@@ -47,20 +39,11 @@ export class AuthenticationService {
   }
 
   /**
-   * API call for validating username or email availability.
-   * @param {string} field - The input being validated.
-   * @param {string} type - THe type to check input on.
-   */
-  validate(field: string, type: string) {
-    return this.http.get(`/api/auth/${type}/${field}`).map(res => res.json());
-  }
-
-  /**
    * Saves authentication token to local storage.
    * @param {string} token - The authentication token.
    */
   private saveToken(token: string): void {
-    localStorage.setItem('janitor-token', token);
+    localStorage.setItem('cc-token', token);
     this.token = token;
   }
 
@@ -70,7 +53,7 @@ export class AuthenticationService {
    */
   private getToken(): string {
     if (!this.token) {
-      this.token = localStorage.getItem('janitor-token');
+      this.token = localStorage.getItem('cc-token');
     }
     return this.token;
   }
@@ -169,7 +152,7 @@ export class AuthenticationService {
    */
   public logout(): void {
     this.token = '';
-    window.localStorage.removeItem('janitor-token');
+    window.localStorage.removeItem('cc-token');
     this.router.navigateByUrl('/login');
   }
 }
